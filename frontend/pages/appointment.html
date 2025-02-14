@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Appointment Booking - PetPal</title>
+    <link rel="stylesheet" href="../css/style.css"> <!-- Ensure correct path -->
+</head>
+
+<body>
+
+    <nav>
+        <div class="logo">PetPal Sheduler</div>
+        <ul class="nav-links">
+            <li><a href="../index.html">Home</a></li>
+            <li><a href="appointment.html">Appointment Booking</a></li>
+            <li><a href="services.html">Services</a></li>
+            <li><a href="contact.html">Contact</a></li>
+            <li><a href="../#about">About Us</a></li>
+        </ul>
+    </nav>
+
+    <!--  Appointment Form  -->
+    <div class="appointment-container">
+        <h2>Book an Appointment</h2>
+        
+        <form class="appointment-form">
+            <label for="last-name">Last Name</label>
+            <input type="text" id="last-name" placeholder="Enter your last name" required>
+        
+            <label for="first-name">First Name</label>
+            <input type="text" id="first-name" placeholder="Enter your first name" required>
+        
+            <label for="middle-name">Middle Name</label>
+            <input type="text" id="middle-name" placeholder="Enter your middle name">
+        
+            <label for="suffix">Suffix (Optional)</label>
+            <input type="text" id="suffix" placeholder="e.g., Jr., Sr., III">
+        
+            <label for="email">Email:</label>
+            <input type="email" id="email" placeholder="Enter your Email" required>
+        
+            <label for="date">Appointment Date:</label>
+            <input type="date" id="date" required>
+        
+            <label for="service">Select Service:</label>
+            <select id="service">
+                <option value="grooming">Pet Grooming</option>
+                <option value="vet">Veterinary Checkup</option>
+                <option value="training">Pet Training</option>
+            </select>
+
+            <button type="submit">Book Now</button>
+
+        </form>
+
+        
+    </div>
+
+</body>
+
+</html>
