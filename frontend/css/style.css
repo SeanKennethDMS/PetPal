@@ -1,3 +1,8 @@
+*{
+    margin: 0;
+    padding: 0;
+}
+
 /* Navigation Bar Styles */
 nav {
     display: flex;
@@ -16,6 +21,7 @@ nav {
 .nav-links {
     list-style: none;
     display: flex;
+    margin-right: 30px;
 }
 
 .nav-links li {
@@ -23,14 +29,28 @@ nav {
 }
 
 .nav-links li a {
+    position: relative; /* Important for ::after */
     text-decoration: none;
     color: white;
     font-size: 18px;
+    padding: 5px 0;
+    transition: color 0.3s ease-in-out;
 }
 
-.nav-links li a:hover {
-    color: #e84393;
-    text-decoration: none;
+/* Create the hover animation using ::after */
+.nav-links li a::after {
+    content: "";
+    position: absolute;
+    left: 0;
+    bottom: -3px; /* Distance from text */
+    width: 0;
+    height: 3px; /* Thickness of animation */
+    background-color: white;
+    transition: width 0.5s ease-in-out;
+}
+
+.nav-links li a:hover:after {
+    width: 100%;
 }
 
 /* General Page Styles */
@@ -40,13 +60,29 @@ body {
     padding: 0;
 }
 
-h1 {
-    text-align: center;
-    color: #333;
+.hero-section{
+    position: absolute;
+    top: 50%;
+    left: 10%;
+    transform: translateY(-50%);
+    text-align: left;
+    max-width: 80%;
 }
 
-p {
-    text-align: center;
-    font-size: 18px;
+.hero-text{
+    font-size: 5vw; /* Adjusts based on viewport width */
+    font-weight: bold;
+    color: #333;
+    margin-bottom: 10px;
+}
+
+.hero-section h1 {
+    font-size: 6vw;
+}
+
+.hero-section p {
+    font-size: 1.2rem; /* Slightly larger but scalable */
     color: #555;
+    max-width: 600px;
+    line-height: 1.5;
 }
