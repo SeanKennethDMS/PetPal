@@ -102,12 +102,12 @@ body {
 
 /* Appointment Page Styles */
 .appointment-container {
-    max-width: 600px;
+    max-width: 650px;
     margin: 50px auto; /* Centering */
     padding: 20px;
     background: #f8f9fa; /* Light background */
     border-radius: 10px;
-    box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1);
+    box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.5);
 }
 
 .appointment-container h2 {
@@ -118,7 +118,7 @@ body {
 .appointment-form {
     display: flex;
     flex-direction: column;
-    gap: 15px;
+    gap: 8px;
 }
 
 .appointment-form label {
@@ -127,10 +127,12 @@ body {
 
 .appointment-form input, .appointment-form select, .appointment-form textarea {
     width: 100%;
-    padding: 10px;
+    max-width: 680px;
+    padding: 10px 15px;
     border: 1px solid #ccc;
     border-radius: 5px;
     font-size: 16px;
+    box-sizing: border-box;
 }
 
 .appointment-form button {
@@ -145,4 +147,15 @@ body {
 
 .appointment-form button:hover {
     background: linear-gradient(to right, #2980b9, #d63077);
+}
+
+/* Responsive Design */
+@media screen and (max-width: 768px) {
+    .appointment-container {
+        width: 90%;
+    }
+
+    .name-fields {
+        flex-direction: column; /* Stack fields on small screens */
+    }
 }
