@@ -15,22 +15,47 @@
     <nav>
         <div class="logo">PetPal Scheduler</div>
         <ul class="nav-links">
-            <li><a href="pages/appointment.html">Appointment Booking</a></li>
-            <li><a href="pages/login.html">Login</a></li>
-            <li><a href="pages/services.html">Services</a></li>
-            <li><a href="pages/contact.html">Contact</a></li>
+            <li><a href="#home">Home</a></li>
+            <li><a href="pages/appointment.html">Appointment</a></li>
             <li><a href="#about">About Us</a></li>
         </ul>
     </nav>
 
-    <section class="hero-section">
-        <h1 class="hero-text">Welcome to PetPal</h1>
-        <p>Your one-stop pet grooming appointment system.</p>
+    <!-- Login Button (Fixed Position) -->
+    <a href="pages/login.html">
+        <button class="login-btn">Login</button>
+    </a>
+
+    <!-- Hero Section (Home) -->
+    <section id="home" class="hero-section">
+        <h1>Welcome to PetPal</h1>
+        <p>Your trusted pet grooming service.</p>
     </section>
 
+    <!-- About Us Page (Includes Services & Contact) -->
     <section id="about">
         <h2>About PetPal</h2>
-        <p>Weclome to PetPal, your pet's grooming partner.</p>
+        <p>Welcome to PetPal, your pet's grooming partner.</p>
+
+        <!-- Services Section -->
+        <div class="services">
+            <h2>Our Services</h2>
+            <ul>
+                <li>🛁 Full Pet Grooming</li>
+                <li>✂️ Hair Trimming</li>
+                <li>🦷 Dental Cleaning</li>
+                <li>🐶 Nail Clipping</li>
+                <li>💅 Paw Massage</li>
+            </ul>
+        </div>
+
+        <!-- Contact Section -->
+        <div class="contact">
+            <h2>Contact Us</h2>
+            <p>Email: petpal@example.com</p>
+            <p>Phone: +63 912 345 6789</p>
+            <p>Address: 123 Pet Street, Manila, PH</p>
+        </div>
     </section>
 
 </body>

@@ -5,15 +5,21 @@ html {
 *{
     margin: 0;
     padding: 0;
+    box-sizing: border-box;
 }
 
 /* Navigation Bar Styles */
 nav {
+    position: fixed; /* Keeps navbar at the top */
+    top: 0;
+    left: 0;
+    width: 100%;
+    background: linear-gradient(to right, #3498db, #e84393);
+    padding: 15px 20px;
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 15px 20px;
-    background: linear-gradient(to right, #3498db, #e84393);
+    z-index: 1000;
 }
 
 .logo {
@@ -25,7 +31,6 @@ nav {
 .nav-links {
     list-style: none;
     display: flex;
-    margin-right: 30px;
 }
 
 .nav-links li {
@@ -57,11 +62,73 @@ nav {
     width: 100%;
 }
 
+/* Login Button (Separate from Nav) */
+.login-btn {
+    position: fixed;
+    top: 65px; /* Below the nav */
+    right: 20px;
+    background: linear-gradient(to right, #3498db, #e84393);
+    color: white;
+    padding: 10px 20px;
+    font-size: 16px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background 0.3s ease-in-out;
+}
+
+.login-btn:hover {
+    background: linear-gradient(to right, #2980b9, #d63077);
+}
+
+/* Section Styling */
+section {
+    height: 100vh; /* Full screen height */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+    padding: 20px;
+}
+
+#about {
+    padding: 80px 20px;
+    text-align: center;
+    background-color: #f4f4f4;
+    min-height: 100vh;
+}
+
+#about h2 {
+    font-size: 2rem;
+}
+
+.services, .contact {
+    margin-top: 50px;
+    padding: 20px;
+    background: white;
+    border-radius: 10px;
+    box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.2);
+}
+
+.services h2, .contact h2 {
+    color: #e84393;
+}
+
+.services ul {
+    list-style: none;
+    padding: 0;
+}
+
+.services li {
+    font-size: 18px;
+    margin-bottom: 5px;
+}
+
 /* General Page Styles */
 body {
     font-family: Arial, sans-serif;
     margin: 0;
-    padding: 0;
+    padding-top: 70px; /* Prevent navbar from covering sections */
 }
 
 .hero-section{
@@ -81,7 +148,7 @@ body {
 }
 
 .hero-section h1 {
-    font-size: 6vw;
+    font-size: 5vw;
 }
 
 .hero-section p {
@@ -91,15 +158,6 @@ body {
     line-height: 1.5;
 }
 
-/* About Us Styles */
-#about {
-    padding: 100px 20px; /* Adds space inside */
-    margin-top: 300px; /* Pushes it below the hero section */
-    text-align: center;
-    background-color: #f4f4f4;
-    min-height: 100vh; /* Makes sure it's visible */
-}
-
 /* Appointment Page Styles */
 .appointment-container {
     max-width: 650px;
@@ -107,7 +165,7 @@ body {
     padding: 20px;
     background: #f8f9fa; /* Light background */
     border-radius: 10px;
-    box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.5);
+    box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.7);
 }
 
 .appointment-container h2 {
@@ -127,7 +185,6 @@ body {
 
 .appointment-form input, .appointment-form select, .appointment-form textarea {
     width: 100%;
-    max-width: 680px;
     padding: 10px 15px;
     border: 1px solid #ccc;
     border-radius: 5px;
@@ -151,11 +208,22 @@ body {
 
 /* Responsive Design */
 @media screen and (max-width: 768px) {
-    .appointment-container {
-        width: 90%;
+    .nav-links {
+        flex-direction: column;
+        align-items: center;
     }
 
-    .name-fields {
-        flex-direction: column; /* Stack fields on small screens */
+    .hero-section {
+        align-items: center;
+        text-align: center;
+        padding-left: 0;
+    }
+
+    .hero-text {
+        font-size: 7vw;
+    }
+
+    .appointment-container {
+        width: 90%;
     }
 }
