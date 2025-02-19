@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Register | PetPal Scheduler</title>
+    <link rel="stylesheet" href="../css/style.css"> <!-- Link to CSS -->
+</head>
+<body>
+
+    <nav class="navbar">
+        <div class="logo">PetPal Scheduler</div>
+        <ul class="nav-links">
+            <li><a href="../public/index.html">Home</a></li>
+            <li><a href="../public/index.html#services">Services</a></li>
+            <li><a href="../public/index.html#about">About Us</a></li>
+        </ul>
+    </nav>
+
+    <section id="register">
+        <div class="form-container">
+            <h1>New Customer <br>Sign Up</h1>
+            <form action="register.php" method="POST"> <!-- Later replace with backend -->
+                <input type="text" name="lastname" placeholder="Last Name" required>
+                <input type="text" name="firstname" placeholder="First Name" required>
+                <input type="text" name="middlename" placeholder="Middle Name">
+                <input type="email" name="email" placeholder="Email" required>
+                <input type="password" name="password" placeholder="Password" required>
+                <button type="submit" class="btn-submit">Register</button>
+            </form>
+        </div>
+    </section>
+
+</body>
+</html>

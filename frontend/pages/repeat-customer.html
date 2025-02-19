@@ -3,8 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Login Options | PetPal Scheduler</title>
-    <link rel="stylesheet" href="../css/style.css"> <!-- Link your CSS file -->
+    <title>Login | PetPal Scheduler</title>
+    <link rel="stylesheet" href="../css/style.css"> <!-- Link to CSS -->
 </head>
 <body>
 
@@ -17,13 +17,14 @@
         </ul>
     </nav>
 
-    <section id="login-options">
+    <section id="login">
         <div class="form-container">
-            <h1>Choose Your Login Type</h1>
-            <div class="login-buttons">
-                <button class="btn-login" onclick="location.href='new-customer.html'">New Customer</button>
-                <button class="btn-login" onclick="location.href='repeat-customer.html'">Repeat Customer</button>
-            </div>
+            <h1>Repeat Customer Login</h1>
+            <form action="login.php" method="POST"> <!-- Later replace with backend -->
+                <input type="email" name="email" placeholder="Email" required>
+                <input type="password" name="password" placeholder="Password" required>
+                <button type="submit" class="btn-submit">Login</button>
+            </form>
         </div>
     </section>
 
