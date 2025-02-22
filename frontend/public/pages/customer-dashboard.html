@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard | PetPal Scheduler</title>
+    <link rel="stylesheet" href="../css/style.css">
+</head>
+<body>
+
+    <!-- Root container -->
+    <div class="root-container">
+        <!-- Navbar -->
+        <nav class="navbar">
+            <div class="logo">PetPal Scheduler</div>
+            <div class="profile-dropdown">
+                <div class="profile-box" onclick="toggleDropdown()">
+                    <span id="username">Customer Name</span>
+                    <span class="arrow">&#9662;</span> <!-- Dropdown arrow -->
+                </div>
+                <div id="dropdownMenu" class="dropdown-content">
+                    <a href="notification">Notifications</a>
+                    <a href="settings.html">Settings</a>
+                    <a href="/frontend/public/index.html">Logout</a>
+                </div>
+            </div>
+        </nav>
+
+        <!-- Main Content -->
+    <main class="main-container">
+        <div class="side-bar">
+            <div class="user-profile">
+                <label for="upload-pic">
+                    <img src="" alt="User Profile" id="profile-pic">
+                </label>
+                <input type="file" id="upload-pic" style="display: none;">
+                <h3 id="username">User Name</h3>
+                <p>Customer</p>
+            </div>
+
+            <ul>
+                <li><a href="#">Home</a></li>
+                <li><a href="#">Booking</a></li>
+                <li><a href="#">History</a></li>
+                <li><a href="#">Pet Profile</a></li>
+            </ul>
+        </div>
+
+        <!-- Dashboard Content -->
+        <div class="dashboard-content">
+
+            <div class="welcome-dashboard">
+                <h3>Welcome to Dashboard!</h3>
+            </div>
+
+            <!--nav for dashboard-->
+            <nav class="dashboard-nav">
+                <ul>
+                    <li><a href="#">Home</a></li>
+                    <li><a href="#">Booking</a></li>
+                    <li><a href="#">History</a></li>
+                    <li><a href="#">Pet Profile</a></li>
+                </ul>
+            </nav>
+
+
+            <!-- Dashboard Boxes Container -->
+            <div class="dashboard-boxes">
+
+                <!-- Left side (Large) -->
+                <div class="schedule-summary">
+                    <h3>Schedule Summary</h3>
+                </div>
+
+                <!-- Right side (Stacked) -->
+                <div class="right-boxes">
+                    <div class="notification-box">
+                        <h3>Notification</h3>
+                    </div>
+                    <div class="pet-profile-summary">
+                        <h3>Pet Profile Summary</h3>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    </div>
+
+    <script>
+        function toggleDropdown() {
+            document.getElementById("dropdownMenu").classList.toggle("show");
+        }
+
+        window.onclick = function(event) {
+            if (!event.target.closest('.profile-box')) {
+                var dropdowns = document.getElementsByClassName("dropdown-content");
+                for (var i = 0; i < dropdowns.length; i++) {
+                    if (dropdowns[i].classList.contains('show')) {
+                        dropdowns[i].classList.remove('show');
+                    }
+                }
+            }
+        }
+
+        document.getElementById("upload-pic").addEventListener("change", function(event){
+            const file = event.target.files[0];
+            if (file){
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    document.getElementById("profile-pic").src = e.target.result;
+                };
+                reader.readAsDataURL(file);
+            }
+        });
+    </script>
+
+</body>
+</html>
