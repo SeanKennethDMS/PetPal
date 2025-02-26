@@ -9,32 +9,283 @@
 <body>
 
     <!-- Navigation Bar -->
-    <nav class="navbar">
-        <div class="logo">PetPal Scheduler</div>
-        <ul class="nav-links">
-            <li><a href="#home">Home</a></li>
-            <li><a href="#services">Services</a></li>
-            <li><a href="#about">About Us</a></li>
-            <li><a href="#book">Book Now</a></li>
+    <nav class="navbar-index">
+        <div class="logo-index">PetPal Scheduler</div>
+        <ul class="nav-links-index">
+            <li><a href="#home-index">Home</a></li>
+            <li><a href="#services-index">Services</a></li>
+            <li><a href="#about-index">About Us</a></li>
+            <li><a href="#book-index">Book Now</a></li>
         </ul>
     </nav>
 
     <!-- Home Section -->
-    <section id="home">
-        <div class="login-container">
-            <button class="btn-login" onclick="location.href='./pages/login.html'">Login</button>
+    <section id="home-index">
+        <div class="login-container-index">
+            <button class="btn-login-index" onclick="openCustomerChoiceModal()">Login</button>
         </div>
-        <h1>Welcome to PetPal Scheduler</h1>
-        <p>Your Trusted Pet Grooming Appointment Partner.</p>
-        <button class="btn-home" onclick="location.href='./pages/login.html'">Book Now</button>
+        
+        <div class="home-content">
+            <div class="text-content">
+                <h1>Welcome to PetPal Scheduler</h1>
+                <p>Your Trusted Pet Grooming Appointment Partner.</p>
+                <button class="btn-home-index" onclick="openCustomerChoiceModal()">Book Now</button>
+            </div>
+    
+            <div class="catdog-index">
+                <img src="./assets/catdog-home.png" alt="PetPal Logo" class="home-image">
+            </div>
+        </div>
     </section>
 
+    <!-- Customer Choice Modal -->
+    <div id="customerChoiceModal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeModal('customerChoiceModal')">&times;</span>
+            <h2>Continue As</h2>
+            <button class="btn-modal" onclick="openModal('signupModal')">Sign Up</button>
+            <button class="btn-modal" onclick="openModal('loginModal')">Login</button>
+        </div>
+    </div>
+
+    <!-- Signup Modal -->
+    <div id="signupModal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeModal('signupModal')">&times;</span>
+    
+            <h3>Welcome to PetPal!</h3>
+            <p>Create an account.</p>
+    
+            <form>
+                <!-- Personal Information Section -->
+                <h4 class="section-title">PERSONAL INFORMATION</h4>
+    
+                <label for="lastname">Last Name</label>
+                <input type="text" id="lastname" name="lastname" placeholder="Last Name" required>
+    
+                <label for="firstname">First Name</label>
+                <input type="text" id="firstname" name="firstname" placeholder="First Name" required>
+    
+                <br><br> <!-- Space -->
+    
+                <!-- Account Section -->
+                <h4 class="section-title">ACCOUNT</h4>
+    
+                <label for="username">Username or Email</label>
+                <input type="text" id="username" placeholder="Enter Username or Email" required>
+    
+                <label for="password">Password</label>
+                <div class="password-field">
+                    <input type="password" id="password" placeholder="Password" required>
+                    <span class="toggle-password" onclick="togglePassword('password')">👁️</span>
+                </div>
+    
+                <label for="confirm-password">Confirm Password</label>
+                <div class="password-field">
+                    <input type="password" id="confirm-password" placeholder="Confirm Password" required>
+                    <span class="toggle-password" onclick="togglePassword('confirm-password')">👁️</span>
+                </div>
+    
+                <br> <!-- Space -->
+    
+                <button type="submit">Sign Up</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- JavaScript for Password Toggle -->
+    <script>
+        function togglePassword(fieldId) {
+            let field = document.getElementById(fieldId);
+            field.type = field.type === "password" ? "text" : "password";
+        }
+    </script>
+
+    <!-- Login Modal -->
+    <div id="loginModal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeModal('loginModal')">&times;</span>
+    
+    
+            <h3>Welcome to PetPal!</h3>
+            <p>Please sign in to your account.</p>
+    
+            <form>
+                <label>Username</label>
+                <input type="text" placeholder="Enter your username" required>
+    
+                <label style="display: flex; justify-content: space-between; align-items: center;">
+                    Password
+                    <a href="#" style="font-size: 0.9em; text-decoration: none; color: #007bff;">Forgot password?</a>
+                </label>
+                <input type="password" placeholder="Enter your password" required>
+    
+                <label>Confrim Password</label>
+                <input type="password" placeholder="Confirm your password" required>
+    
+                <div style="display: flex; align-items: center; gap: 5px;">
+                    <input type="checkbox" id="rememberMe" style="margin: 0;">
+                    <label for="rememberMe" style="font-size: 0.9em; margin: 0;">Remember Me</label>
+                </div>
+    
+                <button type="submit" style="margin-top: 15px;">Log In</button>
+    
+                <p style="text-align: center; margin-top: 10px;">
+                    Don't you have an account?
+                    <a href="#" style="color: #007bff; text-decoration: none;" onclick="openModal('signupModal')">Create an account</a>
+                </p>
+            </form>
+        </div>
+    </div>
+
+    <!-- JavaScript for Modal Functionality -->
+    <script>
+        function openCustomerChoiceModal() {
+            let modal = document.getElementById('customerChoiceModal');
+            modal.style.display = 'flex'; // Ensures it stays centered
+        }
+
+        function openModal(modalId) {
+            let modal = document.getElementById(modalId);
+            modal.style.display = 'flex'; // Display flex ensures centering
+        }
+
+        function closeModal(modalId) {
+            let modal = document.getElementById(modalId);
+            modal.style.display = 'none';
+        }
+
+        // Close modal when clicking outside
+        window.onclick = function(event) {
+            let modals = document.querySelectorAll('.modal');
+            modals.forEach(modal => {
+                if (event.target === modal) {
+                    modal.style.display = 'none';
+                }
+            });
+        };
+    </script>
+
+    <!-- CSS for Modals -->
+    <style>
+        /* Modal Styles */
+        .modal {
+            display: none; /* Ensures modals are hidden on refresh */
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+
+            /* Centering */
+            justify-content: center;
+            align-items: center;
+        }
+
+        .modal-content {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            width: 350px;
+            position: relative; /* Allows positioning of close button */
+            box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.2);
+        }
+
+        h3 {
+            font-size: 3vh;
+            margin-bottom: 5px;
+        }
+
+        h4 {
+            margin-bottom: 5px;
+        }
+
+        .section-title {
+            font-weight: bold;
+            margin-top: 10px;
+        }
+
+
+        .close {
+            position: absolute;
+            right: 15px;
+            top: 10px;
+            font-size: 20px;
+            cursor: pointer;
+        }
+
+        .btn-modal {
+            display: block;
+            width: 100%;
+            margin: 10px 0;
+            padding: 10px;
+            background: #007bff;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        .btn-modal:hover {
+            background: #0056b3;
+        }
+
+        input {
+            width: 100%;
+            margin: 10px 0;
+            padding: 8px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
+
+        label {
+            display: block;
+            margin-top: 10px;
+        }
+
+        .password-field {
+            display: flex;
+            align-items: center;
+            position: relative;
+        }
+
+        .password-field input {
+            width: 100%;
+            padding-right: 30px;
+        }
+
+        .toggle-password {
+            position: absolute;
+            right: 10px;
+            cursor: pointer;
+        }
+
+        button {
+            width: 100%;
+            padding: 10px;
+            background: #166396;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background: #218838;
+        }
+    </style>
+
+
+
+    
     <!-- Service Section -->
-    <section id="services">
+    <section id="services-index">
         <h2>Our Services</h2>
         <p>Check out the services we offer for your pet.</p>
 
-        <div class="service-container">
+        <div class="service-container-index">
             <div class="service-box">
                 <img src="./assets/service1.jpg" alt="Service 1">
                 <div class="service-text">Grooming</div>
@@ -51,13 +302,13 @@
     </section>
 
     <!-- About Us Section -->
-    <section id="about">
+    <section id="about-index">
         <h2>About Us</h2>
         <p>Learn more about us.</p>
     </section>
 
     <!-- Book Now Section -->
-    <section id="book">
+    <section id="book-index">
         <h2>Book Your Appointment</h2>
         <p>Schedule your pet's next grooming session.</p>
     </section>
@@ -65,7 +316,7 @@
     <script>
         window.addEventListener('scroll', function () {
             let sections = document.querySelectorAll('section');
-            let links = document.querySelectorAll('.nav-links a');
+            let links = document.querySelectorAll('.nav-links-index a');
             
             sections.forEach(function (section, index) {
                 let rect = section.getBoundingClientRect();
