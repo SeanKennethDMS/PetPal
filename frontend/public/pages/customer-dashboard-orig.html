@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PetPal | Customer Dashboard</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+</head>
+<body class="bg-gray-100">
+
+    <!-- Navbar -->
+    <nav class="text-white p-4 flex justify-between items-center" style="background: linear-gradient(to right, #3498DB, #166396);">
+        <div class="text-xl font-bold">PetPal Scheduler</div>
+        <div class="flex items-center space-x-4">
+            <span>Welcome, Customer</span>
+            <button class="bg-red-500 px-3 py-1 rounded hover:bg-red-700">Logout</button>
+        </div>
+    </nav>
+
+    <!-- Sidebar + Content Container -->
+    <div class="flex h-screen">
+        <!-- Sidebar -->
+        <aside class="w-64 bg-gray-800 h-screen p-5 text-white">
+            <h2 class="text-xl font-bold mb-4">Customer Dashboard</h2>
+            
+            <div class="mb-4">
+                <h3 class="text-gray-400 uppercase text-sm mb-2">Main</h3>
+                <ul>
+                    <li><a href="#" class="block py-2 px-3 rounded sidebar-link default-active" data-target="dashboard">Dashboard</a></li>
+                </ul>
+            </div>
+        
+            <div class="mb-4">
+                <h3 class="text-gray-400 uppercase text-sm mb-2">Profiles</h3>
+                <ul>
+                    <li><a href="#" class="block py-2 px-3 rounded sidebar-link" data-target="your-profile">Your Profile</a></li>
+                    <li><a href="#" class="block py-2 px-3 rounded sidebar-link" data-target="pet-profile">Pet Profile</a></li>
+                </ul>
+            </div>
+        
+            <div class="mb-4">
+                <h3 class="text-gray-400 uppercase text-sm mb-2">Booking</h3>
+                <ul>
+                    <li><a href="#" class="block py-2 px-3 rounded sidebar-link" data-target="book-appointment">Book an Appointment</a></li>
+                    <li><a href="#" class="block py-2 px-3 rounded sidebar-link" data-target="booking-history">Booking History</a></li>
+                </ul>
+            </div>
+        
+            <div class="mb-4">
+                <h3 class="text-gray-400 uppercase text-sm mb-2">Others</h3>
+                <ul>
+                    <li><a href="#" class="block py-2 px-3 rounded sidebar-link" data-target="settings">Settings</a></li>
+                    <li><a href="#" class="block py-2 px-3 rounded text-red-400 hover:bg-red-600">Logout</a></li>
+                </ul>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="flex-1 p-6">
+            <!-- Dashboard -->
+            <section id="dashboard" class="content-section">
+                <h1 class="text-3xl font-bold">Dashboard Overview</h1>
+                <p class="text-gray-600 mt-2">Welcome to your customer panel.</p>
+            </section>
+
+            <!-- Your Profile -->
+            <section id="your-profile" class="content-section hidden">
+                <h1 class="text-3xl font-bold">Your Profile</h1>
+                <p class="text-gray-600 mt-2">Manage your personal information.</p>
+            </section>
+
+            <!-- Pet Profile -->
+            <section id="pet-profile" class="content-section hidden">
+                <h1 class="text-3xl font-bold">Pet Profile</h1>
+                <p class="text-gray-600 mt-2">Manage your pets' details.</p>
+            </section>
+
+            <!-- Book an Appointment -->
+            <section id="book-appointment" class="content-section hidden">
+                <h1 class="text-3xl font-bold">Book an Appointment</h1>
+                <p class="text-gray-600 mt-2">Schedule a new appointment.</p>
+            </section>
+
+            <!-- Booking History -->
+            <section id="booking-history" class="content-section hidden">
+                <h1 class="text-3xl font-bold">Booking History</h1>
+                <p class="text-gray-600 mt-2">View past appointments.</p>
+            </section>
+
+            <!-- Settings -->
+            <section id="settings" class="content-section hidden">
+                <h1 class="text-3xl font-bold">Settings</h1>
+                <p class="text-gray-600 mt-2">Configure your account settings.</p>
+            </section>
+        </main>
+    </div>
+
+
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            const links = document.querySelectorAll(".sidebar-link");
+            const sections = document.querySelectorAll(".content-section");
+
+            function setActive(link) {
+                links.forEach(l => l.classList.remove("font-bold", "bg-gray-700"));
+                link.classList.add("font-bold", "bg-gray-700");
+            }
+
+            function showSection(targetId) {
+                sections.forEach(section => section.classList.add("hidden"));
+                document.getElementById(targetId).classList.remove("hidden");
+            }
+
+            links.forEach(link => {
+                link.addEventListener("click", function(event) {
+                    event.preventDefault();
+                    setActive(this);
+                    showSection(this.dataset.target);
+                });
+            });
+
+            // Set default active section
+            setActive(document.querySelector(".default-active"));
+            showSection("dashboard");
+        });
+    </script>
+    
+</body>
+</html>

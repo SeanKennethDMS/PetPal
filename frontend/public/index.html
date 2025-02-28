@@ -56,50 +56,42 @@
             <h3>Welcome to PetPal!</h3>
             <p>Create an account.</p>
     
-            <form>
+            <form onsubmit="handleSignup(event)" method="POST">
                 <!-- Personal Information Section -->
                 <h4 class="section-title">PERSONAL INFORMATION</h4>
-    
+            
                 <label for="lastname">Last Name</label>
                 <input type="text" id="lastname" name="lastname" placeholder="Last Name" required>
-    
+            
                 <label for="firstname">First Name</label>
                 <input type="text" id="firstname" name="firstname" placeholder="First Name" required>
-    
+            
                 <br><br> <!-- Space -->
-    
+            
                 <!-- Account Section -->
                 <h4 class="section-title">ACCOUNT</h4>
-    
-                <label for="username">Username or Email</label>
-                <input type="text" id="username" placeholder="Enter Username or Email" required>
-    
+            
+                <label for="email">Email</label>
+                <input type="email" id="email" placeholder="Enter your email" required>
+            
                 <label for="password">Password</label>
                 <div class="password-field">
                     <input type="password" id="password" placeholder="Password" required>
-                    <span class="toggle-password" onclick="togglePassword('password')">👁️</span>
+                    <span class="toggle-password" onclick="togglePazssword('password')">👁️</span>
                 </div>
-    
+            
                 <label for="confirm-password">Confirm Password</label>
                 <div class="password-field">
                     <input type="password" id="confirm-password" placeholder="Confirm Password" required>
                     <span class="toggle-password" onclick="togglePassword('confirm-password')">👁️</span>
                 </div>
-    
+            
                 <br> <!-- Space -->
-    
+            
                 <button type="submit">Sign Up</button>
             </form>
         </div>
     </div>
-
-    <!-- JavaScript for Password Toggle -->
-    <script>
-        function togglePassword(fieldId) {
-            let field = document.getElementById(fieldId);
-            field.type = field.type === "password" ? "text" : "password";
-        }
-    </script>
 
     <!-- Login Modal -->
     <div id="loginModal" class="modal">
@@ -110,28 +102,25 @@
             <h3>Welcome to PetPal!</h3>
             <p>Please sign in to your account.</p>
     
-            <form>
-                <label>Username</label>
-                <input type="text" placeholder="Enter your username" required>
+            <form onsubmit="handleLogin(event)">
+                <label for="login-email">Email</label>
+                <input type="email" id="login-email" placeholder="Enter your email" required>
     
                 <label style="display: flex; justify-content: space-between; align-items: center;">
                     Password
                     <a href="#" style="font-size: 0.9em; text-decoration: none; color: #007bff;">Forgot password?</a>
                 </label>
-                <input type="password" placeholder="Enter your password" required>
-    
-                <label>Confrim Password</label>
-                <input type="password" placeholder="Confirm your password" required>
+                <input type="password" id="login-password" placeholder="Enter your password" required>
     
                 <div style="display: flex; align-items: center; gap: 5px;">
-                    <input type="checkbox" id="rememberMe" style="margin: 0;">
-                    <label for="rememberMe" style="font-size: 0.9em; margin: 0;">Remember Me</label>
+                    <input type="checkbox" id="rememberMe">
+                    <label for="rememberMe" style="font-size: 0.9em;">Remember Me</label>
                 </div>
     
                 <button type="submit" style="margin-top: 15px;">Log In</button>
     
                 <p style="text-align: center; margin-top: 10px;">
-                    Don't you have an account?
+                    Don't have an account?
                     <a href="#" style="color: #007bff; text-decoration: none;" onclick="openModal('signupModal')">Create an account</a>
                 </p>
             </form>
@@ -141,11 +130,13 @@
     <!-- JavaScript for Modal Functionality -->
     <script>
         function openCustomerChoiceModal() {
+            closeAllModals(); // Close all modals before opening the customer choice modal
             let modal = document.getElementById('customerChoiceModal');
             modal.style.display = 'flex'; // Ensures it stays centered
         }
 
         function openModal(modalId) {
+            closeAllModals(); // Close all modals before opening the new modal
             let modal = document.getElementById(modalId);
             modal.style.display = 'flex'; // Display flex ensures centering
         }
@@ -153,6 +144,13 @@
         function closeModal(modalId) {
             let modal = document.getElementById(modalId);
             modal.style.display = 'none';
+        }
+
+        function closeAllModals() {
+            let modals = document.querySelectorAll('.modal');
+            modals.forEach(modal => {
+                modal.style.display = 'none';
+            });
         }
 
         // Close modal when clicking outside
@@ -327,6 +325,10 @@
             });
         });
     </script>
+
+
+    <!-- Script Supabase -->
+    <script type="module" src="../js/authentication.js"></script>
 
 </body>
 </html>
