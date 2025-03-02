@@ -6,7 +6,7 @@
     <title>PetPal | Admin Dashboard</title>
     <script src="https://cdn.tailwindcss.com"></script>
 </head>
-<body class="bg-gray-100">
+<body class="hidden bg-gray-100">
 
     <!-- Navbar -->
     <nav class="text-white p-4 flex justify-between items-center" style="background: linear-gradient(to right, #3498DB, #166396);">
@@ -371,7 +371,38 @@
         }
     </script>
 
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            const userSession = localStorage.getItem("userSession");
+            const userRole = localStorage.getItem("userRole");
+            const currentPage = window.location.pathname;
 
+            // Check if user is logged in
+            if (!userSession) {
+                alert("Access denied. Please log in.");
+                window.location.href = "/frontend/public/index.html";
+                return;
+            }
+
+            // Ensure correct role-based access
+            if (currentPage.includes("admin-dashboard.html") && userRole !== "admin") {
+                alert("Unauthorized access!");
+                window.location.href = "/frontend/public/index.html";
+                return;
+            }
+
+            if (currentPage.includes("customer-dashboard-orig.html") && userRole !== "customer") {
+                alert("Unauthorized access!");
+                window.location.href = "/frontend/public/index.html";
+                return;
+            }
+
+            //If authorized, show the page
+            document.body.classList.remove("hidden");
+        });
+    </script>
+
+    <script src="/frontend/public/js/auth.js"></script>
 
 </body>
 </html>

@@ -7,14 +7,14 @@
     <script src="https://cdn.tailwindcss.com"></script>
     
 </head>
-<body class="bg-gray-100">
+<body class="hidden bg-gray-100">
 
     <!-- Navbar -->
     <nav class="text-white p-4 flex justify-between items-center" style="background: linear-gradient(to right, #3498DB, #166396);">
         <div class="text-xl font-bold">PetPal Scheduler</div>
         <div class="flex items-center space-x-4">
             <span>Welcome, Customer</span>
-            <button class="bg-red-500 px-3 py-1 rounded hover:bg-red-700">Logout</button>
+            <button id="openLogoutModal" class="bg-red-500 px-3 py-1 rounded hover:bg-red-700">Logout</button>
         </div>
     </nav>
 
@@ -27,31 +27,31 @@
             <div class="mb-4">
                 <h3 class="text-gray-400 uppercase text-sm mb-2">Main</h3>
                 <ul>
-                    <li><a href="#" class="block py-2 px-3 rounded sidebar-link default-active" data-target="dashboard">Dashboard</a></li>
+                    <li><a href="#" class="block py-2 px-3 rounded sidebar-link default-active" data-target="dashboard">📊 Dashboard</a></li>
                 </ul>
             </div>
         
             <div class="mb-4">
                 <h3 class="text-gray-400 uppercase text-sm mb-2">Profiles</h3>
                 <ul>
-                    <li><a href="#" class="block py-2 px-3 rounded sidebar-link" data-target="your-profile">Your Profile</a></li>
-                    <li><a href="#" class="block py-2 px-3 rounded sidebar-link" data-target="pet-profile">Pet Profile</a></li>
+                    <li><a href="#" class="block py-2 px-3 rounded sidebar-link" data-target="your-profile">👤 Your Profile</a></li>
+                    <li><a href="#" class="block py-2 px-3 rounded sidebar-link" data-target="pet-profile">🐾 Pet Profile</a></li>
                 </ul>
             </div>
         
             <div class="mb-4">
                 <h3 class="text-gray-400 uppercase text-sm mb-2">Booking</h3>
                 <ul>
-                    <li><a href="#" class="block py-2 px-3 rounded sidebar-link" data-target="book-appointment">Book an Appointment</a></li>
-                    <li><a href="#" class="block py-2 px-3 rounded sidebar-link" data-target="booking-history">Booking History</a></li>
+                    <li><a href="#" class="block py-2 px-3 rounded sidebar-link" data-target="book-appointment">📅 Book an Appointment</a></li>
+                    <li><a href="#" class="block py-2 px-3 rounded sidebar-link" data-target="booking-history">📝 Booking History</a></li>
                 </ul>
             </div>
         
             <div class="mb-4">
                 <h3 class="text-gray-400 uppercase text-sm mb-2">Others</h3>
                 <ul>
-                    <li><a href="#" class="block py-2 px-3 rounded sidebar-link" data-target="settings">Settings</a></li>
-                    <li><a href="#" class="block py-2 px-3 rounded text-red-400 hover:bg-red-600">Logout</a></li>
+                    <li><a href="#" class="block py-2 px-3 rounded sidebar-link" data-target="settings">⚙️ Settings</a></li>
+                    <li><a href="#" id="openLogoutModalSidebar" class="block py-2 px-3 rounded text-red-400 hover:bg-red-600">Logout</a></li>
                 </ul>
             </div>
         </aside>
@@ -67,7 +67,44 @@
             <!-- Your Profile -->
             <section id="your-profile" class="content-section hidden">
                 <h1 class="text-3xl font-bold">Your Profile</h1>
-                <p class="text-gray-600 mt-2">Manage your personal information.</p>
+                <p class="text-gray-600 mt-2 mb-8">Manage your personal information.</p> <!-- Increased spacing with mb-8 -->
+
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+
+                    <!-- Personal Information -->
+                    <div class="box border-2 border-blue-400 p-6 rounded-lg shadow-md bg-white flex flex-col justify-between h-full">
+                        <div>
+                            <h2 class="font-bold text-xl flex items-center">Personal Information</h2>
+                            <p class="text-gray-700 mt-2 mb-4"><span class="font-medium">Last Name:</span> <span id="last-name"></span></p>
+                            <p class="text-gray-700 mb-4"><span class="font-medium">First Name:</span> <span id="first-name"></span></p>
+                            <p class="text-gray-700 mb-4"><span class="font-medium">Middle Name:</span> <span id="middle-name"></span></p>
+                            <p class="text-gray-700 mb-4"><span class="font-medium">Birthdate:</span> <span id="birthdate"></span></p>
+                        </div>
+                        <button class="mt-4 px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 self-start">Edit</button>
+                    </div>
+            
+                    <!-- Contact Details -->
+                    <div class="box border-2 border-green-400 p-6 rounded-lg shadow-md bg-white flex flex-col justify-between h-full">
+                        <div>
+                            <h2 class="font-bold text-xl flex items-center">Contact</h2>
+                            <p class="text-gray-700 mt-2 mb-4"><span class="font-medium">Phone:</span> <span id="phone"></span></p>
+                            <p class="text-gray-700 mb-4"><span class="font-medium">Email:</span> <span id="email"></span></p>
+                        </div>
+                        <button class="mt-4 px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 self-start">Edit</button>
+                    </div>
+            
+                     <!-- Address -->
+                    <div class="box border-2 border-yellow-400 p-6 rounded-lg shadow-md bg-white flex flex-col justify-between h-full">
+                        <div>
+                            <h2 class="font-bold text-xl flex items-center">Address</h2>
+                            <p class="text-gray-700 mt-2 mb-4"><span class="font-medium">Barangay:</span> <span id="barangay"></span></p>
+                            <p class="text-gray-700 mb-4"><span class="font-medium">City:</span> <span id="city"></span></p>
+                            <p class="text-gray-700 mb-4"><span class="font-medium">Region:</span> <span id="region"></span></p>
+                        </div>
+                        <button class="mt-4 px-4 py-2 bg-yellow-500 text-white rounded-lg hover:bg-yellow-600 self-start">Edit</button>
+                    </div>
+                </div>
+
             </section>
 
             <!-- Pet Profile -->
@@ -126,5 +163,52 @@
         });
     </script>
     
+   
+
+    <!-- Logout Confirmation Modal -->
+    <div id="logoutModal" class="fixed inset-0 flex items-center justify-center bg-gray-900 bg-opacity-50 hidden">
+        <div class="bg-white p-6 rounded-lg shadow-lg w-96">
+            <h2 class="text-lg font-bold mb-4">Confirm Logout</h2>
+            <p class="text-gray-600 mb-4">Are you sure you want to log out?</p>
+            <div class="flex justify-end space-x-3">
+                <button id="cancelLogout" class="px-4 py-2 bg-gray-400 text-white rounded hover:bg-gray-600">Cancel</button>
+                <button id="confirmLogout" class="px-4 py-2 bg-red-500 text-white rounded hover:bg-red-700">Logout</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            const userSession = localStorage.getItem("userSession");
+            const userRole = localStorage.getItem("userRole");
+            const currentPage = window.location.pathname;
+
+            // Check if user is logged in
+            if (!userSession) {
+                alert("Access denied. Please log in.");
+                window.location.href = "/frontend/public/index.html";
+                return;
+            }
+
+            // Ensure correct role-based access
+            if (currentPage.includes("admin-dashboard.html") && userRole !== "admin") {
+                alert("Unauthorized access!");
+                window.location.href = "/frontend/public/index.html";
+                return;
+            }
+
+            if (currentPage.includes("customer-dashboard-orig.html") && userRole !== "customer") {
+                alert("Unauthorized access!");
+                window.location.href = "/frontend/public/index.html";
+                return;
+            }
+
+            // ✅ If authorized, show the page
+            document.body.classList.remove("hidden");
+        });
+    </script>
+
+    <script src="../js/logout.js"></script>
+    <script src="/frontend/public/js/auth.js"></script>
 </body>
 </html>
