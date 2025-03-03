@@ -34,7 +34,7 @@
             sessionStorage.clear();
 
             // Redirect to login page
-            window.location.href = "/index.html"; // Ensure this is your login page
+            window.location.href = "../index.html"; // Ensure this is your login page
         } catch (error) {
             console.error("Error logging out:", error);
         }
