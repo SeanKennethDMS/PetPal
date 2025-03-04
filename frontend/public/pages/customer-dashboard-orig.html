@@ -181,7 +181,84 @@
             <section id="pet-profile" class="content-section hidden">
                 <h1 class="text-3xl font-bold">Pet Profile</h1>
                 <p class="text-gray-600 mt-2">Manage your pets' details.</p>
+
+                <!-- Main Container -->
+                <div class="mt-4 p-4 border-2 border-blue-400 rounded-lg shadow-md bg-white flex flex-col md:flex-row space-y-4 md:space-y-0">
+
+                    <!-- Table Section (4/4 width) -->
+                    <div id="pet-table-container" class="w-full md:w-4/4 pr-4">
+                        <table class="w-full border-collapse border border-gray-300 shadow-md">
+                            <thead class="bg-blue-500 text-white">
+                                <tr>
+                                    <th class="border border-gray-300 px-4 py-2">Pet's Name</th>
+                                    <th class="border border-gray-300 px-4 py-2">Species</th>
+                                    <th class="border border-gray-300 px-4 py-2">Breed</th>
+                                    <th class="border border-gray-300 px-4 py-2">Weight (kg)</th>
+                                    <th class="border border-gray-300 px-4 py-2">Birthdate</th>
+                                    <th class="border border-gray-300 px-4 py-2">Appointment</th>
+                                </tr>
+                            </thead>
+                            <tbody id="pet-table-body" class="text-center">
+                                <tr>
+                                    <td colspan="6" class="border border-gray-300 px-4 py-2 text-gray-500">
+                                        No pets available. Add a pet to get started.
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <!-- Blank Column with Add Button -->
+                    <div class="flex items-center justify-center">
+                        <button id="add-pet-btn" class="fixed bottom-5 right-5 w-40 h-12 bg-blue-500 text-white rounded-lg shadow-lg hover:bg-blue-600">
+                            Add Pet
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Modal to Add Pet -->
+                <div id="add-pet-modal" class="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center hidden">
+                    <div class="bg-white p-6 rounded-lg shadow-lg w-full max-w-md">
+                        <h2 class="text-2xl font-semibold mb-4">Add a Pet</h2>
+                        <form id="add-pet-form">
+                            <div class="mb-4">
+                                <label for="pet_name" class="block text-sm font-medium text-gray-700">Pet Name</label>
+                                <input type="text" id="pet-name" name="pet_name" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm" required />
+                            </div>
+                            <div class="mb-4">
+                                <label for="species" class="block text-sm font-medium text-gray-700">Species</label>
+                                <select id="species" name="species" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm" required>
+                                    <option value="">Select Species</option>
+                                    <option value="dog">Dog</option>
+                                    <option value="cat">Cat</option>
+                                    <option value="bird">Bird</option>
+                                    <option value="rabbit">Rabbit</option>
+                                </select>
+                            </div>
+                            <div class="mb-4">
+                                <label for="breed" class="block text-sm font-medium text-gray-700">Breed</label>
+                                <select id="breed" name="breed" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm" required>
+                                    <option value="">Select Breed</option>
+                                </select>
+                            </div>
+                            <div class="mb-4">
+                                <label for="pets_birthdate" class="block text-sm font-medium text-gray-700">Birthdate</label>
+                                <input type="date" id="pets_birthdate" name="pets_birthdate" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm" />
+                            </div>
+                            <div class="mb-4">
+                                <label for="weight" class="block text-sm font-medium text-gray-700">Weight (kg)</label>
+                                <input type="number" id="weight" name="weight" min="0.1" step="0.1" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm" required />
+                            </div>
+                            <div class="flex justify-end">
+                                <button type="button" id="close-modal-btn" class="text-gray-500 hover:text-gray-700">Cancel</button>
+                                <button type="submit" class="ml-4 bg-blue-500 text-white py-2 px-4 rounded-md hover:bg-blue-600">Add Pet</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
             </section>
+
+            
 
             <!-- Book an Appointment -->
             <section id="book-appointment" class="content-section hidden">
@@ -287,5 +364,7 @@
     <script type="module" src="../js/personalInfoModals/editContactInfo.js"></script>
     <script type="module" src="../js/personalInfoModals/editAddress.js"></script>
 
+    <!-- Modal for Pet Information -->
+    <script type="module" src="../js/petInfoModal/petProfile.js"></script>
 </body>
 </html>
