@@ -20,21 +20,30 @@
     </nav>
 
     <!-- Home Section -->
+    <div class="login-container-index">
+        <button class="btn-login-index" onclick="openModal('loginModal')">Login</button>
+    </div>
     <section id="home-index">
-        <div class="login-container-index">
-            <button class="btn-login-index" onclick="openCustomerChoiceModal()">Login</button>
-        </div>
+      
         
         <div class="home-content">
             <div class="text-content">
-                <h1>Welcome to PetPal Scheduler</h1>
-                <p>Your Trusted Pet Grooming Appointment Partner.</p>
-
-                <button class="btn-home-index" onclick="openCustomerChoiceModal()">Book Now</button>
+                <div class="mainHeadline">
+                    <h1>PetPal Scheduler</h1>
+                    <p class="headline">Hassle booking of appointment onsite?
+                        Skip the line with PetPal Scheduler now!</p>
+                </div>
+              
+                <div class="buttonContainer">
+                    <button class="btnBookNow" onclick="openModal('loginModal')">Book Now</button>
+                    <button class="btnBrowseProduct" onclick="services-index">Browse Product</button>
+                </div>
+            
             </div>
     
             <div class="catdog-index">
                 <img src="./assets/catdog-home.png" alt="PetPal Logo" class="home-image">
+                
             </div>
         </div>
     </section>
