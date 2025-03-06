@@ -22,7 +22,7 @@ button {
 
 /* Sections */
 section {
-    padding: 10vh 5%;  /* Adjust padding dynamically */
+  /* Adjust padding dynamically */
     min-height: 100vh; /* Ensure full height without forcing overflow */
 }
 
@@ -43,14 +43,17 @@ h1 {
     margin-top: 20px;
     font-weight: bold;
     width: 50%;
+    width: 40%;
 }
 
 /* Login Button */
 .login-container-index {
-    position: fixed;
-    top: 80px;   /* Adjust spacing from the top */
-    right: 50px; /* Adjust spacing from the right */
-    z-index: 1000;
+    display: flex;
+    justify-content: flex-end;
+    position: relative;
+    left: 65rem;
+    width: 15%;
+  margin-top: 5rem;
 }
 
 .btn-login-index {
@@ -131,12 +134,11 @@ h1 {
     justify-content: center;
     align-items: center; /* Centers the content */
     height: 100vh;
-    padding: 0 5%;
     background-color: #f5f5f5;
 }
 
 #home-index h1 {
-    font-size: 65px;
+    font-size: 50px;
     margin: 0;
 }
 
@@ -146,6 +148,7 @@ h1 {
 }
 
 .home-content {
+    
     display: flex;
     align-items: center;
     justify-content: space-between;
@@ -160,16 +163,36 @@ h1 {
     padding: 12px;
 }
 
+
 .catdog-index{
-    flex: 1;
+    
     display: flex;
     justify-content: flex-end;
 }
+.mainHeadline {
+    display: flex;
+    justify-content: center;
+    flex-direction: column;
+}
+.mainHeadline h1 {
+    text-align: center;
+}
 
 .home-image {
-    width: 350px; /* Adjust size as needed */
+    width:35rem;
+    padding-top: 5rem;
+    padding-left: 5rem;
+    padding-bottom: 10rem; /* Adjust size as needed */
     height: auto;
 }
+.testing {
+    width: 20rem;
+}
+
+.buttonContainer button {
+    padding: 0 5rem;
+    
+    }
 
 /* Service Container */
 .service-container-index {
