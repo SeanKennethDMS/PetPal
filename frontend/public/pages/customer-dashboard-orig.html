@@ -260,10 +260,63 @@
 
             
 
-            <!-- Book an Appointment -->
+            <!-- Book an Appointment Section -->
             <section id="book-appointment" class="content-section hidden">
+                <!-- Title and Description -->
                 <h1 class="text-3xl font-bold">Book an Appointment</h1>
-                <p class="text-gray-600 mt-2">Schedule a new appointment.</p>
+                <p class="text-gray-600 mt-2 mb-8">Schedule a new appointment.</p>
+
+                <!-- Box Holding the Content -->
+                <div class="box border-2 border-blue-400 p-6 rounded-lg shadow-md bg-white flex flex-col justify-between h-full">
+                    <!-- Pending Appointment (Always Visible, Updates Dynamically) -->
+                    <div id="pending-appointment" class="mt-4 p-4 bg-gray-100 rounded-lg border-2 border-yellow-500">
+                        <h2 class="font-bold text-xl flex items-center text-yellow-600">🐾 Pending Appointment</h2>
+
+                        <div id="appointment-details">
+                            <p class="text-gray-500 italic">No pending appointments.</p>
+                        </div>
+
+                        <div class="mt-3 flex space-x-2">
+                            <button id="cancel-booking" class="px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600">Cancel</button>
+                            <button id="refresh-booking" class="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600">Refresh</button>
+                        </div>
+                    </div>
+
+                    <!-- Book Now Button -->
+                    <button id="book-now" class="mt-4 px-5 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 self-end">
+                        Book an Appointment
+                    </button>
+
+                    <!-- Booking Modal (Hidden by Default) -->
+                    <div id="booking-modal" class="modal hidden fixed inset-0 flex items-center justify-center bg-black bg-opacity-50">
+                        <div class="bg-white p-6 rounded-lg w-96 border-2 border-gray-400">
+                            <h3 class="text-xl font-bold mb-3">Select Service, Pet, and Date</h3>
+                            
+                            <!-- Service Selection -->
+                            <select id="service-select" class="w-full p-2 border rounded mb-2">
+                                <option value="grooming">Full Grooming</option>
+                                <option value="nail-trim">Nail Trimming</option>
+                                <option value="vet-checkup">Vet Check Up</option>
+                            </select>
+
+                            <!-- Pet Selection (Will be populated dynamically) -->
+                            <select id="pet-select" class="w-full p-2 border rounded mb-2">
+                                <option value="" disabled selected>Select Your Pet</option>
+                            </select>
+
+                            <!-- Date & Time Selection -->
+                            <input type="datetime-local" id="appointment-date-time" class="w-full p-2 border rounded mb-3">
+
+                            <!-- Confirm & Cancel Buttons -->
+                            <button id="confirm-booking" class="w-full bg-green-500 text-white py-2 rounded-lg hover:bg-green-600">
+                                Confirm Booking
+                            </button>
+                            <button id="close-modal" class="w-full bg-gray-300 py-2 rounded-lg mt-2 hover:bg-gray-400">
+                                Cancel
+                            </button>
+                        </div>
+                    </div>
+                </div>
             </section>
 
             <!-- Booking History -->
@@ -366,5 +419,10 @@
 
     <!-- Modal for Pet Information -->
     <script type="module" src="../js/petInfoModal/petProfile.js"></script>
+
+    <!-- Modal for Book an Appointment -->
+    <script type="module" src="../js/BookAnAppointment/bookAnAppointment.js"></script>
+
+
 </body>
 </html>
