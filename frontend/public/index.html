@@ -102,6 +102,11 @@
                 <div class="password-field">
                     <input type="password" id="sign-up-password" placeholder="Password" required>
                 </div>
+
+                <p style="text-align: center; margin-top: 10px;">
+                    Already made an account?
+                    <a href="#" style="color: #007bff; text-decoration: none;" onclick="openModal('loginModal')">Log in here.</a>
+                </p>
             
                 <button type="button" onclick="handleSignup(event)">Sign Up</button>
             </div>
@@ -125,8 +130,10 @@
                     Password
                     <a href="#" style="font-size: 0.9em; text-decoration: none; color: #007bff;">Forgot password?</a>
                 </label>
-                <input type="password" id="login-password" placeholder="Enter your password" required>
-    
+                <div style="display: flex; align-items: center; position: relative;">
+                    <input type="password" id="login-password" placeholder="Enter your password" required style="width: 100%;">
+                    <span id="togglePassword" style="position: absolute; right: 10px; cursor: pointer;">👁️</span>
+                </div>
                 <div style="display: flex; align-items: center; gap: 5px;">
                     <input type="checkbox" id="rememberMe" style="width: 12px;">
                     <label for="rememberMe" style="margin-bottom: 10px; font-size: 0.9em;">Remember Me</label>
@@ -144,6 +151,28 @@
 
     <!-- JavaScript for Modal Functionality -->
     <script>
+
+        // Toggle Password Visibility
+        document.getElementById("togglePassword").addEventListener("click", function () {
+            let passwordInput = document.getElementById("login-password");
+            if (passwordInput.type === "password") {
+                passwordInput.type = "text";
+                this.innerText = "🔒"; // Change icon
+            } else {
+                passwordInput.type = "password";
+                this.innerText = "👁️"; // Change back
+            }
+        });
+
+        // Remember Me Function
+        document.addEventListener("DOMContentLoaded", function () {
+            if (localStorage.getItem("rememberMe") === "true") {
+                document.getElementById("login-email").value = localStorage.getItem("email") || "";
+                document.getElementById("login-password").value = localStorage.getItem("password") || "";
+                document.getElementById("rememberMe").checked = true;
+            }
+        });
+
         function openModal(modalId) {
             closeAllModals(); // Close all modals before opening the new modal
             let modal = document.getElementById(modalId);
@@ -153,6 +182,7 @@
         function closeModal(modalId) {
             let modal = document.getElementById(modalId);
             modal.style.display = 'none';
+            resetModal(modalId);
         }
 
         function closeAllModals() {
@@ -160,6 +190,14 @@
             modals.forEach(modal => {
                 modal.style.display = 'none';
             });
+        }
+
+        function resetModal(modalId) {
+            if (modalId === "loginModal") {
+                document.getElementById("login-email").value = "";
+                document.getElementById("login-password").value = "";
+                document.getElementById("rememberMe").checked = false;
+            }
         }
 
         // Close modal when clicking outside
@@ -323,9 +361,6 @@
         <p class="text-lg mt-6 text-center max-w-2xl text-gray-700">
             Schedule your pet’s next appointment with ease.
         </p>
-        <button class="bg-blue-500 text-white font-bold py-3 px-6 mt-6 rounded transition duration-300 hover:bg-blue-600">
-            Book Now
-        </button>
     </section>
 
      <!-- Script Supabase -->
