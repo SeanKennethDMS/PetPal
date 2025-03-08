@@ -1,8 +1,8 @@
 import supabase from "./supabaseClient.js";
 
 
-
-window.handleLogin = async function (event) {
+const loginBtn = document.querySelector(".loginBtn");
+loginBtn.addEventListener("click", async function (event) {
     event.preventDefault(); 
     console.log("Login button clicked!");  // ✅ Check if this appears
 
@@ -58,4 +58,4 @@ window.handleLogin = async function (event) {
     } else {
         alert("Invalid user role!");
     }
-}
+})
