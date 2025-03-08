@@ -323,8 +323,45 @@
             <section id="booking-history" class="content-section hidden">
                 <h1 class="text-3xl font-bold">Booking History</h1>
                 <p class="text-gray-600 mt-2">View past appointments.</p>
-            </section>
 
+                <!-- Filters -->
+                <div class="mt-4 flex flex-wrap gap-4">
+                    <input type="date" id="filter-date" class="border p-2 rounded">
+                    <select id="filter-status" class="border p-2 rounded">
+                        <option value="">All Status</option>
+                        <option value="Completed">Completed</option>
+                        <option value="Pending">Pending</option>
+                        <option value="Cancelled">Cancelled</option>
+                        <option value="No Show">No Show</option>
+                    </select>
+                    <button id="filter-btn" class="bg-blue-500 text-white px-4 py-2 rounded">Filter</button>
+                </div>
+
+                <!-- Table -->
+                <div class="mt-4 overflow-x-auto w-full">
+                    <table class="w-full border-collapse border border-gray-200">
+                        <thead class="bg-gray-100">
+                            <tr>
+                                <th class="border p-2">Date</th>
+                                <th class="border p-2">Pet Name</th>
+                                <th class="border p-2">Service</th>
+                                <th class="border p-2">Previous Status</th> <!-- Renamed for clarity -->
+                                <th class="border p-2">Current Status</th> 
+                                <th class="border p-2">Cost</th>
+                            </tr>
+                        </thead>
+                        <tbody id="history-table">
+                            <tr><td colspan="6" class="p-2 text-center text-gray-500">No booking history available.</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- Download Button -->
+                <button id="download-pdf" class="mt-4 bg-green-500 text-white px-4 py-2 rounded">
+                    Download PDF
+                </button>
+            </section>
+            
             <!-- Settings -->
             <section id="settings" class="content-section hidden">
                 <h1 class="text-3xl font-bold">Settings</h1>
@@ -422,6 +459,10 @@
 
     <!-- Modal for Book an Appointment -->
     <script type="module" src="../js/BookAnAppointment/bookAnAppointment.js"></script>
+
+    <!-- Js for Booking History -->
+    <script type="module" src="../js/bookingHistory/bookingHistory.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 
 
 </body>
