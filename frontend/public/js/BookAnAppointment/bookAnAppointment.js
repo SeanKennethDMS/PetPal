@@ -23,26 +23,6 @@ document.addEventListener("DOMContentLoaded", async () => {
     const appointmentDetails = document.getElementById("appointment-details");
     const refreshBookingBtn = document.getElementById("refresh-booking");
 
-    
-    function setDateRestrictions() {
-        let today = new Date();
-        
-        // Format to YYYY-MM-DD (HTML input format)
-        let minDate = today.toISOString().split("T")[0];
-    
-        // Get the max date (today + 4 days)
-        let maxDateObj = new Date();
-        maxDateObj.setDate(today.getDate() + 4);
-        let maxDate = maxDateObj.toISOString().split("T")[0];
-    
-        // Set restrictions
-        appointmentDateInput.setAttribute("min", minDate);
-        appointmentDateInput.setAttribute("max", maxDate);
-    }
-    
-    // Call function on page load
-    setDateRestrictions();
-    
     // Load data on page load
     await loadServices();
     await loadPets();
