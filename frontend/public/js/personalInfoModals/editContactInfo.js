@@ -8,7 +8,13 @@ document.addEventListener("DOMContentLoaded", async () => {
     const phoneSpan = document.getElementById("phone");
     const editPhoneInput = document.getElementById("edit-phone");
 
-    // Fetch the phone number data from the database and display it on page load
+    // Function to validate Philippine phone number format
+    function isValidPhoneNumber(phone) {
+        const pattern = /^09\d{9}$/; // Must start with 09 and be 11 digits
+        return pattern.test(phone);
+    }
+
+    // Fetch the phone number from the database
     async function fetchPhoneNumber() {
         // Fetch authenticated user
         const { data: userData, error: authError } = await supabase.auth.getUser();
@@ -18,25 +24,24 @@ document.addEventListener("DOMContentLoaded", async () => {
             return;
         }
 
-        const userId = userData.user.id; // Correctly retrieve user ID
+        const userId = userData.user.id;
 
-        // Fetch the user's phone number from the database
+        // Fetch user's phone number from the database
         const { data, error } = await supabase
             .from("user_profiles")
             .select("phone_number")
             .eq("user_id", userId)
-            .single(); // Use single() to get one result
+            .single(); // Fetch only one record
 
         if (error) {
             console.error("Error fetching phone number:", error.message);
             alert("Could not load phone number.");
         } else {
-            // Display the fetched phone number in the UI
             phoneSpan.textContent = data.phone_number || "Not available";
         }
     }
 
-    // Fetch and display phone number data when the page loads
+    // Fetch and display phone number on page load
     await fetchPhoneNumber();
 
     // Open modal and set input value
@@ -50,12 +55,18 @@ document.addEventListener("DOMContentLoaded", async () => {
         modal.classList.add("hidden");
     });
 
-    // Save new phone number and update in database
+    // Save new phone number and update database
     saveBtn.addEventListener("click", async () => {
         const updatedPhone = editPhoneInput.value.trim();
-        
+
+        // Validate input
         if (updatedPhone === "") {
             alert("Phone number is required.");
+            return;
+        }
+
+        if (!isValidPhoneNumber(updatedPhone)) {
+            alert("Invalid phone number. It must start with 09 and be 11 digits.");
             return;
         }
 
@@ -67,25 +78,35 @@ document.addEventListener("DOMContentLoaded", async () => {
             return;
         }
 
-        const userId = userData.user.id; // Correctly retrieve user ID
+        const userId = userData.user.id;
 
-        // Update the phone number in the user_profiles table
-        const { data, error } = await supabase
-            .from("user_profiles")
-            .update({ phone_number: updatedPhone }) // Make sure the column name is 'phone_number'
-            .eq("user_id", userId)
-            .select();
+        // Disable save button while saving
+        saveBtn.disabled = true;
+        saveBtn.textContent = "Saving...";
 
-        if (error) {
-            console.error("Error updating phone number:", error.message);
-            alert("Update failed: " + error.message);
-        } else {
-            console.log("Phone number updated successfully:", data);
-            alert("Phone number updated successfully!");
+        try {
+            // Update the phone number in the user_profiles table
+            const { data, error } = await supabase
+                .from("user_profiles")
+                .update({ phone_number: updatedPhone })
+                .eq("user_id", userId)
+                .select();
 
-            // Update UI with the new phone number
-            phoneSpan.textContent = updatedPhone;
-            modal.classList.add("hidden");
+            if (error) {
+                console.error("Error updating phone number:", error.message);
+                alert("Update failed: " + error.message);
+            } else {
+                console.log("Phone number updated successfully:", data);
+                alert("Phone number updated successfully!");
+
+                // Update UI with new phone number
+                phoneSpan.textContent = updatedPhone;
+                modal.classList.add("hidden");
+            }
+        } finally {
+            // Re-enable save button
+            saveBtn.disabled = false;
+            saveBtn.textContent = "Save";
         }
     });
 
