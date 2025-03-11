@@ -52,21 +52,21 @@ document.addEventListener("DOMContentLoaded", async () => {
     // Load user's pets from Supabase
     async function loadPets() {
         console.log("Loading pets for user:", userId); // Debugging log
-    
+
         const { data, error } = await supabase
-            .from("pets") 
-            .select("id, pet_name") // Removed "status" since it's in "appointments"
+            .from("pets")
+            .select("id, pet_name")
             .eq("owner_id", userId);
-    
+
         if (error) {
             console.error("Error loading pets:", error);
             return;
         }
-    
+
         console.log("Fetched pets:", data); // Debugging log
-    
+
         petSelect.innerHTML = '<option value="" disabled selected>Select Your Pet</option>';
-        
+
         if (data.length === 0) {
             petSelect.innerHTML += '<option disabled>No pets found</option>';
         } else {
@@ -76,26 +76,36 @@ document.addEventListener("DOMContentLoaded", async () => {
         }
     }
 
-    // Prevent booking if pet has a pending appointment
-    petSelect.addEventListener("change", () => {
-        const selectedPet = petSelect.options[petSelect.selectedIndex];
-        if (selectedPet.dataset.status === "pending") {
-            alert("This pet already has a pending appointment. Complete or cancel it first.");
-            petSelect.value = ""; // Reset selection
-        }
-    });
-
-    // Confirm Booking
+    // Confirm Booking with Pending Appointment Check
     confirmBookingBtn.addEventListener("click", async () => {
         const serviceId = serviceSelect.value;
         const petId = petSelect.value;
         const appointmentDate = appointmentDateInput.value;
-
+    
         if (!serviceId || !petId || !appointmentDate) {
             alert("Please fill in all fields before booking.");
             return;
         }
-
+    
+        // Check for existing pending appointment for this pet
+        const { data: pendingAppointments, error: pendingError } = await supabase
+            .from("appointments")
+            .select("appointment_id")
+            .eq("pet_id", petId)
+            .eq("status", "pending");
+    
+        if (pendingError) {
+            console.error("Error checking pending appointments:", pendingError);
+            alert("An error occurred while checking pending appointments.");
+            return;
+        }
+    
+        if (pendingAppointments.length > 0) {
+            alert("This pet already has a pending appointment. Please cancel or complete it first.");
+            return;
+        }
+    
+        // Book appointment
         const { error } = await supabase.from("appointments").insert([
             {
                 user_id: userId,
@@ -105,14 +115,33 @@ document.addEventListener("DOMContentLoaded", async () => {
                 status: "pending"
             }
         ]);
-
+    
         if (error) {
             alert("Error booking appointment.");
             console.error("Booking error:", error);
+            return;
+        }
+    
+        alert("Appointment booked successfully!");
+        bookingModal.classList.add("hidden");
+        await loadAppointments();
+    
+        // ✅ Insert notification here
+        const petName = await getPetName(petId);
+        const serviceName = await getServiceName(serviceId);
+    
+        const { error: notificationError } = await supabase.from("notifications").insert([
+            {
+                user_id: null, // Or specify admin id(s)
+                message: `New appointment booked for ${petName} (${serviceName}) on ${new Date(appointmentDate).toLocaleString()}`,
+                is_read: false
+            }
+        ]);
+    
+        if (notificationError) {
+            console.error("Error inserting notification:", notificationError.message);
         } else {
-            alert("Appointment booked successfully!");
-            bookingModal.classList.add("hidden");
-            await loadAppointments();
+            console.log("Notification sent to admin!");
         }
     });
 

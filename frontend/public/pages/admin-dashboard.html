@@ -5,17 +5,62 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>PetPal | Admin Dashboard</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="icon" type="image/png" href="../assets/1.png">
+    <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@400;700&display=swap" rel="stylesheet">
+    
 </head>
-<body class="hidden bg-gray-100">
+<body class="scroll-smooth font-sans" style="font-family: 'Bricolage Grotesque', Arial, sans-serif;">
 
     <!-- Navbar -->
-    <nav class="text-white p-4 flex justify-between items-center" style="background: linear-gradient(to right, #3498DB, #166396);">
-        <div class="text-xl font-bold">PetPal Scheduler</div>
-        <div class="flex items-center space-x-4">
-            <span>Welcome, Admin</span>
-            <button class="bg-red-500 px-3 py-1 rounded hover:bg-red-700">Logout</button>
+    <nav class="text-white p-4 flex justify-between items-center bg-gradient-to-r from-blue-500 to-blue-800">
+        <div class="flex items-center space-x-3 text-2xl font-bold">
+            <img src="../assets/1-removebg-preview.png" alt="PetPal Logo" class="h-10 w-10 object-contain">
+            <span>PetPal Scheduler</span>
         </div>
+        <div class="flex items-center space-x-3 pr-6">
+            <span class="mr-4">Welcome, <strong>Admin</strong></span>
+        
+            <!-- Notification Bell -->
+            <div class="relative">
+                <button id="notificationBtn" class="relative focus:outline-none">
+                  <!-- Bell Icon -->
+                  <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-white hover:text-yellow-300 transition" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                      d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V4a2 2 0 10-4 0v1.341C8.67 7.165 8 9.388 8 12v2.159c0 .538-.214 1.055-.595 1.436L6 17h5m4 0v1a3 3 0 11-6 0v-1m6 0H9" />
+                  </svg>
+            
+                  <!-- Notification Badge -->
+                  <span id="notificationCount" 
+                        class="hidden absolute -top-2 -right-2 bg-red-500 text-white text-xs font-bold rounded-full h-5 w-5 flex items-center justify-center">
+                    0
+                  </span>
+                </button>
+              </div>
+          </div>
     </nav>
+
+    <!-- Notification Modal -->
+    <div id="notificationModal" class="fixed inset-0 bg-black bg-opacity-50 hidden justify-center items-start pt-24 z-50">
+        <div class="bg-white rounded-lg shadow-lg w-80">
+          
+          <!-- Header -->
+          <div class="flex justify-between items-center px-4 py-2 border-b">
+            <h2 class="text-lg font-semibold">Notifications</h2>
+            <button id="closeNotification" class="text-gray-500 hover:text-red-500">&times;</button>
+          </div>
+      
+          <!-- Notification Content (Dynamic List) -->
+          <div id="notificationList" class="p-4 max-h-64 overflow-y-auto space-y-2">
+            <!-- Notifications will be dynamically added here -->
+          </div>
+      
+          <!-- Footer -->
+          <div class="flex justify-end px-4 py-2 border-t">
+            <button id="closeNotificationFooter" class="text-blue-600 hover:underline">Close</button>
+          </div>
+          
+        </div>
+      </div>
 
     <!-- Sidebar + Content Container -->
     <div class="flex h-screen">
@@ -49,9 +94,9 @@
             <div class="mb-4">
                 <h3 class="text-gray-400 uppercase text-sm mb-2">Others</h3>
                 <ul>
-                    <li><a href="#" class="sidebar-link block py-2 px-3 hover:bg-gray-700 rounded" data-target="settings">⚙ Settings</a></li>
-                    <li><a href="#" class="sidebar-link block py-2 px-3 hover:bg-gray-700 rounded" data-target="backup">🔄 Backup</a></li>
-                    <li><a href="#" class="block py-2 px-3 rounded text-red-400 hover:bg-red-600">Logout</a></li>
+                    <li><a href="#" id="openSettingsModalSidebar" class="block py-2 px-3 rounded hover:bg-blue-600">⚙️ Settings</a></li>
+                    <li><a href="#" class="sidebar-link block py-2 px-3 hover:bg-gray-700 rounded" data-target="backup">Backup</a></li>
+                    <li><a href="#" id="openLogoutModalSidebar" class="block py-2 px-3 rounded text-red-400 hover:bg-red-600">Logout</a></li>
                 </ul>
             </div>
         </aside>
@@ -318,17 +363,84 @@
                     <button class="mt-2 bg-gray-500 text-white px-4 py-2 rounded hover:bg-gray-700">Monthly Report (PDF)</button>
                 </div>
             </section>
-
-            <section id="settings" class="content-section hidden">
-                <h1 class="text-3xl font-bold">Settings</h1>
-                <p class="text-gray-600 mt-2">Update system settings.</p>
-            </section>
-
-            <section id="backup" class="content-section hidden">
-                <h1 class="text-3xl font-bold">Backup</h1>
-                <p class="text-gray-600 mt-2">Manage system backups.</p>
-            </section>
         </main>
+    </div>
+
+    <!-- Logout Modal-->
+    <div id="logoutModal" class="fixed inset-0 flex items-center justify-center bg-gray-900 bg-opacity-50 hidden">
+        <div class="bg-white p-6 rounded-lg shadow-lg w-96">
+            <h2 class="text-lg font-bold mb-4">Confirm Logout</h2>
+            <p class="text-gray-600 mb-4">Are you sure you want to log out?</p>
+            <div class="flex justify-end space-x-3">
+                <button id="cancelLogout" class="px-4 py-2 bg-gray-400 text-white rounded hover:bg-gray-600">Cancel</button>
+                <button id="confirmLogout" class="px-4 py-2 bg-red-500 text-white rounded hover:bg-red-700">Logout</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Settings Modal -->
+    <div id="settingsModal" class="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 hidden z-50">
+        <div class="bg-white p-6 rounded-lg shadow-lg w-[400px] relative">
+        
+        <!-- Close Button -->
+        <button id="closeSettingsBtn" class="absolute top-2 right-2 text-gray-600 hover:text-gray-900 text-2xl">&times;</button>
+        
+        <!-- Modal Header -->
+        <h2 class="text-xl font-bold mb-4">Settings</h2>
+    
+        <!-- App Info Section -->
+        <div class="mb-6">
+            <h3 class="font-semibold text-gray-700 mb-2">App Information</h3>
+            <div class="text-sm text-gray-600 space-y-2">
+            <p><strong>Version:</strong> 1.0.0</p>
+            <a href="#" class="text-blue-500 hover:underline">Terms of Service</a><br>
+            <a href="#" class="text-blue-500 hover:underline">Privacy Policy</a><br>
+            <a href="#" class="text-blue-500 hover:underline">Contact Support</a>
+            </div>
+        </div>
+    
+        <!-- Divider -->
+        <hr class="my-4">
+    
+        <!-- Profile Settings -->
+        <div class="mb-4">
+            <h3 class="font-semibold text-gray-700 mb-2">Profile</h3>
+            <div class="flex flex-col space-y-2">
+            <input type="text" placeholder="Display Name" class="border rounded px-3 py-2">
+            <input type="email" placeholder="Email" class="border rounded px-3 py-2">
+            <button class="bg-blue-500 text-white rounded px-4 py-2 hover:bg-blue-600">Update Profile</button>
+            </div>
+        </div>
+    
+        <!-- Notification Settings -->
+        <div class="mb-4">
+            <h3 class="font-semibold text-gray-700 mb-2">Notifications</h3>
+            <div class="flex items-center space-x-2">
+            <input type="checkbox" id="emailNotif" class="form-checkbox">
+            <label for="emailNotif">Email Reminders</label>
+            </div>
+            <div class="flex items-center space-x-2">
+            <input type="checkbox" id="smsNotif" class="form-checkbox">
+            <label for="smsNotif">SMS Reminders</label>
+            </div>
+        </div>
+    
+        <!-- Theme Preferences -->
+        <div class="mb-4">
+            <h3 class="font-semibold text-gray-700 mb-2">Theme</h3>
+            <div class="flex items-center space-x-4">
+            <button id="lightModeBtn" class="bg-gray-200 px-4 py-2 rounded hover:bg-gray-300">Light</button>
+            <button id="darkModeBtn" class="bg-gray-800 text-white px-4 py-2 rounded hover:bg-gray-900">Dark</button>
+            </div>
+        </div>
+    
+        <!-- Save & Close Buttons -->
+        <div class="flex justify-end space-x-3 mt-6">
+            <button id="closeSettingsBtn2" class="px-4 py-2 bg-gray-400 text-white rounded hover:bg-gray-600">Close</button>
+            <button id="saveSettingsBtn" class="px-4 py-2 bg-green-500 text-white rounded hover:bg-green-600">Save Changes</button>
+        </div>
+    
+        </div>
     </div>
 
     <script>
@@ -404,5 +516,8 @@
 
     <script src="/frontend/public/js/auth.js"></script>
 
+    <script src="../js/logout.js"></script>
+    <script src="../js/settingsModal.js"></script>
+    <script type="module" src="../js/modal/notification.js"></script>
 </body>
 </html>

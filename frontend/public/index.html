@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>PetPal Scheduler</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="icon" type="image/png" href="./assets/1-removebg-preview.png">
     <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@400;700&display=swap" rel="stylesheet">
 </head>
 <body class="scroll-smooth font-sans" style="font-family: 'Bricolage Grotesque', Arial, sans-serif;">
@@ -18,7 +19,12 @@
 
     <!-- Navigation Bar -->
     <nav class="fixed top-0 w-full bg-gradient-to-r from-blue-500 to-blue-800 text-white flex justify-between items-center px-10 py-4 shadow-lg z-50">
-        <div class="text-2xl font-bold">PetPal Scheduler</div>
+        <div class="flex items-center space-x-3 text-2xl font-bold">
+            <!-- Logo Image -->
+            <img src="./assets/1-removebg-preview.png" alt="PetPal Logo" class="h-10 w-10 object-contain">
+            <!-- Title -->
+            <span>PetPal Scheduler</span>
+        </div>
         <ul class="flex space-x-6">
             <li><a href="#home-index" class="text-lg relative after:block after:content-[''] after:absolute after:w-full after:h-[3px] after:bg-white after:scale-x-0 after:origin-left after:transition-transform after:duration-300 hover:after:scale-x-100 active:font-extrabold" id="home-link">Home</a></li>
             <li><a href="#services-index" class="text-lg relative after:block after:content-[''] after:absolute after:w-full after:h-[3px] after:bg-white after:scale-x-0 after:origin-left after:transition-transform after:duration-300 hover:after:scale-x-100 active:font-extrabold" id="services-link">Services</a></li>
@@ -96,6 +102,7 @@
                 <h4 class="section-title">ACCOUNT</h4>
             
                 <label for="email">Email</label>
+                <p class="text-sm text-gray-500">Use an exsiting gmail.</p>
                 <input type="email" id="sign-up-email" placeholder="Enter your email" required>
             
                 <label for="password">Password</label>
