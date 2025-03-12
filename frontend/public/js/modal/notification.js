@@ -60,7 +60,7 @@ async function listenForAdminNotifications() {
  * Adds a new notification item to the list inside the modal.
  * @param {Object} notification - The notification object from Supabase.
  */
-function addNotificationToList(notification) {
+function addNotificationToList(notification,userId) {
   if (!notificationList) {
     console.warn("Notification list element not found.");
     return;

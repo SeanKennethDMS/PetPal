@@ -6,6 +6,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     const userId = await getUserId();
     console.log("User ID:", userId); // Debugging log
 
+  
     if (!userId) {
         console.error("User ID is missing. Redirecting to login...");
         window.location.href = "../index.html"; // Adjust based on your structure
@@ -48,6 +49,26 @@ document.addEventListener("DOMContentLoaded", async () => {
             serviceSelect.innerHTML += `<option value="${service.id}">${service.service_name}</option>`;
         });
     }
+
+    const { data, error } = await supabase
+    .from("users_table")
+    .select("first_name")
+    .eq("id", userId);
+
+if (error) {
+    console.error("Error loading pets:", error);
+    return;
+}
+
+let notificationName=""
+
+data.forEach(name => {
+notificationName += name.first_name;   
+})
+
+console.log(notificationName)
+
+
 
     // Load user's pets from Supabase
     async function loadPets() {
@@ -133,7 +154,7 @@ document.addEventListener("DOMContentLoaded", async () => {
         const { error: notificationError } = await supabase.from("notifications").insert([
             {
                 user_id: null, // Or specify admin id(s)
-                message: `New appointment booked for ${petName} (${serviceName}) on ${new Date(appointmentDate).toLocaleString()}`,
+                message: `New appointment booked from ${notificationName} for ${petName} (${serviceName}) on ${new Date(appointmentDate).toLocaleString()}`,
                 is_read: false
             }
         ]);
