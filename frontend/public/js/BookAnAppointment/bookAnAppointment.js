@@ -6,7 +6,6 @@ document.addEventListener("DOMContentLoaded", async () => {
     const userId = await getUserId();
     console.log("User ID:", userId); // Debugging log
 
-  
     if (!userId) {
         console.error("User ID is missing. Redirecting to login...");
         window.location.href = "../index.html"; // Adjust based on your structure
@@ -16,7 +15,8 @@ document.addEventListener("DOMContentLoaded", async () => {
     // Elements
     const serviceSelect = document.getElementById("service-select");
     const petSelect = document.getElementById("pet-select");
-    const appointmentDateInput = document.getElementById("appointment-date-time");
+    const appointmentDateInput = document.getElementById("appointment-date");
+    const appointmentTimeInput = document.getElementById("appointment-time");
     const confirmBookingBtn = document.getElementById("confirm-booking");
     const bookNowBtn = document.getElementById("book-now");
     const closeModalBtn = document.getElementById("close-modal");
@@ -51,24 +51,22 @@ document.addEventListener("DOMContentLoaded", async () => {
     }
 
     const { data, error } = await supabase
-    .from("users_table")
-    .select("first_name")
-    .eq("id", userId);
+        .from("users_table")
+        .select("first_name")
+        .eq("id", userId);
 
-if (error) {
-    console.error("Error loading pets:", error);
-    return;
-}
+    if (error) {
+        console.error("Error loading pets:", error);
+        return;
+    }
 
-let notificationName=""
+    let notificationName = "";
 
-data.forEach(name => {
-notificationName += name.first_name;   
-})
+    data.forEach(name => {
+        notificationName += name.first_name;
+    });
 
-console.log(notificationName)
-
-
+    console.log(notificationName);
 
     // Load user's pets from Supabase
     async function loadPets() {
@@ -101,10 +99,18 @@ console.log(notificationName)
     confirmBookingBtn.addEventListener("click", async () => {
         const serviceId = serviceSelect.value;
         const petId = petSelect.value;
-        const appointmentDate = appointmentDateInput.value;
+        const appointmentDate = appointmentDateInput.value; // format: YYYY-MM-DD
+        const appointmentTime = appointmentTimeInput.value; // format: HH:mm
     
-        if (!serviceId || !petId || !appointmentDate) {
+        if (!serviceId || !petId || !appointmentDate || !appointmentTime) {
             alert("Please fill in all fields before booking.");
+            return;
+        }
+    
+        // Optional: validate time string
+        const timeRegex = /^([01]\d|2[0-3]):([0-5]\d)$/;
+        if (!timeRegex.test(appointmentTime)) {
+            alert("Please enter a valid time in HH:mm format.");
             return;
         }
     
@@ -126,13 +132,14 @@ console.log(notificationName)
             return;
         }
     
-        // Book appointment
+        // Book appointment - NOW we insert both date and time SEPARATELY
         const { error } = await supabase.from("appointments").insert([
             {
                 user_id: userId,
                 pet_id: petId,
                 service_id: serviceId,
-                appointment_date: appointmentDate,
+                appointment_date: appointmentDate,          // stores YYYY-MM-DD
+                appointment_time: `${appointmentTime}:00`,  // stores HH:mm:ss (add seconds if column is TIME type)
                 status: "pending"
             }
         ]);
@@ -154,7 +161,7 @@ console.log(notificationName)
         const { error: notificationError } = await supabase.from("notifications").insert([
             {
                 user_id: null, // Or specify admin id(s)
-                message: `New appointment booked from ${notificationName} for ${petName} (${serviceName}) on ${new Date(appointmentDate).toLocaleString()}`,
+                message: `New appointment booked from ${notificationName} for ${petName} (${serviceName}) on ${appointmentDate} at ${appointmentTime}`,
                 is_read: false
             }
         ]);

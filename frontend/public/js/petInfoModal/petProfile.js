@@ -36,8 +36,8 @@ document.addEventListener("DOMContentLoaded", async () => {
     const breedOptions = {
         dog: ["Aspin", "Labrador Retriever", "German Shepherd", "Golden Retriever", "Bulldog", "Beagle", "Poodle", "Shih Tzu", "Siberian Husky", "Dachshund", "Pomeranian", "Labradoodle (Labrador + Poodle)", "Shorkie (Shih Tzu + Yorkie)", "Others"],
         cat: ["Puspin", "Persian", "Siamese", "Maine Coon", "Bengal", "Ragdoll", "Scottish Fold", "Sphynx", "British Shorthair", "Himalayan", "Norwegian Forest", "Bambino (Sphynx + Munchkin)", "Tonkinese (Siamese + Burmese)", "Others"],
-        bird: ["Parrot", "Canary", "Cockatiel", "Macaw", "Lovebird", "Finch", "Others"],
-        rabbit: ["Holland Lop", "Flemish Giant", "Mini Rex", "Angora", "Netherland Dwarf", "Others"]
+        // bird: ["Parrot", "Canary", "Cockatiel", "Macaw", "Lovebird", "Finch", "Others"],
+        // rabbit: ["Holland Lop", "Flemish Giant", "Mini Rex", "Angora", "Netherland Dwarf", "Others"]
     };
 
     // Update breeds when species is selected

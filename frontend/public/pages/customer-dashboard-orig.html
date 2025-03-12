@@ -287,11 +287,12 @@
                     </div>
 
                     <!-- Blank Column with Add Button -->
-                    <div class="flex items-center justify-center">
-                        <button id="add-pet-btn" class="fixed bottom-5 right-5 w-40 h-12 bg-blue-500 text-white rounded-lg shadow-lg hover:bg-blue-600">
+                    <div class="flex justify-center mt-4">
+                        <button id="add-pet-btn" class="w-40 h-12 bg-blue-500 text-white rounded-lg shadow-lg hover:bg-blue-600">
                             Add Pet
                         </button>
                     </div>
+
                 </div>
 
                 <!-- Modal to Add Pet -->
@@ -309,8 +310,8 @@
                                     <option value="">Select Species</option>
                                     <option value="dog">Dog</option>
                                     <option value="cat">Cat</option>
-                                    <option value="bird">Bird</option>
-                                    <option value="rabbit">Rabbit</option>
+                                    <!-- <option value="bird">Bird</option>
+                                    <option value="rabbit">Rabbit</option> -->
                                 </select>
                             </div>
                             <div class="mb-4">
@@ -381,9 +382,14 @@
                                 <option value="" disabled selected>Loading pets...</option>
                             </select>
 
-                            <!-- Date & Time Selection -->
-                            <label for="appointment-date-time" class="block text-sm font-medium text-gray-700">Select Date & Time</label>
-                            <input type="datetime-local" id="appointment-date-time" class="w-full p-2 border rounded mb-3">
+                            <!-- Date Selection -->
+                            <label for="appointment-date" class="block text-sm font-medium text-gray-700">Select Date</label>
+                            <input type="date" id="appointment-date" min="2025-03-13" class="w-full p-2 border rounded mb-3">
+
+                            <!-- Time Selection -->
+                            <label for="appointment-time" class="block text-sm font-medium text-gray-700">Select Time</label>
+                            <input type="time" id="appointment-time" min="08:00" max="18:00" class="w-full p-2 border rounded mb-3">
+
 
                             <!-- Confirm & Cancel Buttons -->
                             <button id="confirm-booking" class="w-full bg-green-500 text-white py-2 rounded-lg hover:bg-green-600">
@@ -407,10 +413,10 @@
                     <input type="date" id="filter-date" class="border p-2 rounded">
                     <select id="filter-status" class="border p-2 rounded">
                         <option value="">All Status</option>
-                        <option value="Completed">Completed</option>
-                        <option value="Pending">Pending</option>
-                        <option value="Cancelled">Cancelled</option>
-                        <option value="No Show">No Show</option>
+                        <option value="completed">Completed</option>
+                        <option value="pending">Pending</option>
+                        <option value="cancelled">Cancelled</option>
+                        <option value="no show">No Show</option>
                     </select>
                     <button id="filter-btn" class="bg-blue-500 text-white px-4 py-2 rounded">Filter</button>
                 </div>
@@ -602,8 +608,9 @@
 
     <!-- Js for Booking History -->
     <script type="module" src="../js/bookingHistory/bookingHistory.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.25/jspdf.plugin.autotable.min.js"></script>
 
 </body>
 </html>
