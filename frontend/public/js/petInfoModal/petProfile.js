@@ -99,33 +99,56 @@ document.addEventListener("DOMContentLoaded", async () => {
         petForm?.reset();
     });
 
+    async function getAppointmentStatus(petId) {
+        const { data, error } = await supabase
+            .from('appointments')
+            .select('status')
+            .eq('pet_id', petId)
+            .order('appointment_date', { ascending: true }) // Optional: Earliest appointment first
+            .limit(1); // Only need the latest or next appointment
+    
+        if (error) {
+            console.error(`Error fetching appointment for pet ${petId}:`, error);
+            return "Unknown";
+        }
+    
+        if (!data.length) {
+            return "No Appointment";
+        }
+    
+        // Example statuses: Pending, Approved, Completed, Cancelled
+        return data[0].status;
+    }
+    
     async function loadPets() {
         const userId = await getUser();
         if (!userId) {
             console.error("No user logged in.");
             return;
         }
-
-        const { data, error } = await supabase
+    
+        const { data: pets, error } = await supabase
             .from('pets')
             .select('*')
             .eq('owner_id', userId);
-
+    
         if (error) {
             console.error("Error fetching pets:", error);
             return;
         }
-
-        // Clear existing table rows
+    
         petTableBody.innerHTML = "";
-
-        if (!data.length) {
+    
+        if (!pets.length) {
             petTableBody.innerHTML = `
                 <tr>
                     <td colspan="6" class="text-center py-4">No pets available. Add a pet to get started.</td>
                 </tr>`;
         } else {
-            data.forEach((pet) => {
+            for (const pet of pets) {
+                // Fetch the appointment status per pet
+                const appointmentStatus = await getAppointmentStatus(pet.pet_id || pet.id);// assuming pet.id is your PK
+    
                 const newRow = `
                     <tr>
                         <td class="border px-4 py-2">${pet.pet_name}</td>
@@ -133,12 +156,14 @@ document.addEventListener("DOMContentLoaded", async () => {
                         <td class="border px-4 py-2">${pet.breed}</td>
                         <td class="border px-4 py-2">${pet.weight}</td>
                         <td class="border px-4 py-2">${pet.pets_birthdate}</td>
-                        <td class="border px-4 py-2">No Appointment</td>
+                        <td class="border px-4 py-2">${appointmentStatus}</td>
                     </tr>`;
+    
                 petTableBody.innerHTML += newRow;
-            });
+            }
         }
     }
+    
 
     // Load pets when the page loads
     await loadPets();
