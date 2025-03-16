@@ -11,35 +11,62 @@ const notificationList = document.getElementById("notificationList");
 const notificationCount = document.getElementById("notificationCount");
 
 /**
- * Listen for real-time notifications for the specific user.
- * @param {string} userId - The Supabase authenticated user's ID.
+ * Navigates to the specified section by its ID.
+ * @param {string} targetId
  */
-async function listenForUserNotifications(userId) {
-  supabase
-    .channel('notification-channel')
-    .on(
-      'postgres_changes',
-      {
-        event: 'INSERT',
-        schema: 'public',
-        table: 'notifications',
-        filter: `user_id=eq.${userId}`,
-      },
-      (payload) => {
-        console.log('Customer notification:', payload.new);
-        addNotificationToList(payload.new);
-        updateNotificationBadge();
-      }
-    )
-    .subscribe();
+function goToSection(targetId) {
+  const sidebarLinks = document.querySelectorAll(".sidebar-link");
+  const contentSections = document.querySelectorAll(".content-section");
+
+  contentSections.forEach(section => section.classList.add("hidden"));
+
+  const targetSection = document.getElementById(targetId);
+  if (targetSection) {
+    targetSection.classList.remove("hidden");
+  }
+
+  sidebarLinks.forEach(link => {
+    link.classList.remove("font-bold", "bg-gray-700");
+    if (link.dataset.target === targetId) {
+      link.classList.add("font-bold", "bg-gray-700");
+    }
+  });
 }
 
 /**
- * Listen for real-time notifications for admin users (ALL notifications).
+ * Listen for real-time notifications for the specific user.
+ * @param {string} userId
  */
-async function listenForAdminNotifications() {
-  supabase
-    .channel('notification-channel')
+function listenForUserNotifications(userId) {
+  const channel = supabase
+    .channel('user-notification-channel')
+    .on(
+      'postgres_changes',
+      {
+        event: 'INSERT',
+        schema: 'public',
+        table: 'notifications',
+        filter: `user_id=eq.${userId}`
+      },
+      payload => {
+        console.log('Customer notification received:', payload.new);
+        addNotificationToList(payload.new);
+        updateNotificationBadge();
+      }
+    )
+    .subscribe((status) => {
+      if (status === 'SUBSCRIBED') {
+        console.log('Listening for user notifications...');
+      }
+    });
+}
+
+/**
+ * Listen for real-time notifications for admin users.
+ */
+function listenForAdminNotifications() {
+  const channel = supabase
+    .channel('admin-notification-channel')
     .on(
       'postgres_changes',
       {
@@ -47,51 +74,122 @@ async function listenForAdminNotifications() {
         schema: 'public',
         table: 'notifications',
       },
-      (payload) => {
-        console.log('Admin notification:', payload.new);
+      payload => {
+        console.log('Admin notification received:', payload.new);
         addNotificationToList(payload.new);
         updateNotificationBadge();
       }
     )
-    .subscribe();
+    .subscribe((status) => {
+      if (status === 'SUBSCRIBED') {
+        console.log('Listening for admin notifications...');
+      }
+    });
 }
 
 /**
  * Adds a new notification item to the list inside the modal.
- * @param {Object} notification - The notification object from Supabase.
+ * @param {Object} notification
  */
-function addNotificationToList(notification,userId) {
+function addNotificationToList(notification) {
   if (!notificationList) {
     console.warn("Notification list element not found.");
     return;
   }
 
   const li = document.createElement("li");
-
-  // ✨ Add different styles for read/unread notifications
   li.className = `p-3 border-b border-gray-200 hover:bg-gray-50 transition cursor-pointer ${notification.is_read ? 'bg-white' : 'bg-blue-50'}`;
 
+  let message = notification.message;
+
+  if (!message && notification.action_type) {
+    switch (notification.action_type) {
+      case "approved":
+        message = "Your appointment has been approved!";
+        break;
+      case "canceled":
+        message = "Your appointment has been canceled.";
+        break;
+      case "completed":
+        message = "Your appointment has been completed.";
+        break;
+      case "pending":
+        message = "You have a new pending appointment.";
+        break;
+      default:
+        message = "You have a new notification.";
+    }
+  }
+
   li.innerHTML = `
-    <div class="flex justify-between items-center">
-      <p class="text-sm text-gray-800">${notification.message}</p>
-      <span class="text-xs text-gray-500">${new Date(notification.created_at).toLocaleString()}</span>
+    <div class="flex flex-col">
+      <div class="flex justify-between items-center">
+        <p class="text-sm text-gray-800">${message}</p>
+        <span class="text-xs text-gray-500">${new Date(notification.created_at).toLocaleString()}</span>
+      </div>
+      <div class="mt-2 text-right">
+        <button class="text-blue-600 text-xs hover:underline section-link" data-target="booking" data-appointment-id="${notification.appointment_id}">
+          View Appointment
+        </button>
+      </div>
     </div>
   `;
 
-  // ✨ Click to mark as read (if unread)
-  li.addEventListener("click", async () => {
+  li.addEventListener("click", async (event) => {
+    if (event.target.classList.contains('section-link')) return;
     if (!notification.is_read) {
       await markSingleNotificationAsRead(notification.id, li);
     }
   });
 
   notificationList.prepend(li);
+
+  const goToBookingBtn = li.querySelector(".section-link");
+
+  if (goToBookingBtn) {
+    goToBookingBtn.addEventListener("click", (event) => {
+      event.stopPropagation();
+      goToSection("booking");
+
+      const appointmentId = goToBookingBtn.getAttribute('data-appointment-id');
+      console.log(`Navigate to appointment ID: ${appointmentId}`);
+
+      notificationModal?.classList.add("hidden");
+      notificationModal?.classList.remove("flex");
+    });
+  }
 }
 
 /**
- * Marks a single notification as read and updates its UI.
- * @param {number} notificationId - The notification ID.
- * @param {HTMLElement} listItem - The clicked list item element.
+ * Sends a new notification.
+ */
+async function sendNotification({
+  userId,
+  message,
+  actionType = '',
+  appointmentId = null
+}) {
+  const { data, error } = await supabase
+    .from('notifications')
+    .insert([{
+      user_id: userId,
+      message: message,
+      action_type: actionType,
+      appointment_id: appointmentId,
+      is_read: false
+    }]);
+
+  if (error) {
+    console.error('Error sending notification:', error);
+  } else {
+    console.log('Notification sent:', data);
+  }
+}
+
+/**
+ * Marks a single notification as read.
+ * @param {number} notificationId
+ * @param {HTMLElement} listItem
  */
 async function markSingleNotificationAsRead(notificationId, listItem) {
   const { error } = await supabase
@@ -106,11 +204,9 @@ async function markSingleNotificationAsRead(notificationId, listItem) {
 
   console.log(`Notification ${notificationId} marked as read.`);
 
-  // ✨ Change style to show it's read
   listItem.classList.remove('bg-blue-50');
   listItem.classList.add('bg-white');
 
-  // ✨ Decrease the badge count by 1 (if > 0)
   let currentCount = parseInt(notificationCount.textContent) || 0;
   if (currentCount > 1) {
     notificationCount.textContent = currentCount - 1;
@@ -120,19 +216,18 @@ async function markSingleNotificationAsRead(notificationId, listItem) {
 }
 
 /**
- * Updates the notification badge counter by incrementing it.
+ * Increments the notification badge.
  */
 function updateNotificationBadge() {
   if (!notificationCount) return;
 
   let currentCount = parseInt(notificationCount.textContent) || 0;
   notificationCount.textContent = currentCount + 1;
-
   notificationCount.classList.remove("hidden");
 }
 
 /**
- * Clears the notification badge counter.
+ * Clears the notification badge.
  */
 function clearNotificationBadge() {
   if (!notificationCount) return;
@@ -142,13 +237,13 @@ function clearNotificationBadge() {
 }
 
 /**
- * Checks for unread notifications and updates the badge.
+ * Checks for unread notifications on load.
  * @param {string} userId
  */
 async function checkUnreadNotifications(userId) {
   const { data, error } = await supabase
     .from('notifications')
-    .select('*')
+    .select('id')
     .eq('user_id', userId)
     .eq('is_read', false);
 
@@ -166,7 +261,7 @@ async function checkUnreadNotifications(userId) {
 }
 
 /**
- * Loads all past notifications for the current user or admin.
+ * Loads notification history.
  * @param {string} userId
  * @param {string} role
  */
@@ -174,7 +269,7 @@ async function loadNotificationHistory(userId, role) {
   let query = supabase
     .from('notifications')
     .select('*')
-    .order('created_at', { ascending: true })
+    .order('created_at', { ascending: false })
     .limit(50);
 
   if (role === 'customer') {
@@ -190,41 +285,13 @@ async function loadNotificationHistory(userId, role) {
 
   notificationList.innerHTML = '';
 
-  if (data.length === 0) {
+  if (!data.length) {
     notificationList.innerHTML = `<li class="p-3 text-gray-500">No notifications found.</li>`;
     return;
   }
 
-  data.forEach(notification => {
-    addNotificationToList(notification);
-  });
+  data.forEach(notification => addNotificationToList(notification));
 }
-
-// Event: Open Modal
-notificationBtn?.addEventListener("click", async () => {
-  notificationModal?.classList.remove("hidden");
-  notificationModal?.classList.add("flex");
-
-  if (window.currentUserId && window.currentUserRole) {
-    await loadNotificationHistory(window.currentUserId, window.currentUserRole);
-
-    // ✨ Mark all as read after loading and opening
-    await markAllNotificationsAsRead(window.currentUserId);
-
-    // ✨ Clear the badge count since they are now read
-    clearNotificationBadge();
-  }
-});
-
-// Close modals
-closeNotification?.addEventListener("click", () => {
-  notificationModal?.classList.add("hidden");
-  notificationModal?.classList.remove("flex");
-});
-closeNotificationFooter?.addEventListener("click", () => {
-  notificationModal?.classList.add("hidden");
-  notificationModal?.classList.remove("flex");
-});
 
 /**
  * Marks all unread notifications as read.
@@ -246,7 +313,7 @@ async function markAllNotificationsAsRead(userId) {
 }
 
 /**
- * Initializes the notification listener based on user role.
+ * Initializes the notification listeners.
  */
 async function initNotificationListener() {
   const { data: { user }, error } = await supabase.auth.getUser();
@@ -274,7 +341,7 @@ async function initNotificationListener() {
     }
 
     if (!userData) {
-      console.warn("No user data found in users_table.");
+      console.warn("No user data found.");
       return;
     }
 
@@ -286,22 +353,41 @@ async function initNotificationListener() {
     if (userRole === 'admin') {
       console.log('Admin detected. Listening for ALL notifications...');
       listenForAdminNotifications();
-
-      await checkUnreadNotifications(user.id);
     } else if (userRole === 'customer') {
       console.log('Customer detected. Listening for personal notifications...');
       listenForUserNotifications(user.id);
-
-      await checkUnreadNotifications(user.id);
     } else {
       console.warn(`Unknown role detected: ${userRole}`);
     }
 
+    await checkUnreadNotifications(user.id);
   } catch (err) {
     console.error("Unexpected error:", err);
   }
 }
 
-window.addEventListener("DOMContentLoaded", () => {
+// Open Modal
+notificationBtn?.addEventListener("click", async () => {
+  notificationModal?.classList.remove("hidden");
+  notificationModal?.classList.add("flex");
+
+  if (window.currentUserId && window.currentUserRole) {
+    await loadNotificationHistory(window.currentUserId, window.currentUserRole);
+    await markAllNotificationsAsRead(window.currentUserId);
+    clearNotificationBadge();
+  }
+});
+
+// Close Modal Buttons
+[closeNotification, closeNotificationFooter].forEach(btn => {
+  btn?.addEventListener("click", () => {
+    notificationModal?.classList.add("hidden");
+    notificationModal?.classList.remove("flex");
+  });
+});
+
+document.addEventListener("DOMContentLoaded", () => {
   initNotificationListener();
 });
+
+export { sendNotification };

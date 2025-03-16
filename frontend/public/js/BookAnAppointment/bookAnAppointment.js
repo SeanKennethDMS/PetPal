@@ -99,8 +99,8 @@ document.addEventListener("DOMContentLoaded", async () => {
     confirmBookingBtn.addEventListener("click", async () => {
         const serviceId = serviceSelect.value;
         const petId = petSelect.value;
-        const appointmentDate = appointmentDateInput.value; // format: YYYY-MM-DD
-        const appointmentTime = appointmentTimeInput.value; // format: HH:mm
+        const appointmentDate = appointmentDateInput.value; 
+        const appointmentTime = appointmentTimeInput.value; 
     
         if (!serviceId || !petId || !appointmentDate || !appointmentTime) {
             alert("Please fill in all fields before booking.");
@@ -154,7 +154,7 @@ document.addEventListener("DOMContentLoaded", async () => {
         bookingModal.classList.add("hidden");
         await loadAppointments();
     
-        // ✅ Insert notification here
+        // Insert notification here
         const petName = await getPetName(petId);
         const serviceName = await getServiceName(serviceId);
     
