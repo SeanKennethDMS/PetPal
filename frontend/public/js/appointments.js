@@ -5,7 +5,7 @@ import supabase from "../js/supabaseClient.js";
 const pendingAppointmentsContainer = document.getElementById("pendingAppointments");
 const acceptedAppointmentsContainer = document.getElementById("acceptedAppointments");
 const cancelledAppointmentsContainer = document.getElementById("cancelledAppointments");
-const completedAppointmentsContainer = document.getElementById("completedAppointments"); // ✅ New container
+const completedAppointmentsContainer = document.getElementById("completedAppointments"); //New container
 
 async function fetchAppointmentsByStatus(status, container) {
   container.innerHTML = `<p class="text-gray-500 italic">Loading ${status} appointments...</p>`;
@@ -211,7 +211,7 @@ function refreshAllAppointments() {
   fetchAppointmentsByStatus("pending", pendingAppointmentsContainer);
   fetchAppointmentsByStatus("accepted", acceptedAppointmentsContainer);
   fetchAppointmentsByStatus("cancelled", cancelledAppointmentsContainer);
-  fetchAppointmentsByStatus("completed", completedAppointmentsContainer); // ✅ New status added
+  fetchAppointmentsByStatus("completed", completedAppointmentsContainer); // New status added
 }
 
 // ==============================
