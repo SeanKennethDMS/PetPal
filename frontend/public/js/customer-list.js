@@ -13,7 +13,8 @@ document.getElementById('searchCustomer').addEventListener('input', (e) => {
   const filteredCustomers = customers.filter(c =>
     `${c.first_name} ${c.last_name}`.toLowerCase().includes(searchValue) ||
     c.email.toLowerCase().includes(searchValue) ||
-    c.phone_number.includes(searchValue)
+    c.phone_number.includes(searchValue) ||
+    c.customer_type.toLowerCase().includes(searchValue)
   );
 
   displayCustomers(filteredCustomers);
@@ -22,60 +23,83 @@ document.getElementById('searchCustomer').addEventListener('input', (e) => {
 /* ========================
    LOAD CUSTOMERS (users_table + user_profiles)
 ======================== */
-async function loadCustomers() {
-  const { data: customersData, error } = await supabase
+async function loadAllCustomers() {
+
+  try {
+    //1. Load si registered users
+    const {data: registeredData, error: regError } = await supabase
     .from('users_table')
     .select(`
       id,
       role,
-      user_profiles (
+      user_profiles(
         user_id,
         first_name,
         last_name,
         email,
         phone_number
-      )
-    `)
-    .eq('role', 'customer');
+        )
+      `)
+      .eq('role', 'customer');
+ 
+      if (regError) {
+        console.error('Error loading registered customers:', regError);
+      }
 
-  if (error) {
-    console.error('Error loading customers:', error);
-    return;
+      //Map registered users to common structure
+      const registeredCustomers = (registeredData || []).map((user) => {
+        const profile = user.user_profiles;
+        return {
+          id: user.id,
+          first_name: profile?.first_name || '',
+          last_name: profile?.last_name || '',
+          email: profile?.email || '',
+          phone_number: profile?.phone_number || '',
+          appointment_count: 'Registered Account', //para distinguishable
+          customer_type: 'registered'
+        };
+      });
+
+      //2. Load natin si walk-in customers
+      const { data: walkInData, error: walkInError } = await supabase
+      .from('walk_in_customers')
+      .select('*');
+
+      if(walkInError) {
+        console.error('Error loading walk-in customers:',walkInError);
+      }
+
+      //Map walk-in customers to the same structure
+      const walkInCustomers = (walkInData || []).map((walkin) => {
+        return {
+          id: walkin.id,
+          first_name: walkin.first_name,
+          last_name: walkin.last_name,
+          email: walkin.email || 'N/A',
+          phone_number: walkin.phone_number,
+          appointment_count: 'Walk-in Client',
+          customer_type: 'walk-in'
+        };
+      });
+
+      //3. Combine the two lists
+      const combinedCustomers = [...registeredCustomers, ...walkInCustomers];
+
+      //4. Sort by last name 
+      combinedCustomers.sort((a,b) => {
+        const nameA = a.last_name.toUpperCase();
+        const nameB = b.last_name.toUpperCase();
+        if (nameA < nameB) return -1;
+        if (nameA > nameB) return 1;
+        return 0;
+      });
+
+      //5. Save to global array tsaka display
+      customers = combinedCustomers;
+      displayCustomers(customers);
+  } catch (err) {
+    console.error('Unexpected error loading customers:', err);
   }
-
-  const customersWithAppointments = await Promise.all(customersData.map(async (user) => {
-    const profile = user.user_profiles;
-    const appointment_id = 65;
-    const { data:count, error:appointmentError } = await supabase
-      .from('appointments')
-      .select('*', { count: 'exact', head: true })
-      .eq('user_id', user.id);
-
-    if (appointmentError) {
-      console.error('Error fetching appointments:', appointmentError);
-    }
-
-    return {
-      id: user.id,
-      first_name: profile?.first_name || '',
-      last_name: profile?.last_name || '',
-      email: profile?.email || '',
-      phone_number: profile?.phone_number || '',
-      appointment_count: count || 0
-    };
-  }));
-
-  // Sort by last name
-  customersWithAppointments.sort((a, b) => {
-    const nameA = a.last_name.toUpperCase();
-    const nameB = b.last_name.toUpperCase();
-    if (nameA < nameB) return -1;
-    if (nameA > nameB) return 1;
-    return 0;
-  });
-
-  customers = customersWithAppointments;
-  displayCustomers(customers);
 }
 
 /* ========================
@@ -88,14 +112,15 @@ function displayCustomers(customersToShow) {
   customersToShow.forEach(c => {
     const row = document.createElement('tr');
     row.innerHTML = `
-      <td class="border p-2">${c.first_name}</td>
       <td class="border p-2">${c.last_name}</td>
+      <td class="border p-2">${c.first_name}</td>
       <td class="border p-2">${c.email}</td>
       <td class="border p-2">${c.phone_number}</td>
-      <td class="border p-2">${c.appointment_count} Appointments</td>
+      <td class="border p-2">${c.customer_type === 'walk-in' ? 'Walk-in' : 'Registered'}</td>
+      
       <td class="border p-2 flex gap-2">
         <button onclick="editCustomer('${c.id}', '${c.phone_number}')" class="bg-yellow-500 text-white px-2 py-1 rounded hover:bg-yellow-700">Edit</button>
-        <button onclick="openDeleteModal('${c.id}')" class="bg-red-500 text-white px-2 py-1 rounded hover:bg-red-700">Delete</button>
+        <button onclick="openDeleteModal('${c.id}', '${c.customer_type}')"class="bg-red-500 text-white px-2 py-1 rounded hover:bg-red-700">Delete</button>
       </td>
     `;
     tableBody.appendChild(row);
@@ -155,7 +180,7 @@ function editCustomer(id, currentPhoneNumber) {
     } else {
       console.log('Phone number updated successfully!');
       modal.classList.add('hidden');
-      loadCustomers();
+      loadAllCustomers();
     }
   };
 
@@ -175,71 +200,107 @@ function isValidPhilippinePhone(number) {
 /* ========================
    DELETE CUSTOMER WITH MODAL CONFIRMATION
 ======================== */
-function openDeleteModal(id) {
+function openDeleteModal(id, type) {
   const modal = document.querySelectorAll('.deleteModal');
   const mod = document.getElementById('delmodal');
   const confirmBtn = document.getElementById('confirmDeleteBtn');
   const cancelBtn = document.getElementById('cancelDeleteBtn');
-  const closeBtn = document.querySelectorAll('.closeDeleteModalBtn');
+  const closeBtns = document.querySelectorAll('.closeDeleteModalBtn');
 
   // Show the modal
   modal.forEach(del => {
-   del.classList.remove("hidden");
+    del.classList.remove("hidden");
   })
 
-  // Remove old listeners before adding new ones
-  confirmBtn.replaceWith(confirmBtn.cloneNode(true));
-  cancelBtn.replaceWith(cancelBtn.cloneNode(true));
-  closeBtn.replaceWith(closeBtn.cloneNode(true));
+  const newConfirmBtn = confirmBtn.cloneNode(true);
+  const newCancelBtn = cancelBtn.cloneNode(true);
 
-  // Select the cloned buttons again
-  const newConfirmBtn = document.getElementById('confirmDeleteBtn');
-  const newCancelBtn = document.getElementById('cancelDeleteBtn');
-  const newCloseBtn = document.querySelector('.closeDeleteModalBtn');
+  confirmBtn.parentNode.replaceChild(newConfirmBtn, confirmBtn);
+  cancelBtn.parentNode.replaceChild(newCancelBtn, cancelBtn);
 
-  // Add listeners to the fresh cloned buttons
-  newConfirmBtn.addEventListener('click', () => deleteCustomer(id));
-  newCancelBtn.addEventListener('click', () => modal.classList.add('hidden'));
-  newCloseBtn.addEventListener('click', () =>  {
-    // modal.classList.remove('hidden');
-    mod.remove();
+  const newCloseBtns = [];
+  closeBtns.forEach((btn) => {
+    const clonedBtn = btn.cloneNode(true);
+    btn.parentNode.replaceChild(clonedBtn, btn);
+    newCloseBtns.push(clonedBtn);
+  });
+
+  newConfirmBtn.addEventListener('click', () => deleteCustomer(id, type));
+  newCancelBtn.addEventListener('click', () => {
+    modal.forEach(del => del.classList.add('hidden'));
+  });
+
+  newCloseBtns.forEach((btn) => {
+    btn.addEventListener('click', () => {
+      modal.forEach(del => del.classList.add('hidden'));
+    });
   });
 }
 
-async function deleteCustomer(id) {
-  const modal = document.getElementById('deleteModal');
 
-  console.log(`Deleting customer with ID: ${id}`);
+async function deleteCustomer(id, type) {
+  const modal = document.getElementById('delmodal');
+
+  console.log(`Deleting customer with ID: ${id}, Type: ${type}`);
 
   try {
-    // Delete from user_profiles first
-    const { error: profileError } = await supabase
-      .from('user_profiles')
-      .delete()
-      .eq('user_id', id);
+    if (type === 'registered') {
+      // 1. Delete from user_profiles first
+      const { error: profileError } = await supabase
+        .from('user_profiles')
+        .delete()
+        .eq('user_id', id);
 
-    if (profileError) {
-      console.error('Error deleting user profile:', profileError);
-      alert('Failed to delete customer profile!');
+      if (profileError) {
+        console.error('Error deleting user profile:', profileError);
+        alert('Failed to delete customer profile!');
+        return;
+      }
+
+      // 2. Then delete from users_table
+      const { error: userError } = await supabase
+        .from('users_table')
+        .delete()
+        .eq('id', id);
+
+      if (userError) {
+        console.error('Error deleting user:', userError);
+        alert('Failed to delete registered user!');
+        return;
+      }
+
+    } else if (type === 'walk-in') {
+      // 3. Delete from walk_in_customers
+      const { error: walkInError } = await supabase
+        .from('walk_in_customers')
+        .delete()
+        .eq('id', id);
+
+      if (walkInError) {
+        console.error('Error deleting walk-in customer:', walkInError);
+        alert('Failed to delete walk-in customer!');
+        return;
+      }
+
+    } else {
+      console.warn('Unknown customer type!');
+      alert('Unknown customer type!');
       return;
     }
 
-    // Then delete from users_table
-    const { error: userError } = await supabase
-      .from('users_table')
-      .delete()
-      .eq('id', id);
-
-    if (userError) {
-      console.error('Error deleting user:', userError);
-      alert('Failed to delete user!');
-      return;
-    }
-
+    // Success feedback
     console.log('Customer deleted successfully!');
     alert('Customer deleted successfully!');
-    modal.classList.add('hidden');
-    loadCustomers();
+
+    // Hide modal if it exists
+    if (modal) {
+      modal.classList.add('hidden');
+    } else {
+      console.warn('Delete modal not found!');
+    }
+
+    //Reload customers list
+    loadAllCustomers();
 
   } catch (error) {
     console.error('Unexpected error:', error);
@@ -250,63 +311,61 @@ async function deleteCustomer(id) {
 /* ========================
    ADD CUSTOMER
 ======================== */
-async function addCustomerHandler(e) {
+async function addWalkInCustomer(e) {
   e.preventDefault();
 
   const firstName = document.getElementById('customerFirstName').value.trim();
   const lastName = document.getElementById('customerLastName').value.trim();
-  const email = document.getElementById('customerEmail').value.trim();
+  const emailInput = document.getElementById('customerEmail').value.trim();
+  const email = emailInput === '' ? null : emailInput;
   const phone = document.getElementById('customerContact').value.trim();
 
-  if (!firstName || !lastName || !email || !phone) {
-    alert('Please fill out all fields');
+  if (!firstName || !lastName || !phone) {
+    alert('Please fill out all fields (First Name, Last Name, Contact).');
     return;
   }
 
-  const { data: newUser, error: userError } = await supabase
-    .from('users_table')
-    .insert([{ role: 'customer' }])
-    .select()
-    .single();
-
-  if (userError || !newUser) {
-    alert('Failed to create customer user');
-    console.error(userError);
-    return;
-  }
-
-  const userId = newUser.id;
-
-  const { error: profileError } = await supabase
-    .from('user_profiles')
+  try {
+    const {data, error } = await supabase
+    .from('walk_in_customers')
     .insert([{
-      user_id: userId,
       first_name: firstName,
       last_name: lastName,
       email: email,
       phone_number: phone
-    }]);
+    }])
+    .select()
+    .single();
 
-  if (profileError) {
-    alert('Failed to create customer profile');
-    console.error(profileError);
-    return;
+    if (error) {
+      console.error('Error adding walk-in customer: ', error);
+      alert('Something went wrong while adding walk-in client');
+      return;
+    }
+
+    console.log('Walk-in customer added succesfully!', data);
+    alert('Walk-in customer added succesfully! ');
+
+    //Reset ung form para ready sa next entry
+    document.getElementById('addCustomerForm').reset();
+
+    //Reload table kung ginagamit rin sa customer list display
+    loadAllCustomers();
+  } catch (err) {
+    console.error('Unexpected error:', err);
+    alert('Unexpected error occured. Check console!');
   }
-
-  console.log('Customer added successfully');
-  document.getElementById('addCustomerForm').reset();
-  loadCustomers();
 }
 
 /* ========================
    EVENT LISTENERS
 ======================== */
-document.getElementById('addCustomerForm').addEventListener('submit', addCustomerHandler);
+document.getElementById('addCustomerForm').addEventListener('submit', addWalkInCustomer);
 
 /* ========================
    INITIAL LOAD
 ======================== */
-loadCustomers();
+loadAllCustomers();
 
 /* ========================
    GLOBAL SCOPE FUNCTIONS
