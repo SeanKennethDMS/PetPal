@@ -12,7 +12,7 @@
 <body class="scroll-smooth font-sans" style="font-family: 'Bricolage Grotesque', Arial, sans-serif;">
 
     <!-- Navbar -->
-    <nav class="text-white p-4 flex justify-between items-center bg-gradient-to-r from-blue-500 to-blue-800">
+    <nav class="text-white p-4 flex flex-col sm:flex-row justify-between items-center bg-gradient-to-r from-blue-500 to-blue-800">
         <div class="flex items-center space-x-3 text-2xl font-bold">
             <img src="../assets/1-removebg-preview.png" alt="PetPal Logo" class="h-10 w-10 object-contain">
             <span>PetPal Scheduler</span>
@@ -63,7 +63,7 @@
       </div>
 
     <!-- Sidebar + Content Container -->
-    <div class="flex h-screen">
+    <div class="flex flex-col md:flex-row h-screen">
         <!-- Sidebar -->
         <aside class="w-64 bg-gray-800 h-screen p-5 text-white">
             <h2 class="text-xl font-bold mb-4">Admin Dashboard</h2>
@@ -102,9 +102,9 @@
         </aside>
 
         <!-- Main Content -->
-        <main class="flex-1 p-6">
+        <main class="flex-1 p-4 md:p-6 overflow-y-auto">
             <!-- Dashboard -->
-            <section id="dashboard" class="content-section grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <section id="dashboard" class="content-section grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
                 <div class="box border-2 border-blue-500 p-6 rounded-lg shadow-md bg-white">
                     <h2 class="font-bold text-xl flex items-center"><span class="mr-2">📅</span> Upcoming Appointments</h2>
                     <p class="text-gray-600 mt-2">It goes here.</p>
@@ -239,12 +239,12 @@
                 <!-- Add New Customer -->
                 <div class="mt-4 bg-white p-4 rounded-lg shadow-md border-l-4 border-purple-500">
                     <h2 class="text-lg font-semibold">➕ Add New Customer</h2>
-                    <form id="addCustomerForm" class="mt-2">
+                    <form id="addCustomerForm" class="mt-2 grid grid-cols-1 md:grid-cols-2 gap-4">
                         <input type="text" id="customerLastName" placeholder="Last Name" class="p-2 w-full border border-gray-300 rounded mt-2">
                         <input type="text" id="customerFirstName" placeholder="First Name" class="p-2 w-full border border-gray-300 rounded mt-2">
                         <input type="email" id="customerEmail" placeholder="Email" class="p-2 w-full border border-gray-300 rounded mt-2">
                         <input type="text" id="customerContact" placeholder="Contact Number" class="p-2 w-full border border-gray-300 rounded mt-2">
-                        <button type="submit" class="mt-2 bg-green-500 text-white px-4 py-2 rounded hover:bg-green-700">Add Customer</button>
+                        <button type="submit" class="md:col-span-2 bg-green-500 text-white px-4 py-2 rounded hover:bg-green-700 w-full">Add Customer</button>
                     </form>
                 </div>
             
