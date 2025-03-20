@@ -227,7 +227,7 @@
                                     <td class="border border-gray-300 p-2">3 Appointments</td>
                                     <td class="border border-gray-300 p-2">
                                         <button class="bg-yellow-500 text-white px-2 py-1 rounded hover:bg-yellow-700" onclick="openEditModal()">Edit</button>
-                                        <button class="bg-red-500 text-white px-2 py-1 rounded hover:bg-red-700">Delete</button>
+                                        <button id="" class=" bg-red-500 text-white px-2 py-1 rounded hover:bg-red-700">Delete</button>
                                     </td>
                                 </tr>
                                 <!-- Add more rows here -->
@@ -305,6 +305,38 @@
                         </button>
                         <button id="confirmEditBtn" class="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600 transition">
                         Save
+                        </button>
+                    </div>
+                
+                    </div>
+                </div>
+                    <!-- DELETE MODAL -->
+                <div id="delmodal" class="fixed deleteModal inset-0 bg-gray-800 bg-opacity-50 flex items-center justify-center z-50 hidden  transition-opacity duration-300 ease-in-out">
+                    <div class="bg-white rounded-xl shadow-2xl w-full max-w-md p-6 relative animate-fadeIn">
+                    
+                    <!-- Modal Header -->
+                    <div class="flex justify-between items-center mb-4">
+                        <button id="" class="closeDeleteModalBtn text-gray-500 hover:text-gray-700 transition">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none"
+                            viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M6 18L18 6M6 6l12 12" />
+                        </svg>
+                        </button>
+                    </div>
+                
+                    <!-- Modal Body -->
+                    <div class="mb-4">
+                        <h1>Are You sure you want to delete this customer?</h1>
+                    </div>
+                
+                    <!-- Modal Footer -->
+                    <div class="flex justify-end space-x-3">
+                        <button id="cancelDeleteBtn" class="bg-gray-300 text-gray-800 px-4 py-2 rounded-lg hover:bg-gray-400 transition">
+                            No
+                        </button>
+                        <button id="confirmDeleteBtn" class="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600 transition">
+                        Yes
                         </button>
                     </div>
                 

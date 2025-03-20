@@ -45,11 +45,11 @@ async function loadCustomers() {
 
   const customersWithAppointments = await Promise.all(customersData.map(async (user) => {
     const profile = user.user_profiles;
-
-    const { count, error: appointmentError } = await supabase
+    const appointment_id = 65;
+    const { data:count, error:appointmentError } = await supabase
       .from('appointments')
       .select('*', { count: 'exact', head: true })
-      .eq('customer_id', user.id);
+      .eq('user_id', user.id);
 
     if (appointmentError) {
       console.error('Error fetching appointments:', appointmentError);
@@ -176,13 +176,16 @@ function isValidPhilippinePhone(number) {
    DELETE CUSTOMER WITH MODAL CONFIRMATION
 ======================== */
 function openDeleteModal(id) {
-  const modal = document.getElementById('deleteModal');
+  const modal = document.querySelectorAll('.deleteModal');
+  const mod = document.getElementById('delmodal');
   const confirmBtn = document.getElementById('confirmDeleteBtn');
   const cancelBtn = document.getElementById('cancelDeleteBtn');
-  const closeBtn = document.getElementById('closeDeleteModalBtn');
+  const closeBtn = document.querySelectorAll('.closeDeleteModalBtn');
 
   // Show the modal
-  modal.classList.remove('hidden');
+  modal.forEach(del => {
+   del.classList.remove("hidden");
+  })
 
   // Remove old listeners before adding new ones
   confirmBtn.replaceWith(confirmBtn.cloneNode(true));
@@ -192,12 +195,15 @@ function openDeleteModal(id) {
   // Select the cloned buttons again
   const newConfirmBtn = document.getElementById('confirmDeleteBtn');
   const newCancelBtn = document.getElementById('cancelDeleteBtn');
-  const newCloseBtn = document.getElementById('closeDeleteModalBtn');
+  const newCloseBtn = document.querySelector('.closeDeleteModalBtn');
 
   // Add listeners to the fresh cloned buttons
   newConfirmBtn.addEventListener('click', () => deleteCustomer(id));
   newCancelBtn.addEventListener('click', () => modal.classList.add('hidden'));
-  newCloseBtn.addEventListener('click', () => modal.classList.add('hidden'));
+  newCloseBtn.addEventListener('click', () =>  {
+    // modal.classList.remove('hidden');
+    mod.remove();
+  });
 }
 
 async function deleteCustomer(id) {
