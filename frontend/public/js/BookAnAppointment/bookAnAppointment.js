@@ -28,6 +28,18 @@ document.addEventListener("DOMContentLoaded", async () => {
     await loadServices();
     await loadPets();
     await loadAppointments();
+    //  Set up Supabase real-time listener ONCE
+    supabase
+    .channel('public:appointments')
+    .on('postgres_changes', {
+        event: '*', 
+        schema: 'public',
+        table: 'appointments'
+    }, (payload) => {
+        console.log('Change received!', payload);
+        loadAppointments();
+    })
+    .subscribe();
 
     // Open Booking Modal
     bookNowBtn.addEventListener("click", () => {
@@ -175,39 +187,82 @@ document.addEventListener("DOMContentLoaded", async () => {
 
     // Load Appointments
     async function loadAppointments() {
-        const { data: appointments, error } = await supabase
+        try {
+          const { data: appointments, error } = await supabase
             .from("appointments")
             .select("appointment_id, appointment_date, status, pet_id, service_id")
-            .eq("user_id", userId)
-            .neq("status", "completed")
-            .neq("status", "cancelled");
-
-        if (error) {
+            .eq("user_id", userId);
+      
+          if (error) {
             console.error("Error loading appointments:", error);
             return;
+          }
+      
+          // Clear all containers first
+          clearAppointmentLists();
+      
+          // Separate by status
+          const accepted = appointments.filter(app => app.status === "accepted");
+          const pending = appointments.filter(app => app.status === "pending");
+          const cancelled = appointments.filter(app => app.status === "cancelled");
+      
+          // Render in each container
+          renderAppointments("accepted-details", accepted, "accepted");
+          renderAppointments("appointment-details", pending, "pending");
+          renderAppointments("cancelled-details", cancelled, "cancelled");
+      
+        } catch (err) {
+          console.error("Unexpected error loading appointments:", err);
         }
-
-        appointmentDetails.innerHTML = appointments.length === 0
-            ? '<p class="text-gray-500 italic">No pending appointments.</p>'
-            : '';
-
+      }
+      
+      function clearAppointmentLists() {
+        document.getElementById("accepted-details").innerHTML = "";
+        document.getElementById("appointment-details").innerHTML = "";
+        document.getElementById("cancelled-details").innerHTML = "";
+      }
+      
+      async function renderAppointments(containerId, appointments, statusType) {
+        const container = document.getElementById(containerId);
+      
+        if (!appointments || appointments.length === 0) {
+          container.innerHTML = `<p class="text-gray-500 italic">No ${statusType} appointments.</p>`;
+          return;
+        }
+      
         for (const appointment of appointments) {
-            const petName = await getPetName(appointment.pet_id);
-            const serviceName = await getServiceName(appointment.service_id);
+          const petName = await getPetName(appointment.pet_id);
+          const serviceName = await getServiceName(appointment.service_id);
+      
+          const appointmentBox = document.createElement("div");
+          appointmentBox.className = "p-3 bg-white rounded-lg border border-gray-300 mb-2 shadow-sm";
+      
+          // Basic Info
+          appointmentBox.innerHTML = `
+            <p><strong>Pet:</strong> ${petName}</p>
+            <p><strong>Service:</strong> ${serviceName}</p>
+            <p><strong>Date:</strong> ${new Date(appointment.appointment_date).toLocaleDateString()}</p>
+          `;
+      
+          // For Pending appointments, add a Cancel button
+          if (statusType === "pending") {
+            const cancelBtn = document.createElement("button");
+            cancelBtn.className = "cancel-btn px-3 py-1 bg-red-500 text-white rounded hover:bg-red-600 mt-2";
+            cancelBtn.textContent = "Cancel";
+      
+            cancelBtn.setAttribute("data-id", appointment.appointment_id);
 
-            const appointmentBox = document.createElement("div");
-            appointmentBox.classList.add("p-3", "bg-white", "rounded-lg", "border", "mb-2", "shadow-md");
-            appointmentBox.dataset.id = appointment.appointment_id; // Store ID for easy deletion
-            appointmentBox.innerHTML = `
-                <p class="text-gray-700"><strong>Pet:</strong> ${petName}</p>
-                <p class="text-gray-700"><strong>Service:</strong> ${serviceName}</p>
-                <p class="text-gray-700"><strong>Date:</strong> ${new Date(appointment.appointment_date).toLocaleString()}</p>
-                <button class="cancel-btn px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600" data-id="${appointment.appointment_id}">Cancel</button>
-            `;
-
-            appointmentDetails.appendChild(appointmentBox);
+            cancelBtn.addEventListener("click", () => {
+              cancelAppointment(appointment.appointment_id);
+            });
+      
+            appointmentBox.appendChild(cancelBtn);
+          }
+      
+          container.appendChild(appointmentBox);
         }
-    }
+      }
+      
 
     // Fetch pet name
     async function getPetName(petId) {
@@ -223,34 +278,43 @@ document.addEventListener("DOMContentLoaded", async () => {
 
     // Cancel Appointment
     async function cancelAppointment(appointmentId) {
+        if (!appointmentId) {
+          console.error("No appointment ID provided to cancel!");
+          return;
+        }
+      
         if (!confirm("Are you sure you want to cancel this appointment?")) return;
-
+      
         const { error } = await supabase
-            .from("appointments")
-            .update({ status: "cancelled" })
-            .eq("appointment_id", appointmentId);
-
+          .from("appointments")
+          .update({ status: "cancelled" })
+          .eq("appointment_id", appointmentId);
+      
         if (error) {
-            alert("Error cancelling appointment.");
-            console.error("Cancel error:", error);
+          alert("Error cancelling appointment.");
+          console.error("Cancel error:", error);
         } else {
-            alert("Appointment cancelled successfully.");
-            document.querySelector(`[data-id="${appointmentId}"]`).remove(); // Remove from UI
+          alert("Appointment cancelled successfully.");
+          await loadAppointments(); // Reload UI instead of manually removing
         }
     }
 
     // Attach event listener for dynamically created cancel buttons
-    document.addEventListener("click", (event) => {
-        if (event.target.classList.contains("cancel-btn")) {
-            cancelAppointment(event.target.dataset.id);
-        }
-    });
+    // document.addEventListener("click", (event) => {
+    //     if (event.target.classList.contains("cancel-btn")) {
+    //         cancelAppointment(event.target.dataset.id);
+    //     }
+    // });
 
     // Refresh Appointments
-    refreshBookingBtn.addEventListener("click", async () => {
-        console.log("Refreshing appointments...");
-        await loadAppointments();
-    });
+    if (refreshBookingBtn) {
+        refreshBookingBtn.addEventListener("click", async () => {
+          console.log("Refreshing appointments...");
+          await loadAppointments();
+        });
+      } else {
+        console.warn("Refresh Booking button not found");
+      }
 });
 
 // Function to get user ID
