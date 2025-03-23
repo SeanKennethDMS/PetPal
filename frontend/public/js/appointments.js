@@ -29,7 +29,7 @@ async function fetchAppointmentsByStatus(status, container) {
         ),
         services (
         id,
-        service_name
+        name
         )
     `)
     .eq("status", status)
@@ -64,7 +64,7 @@ function createAppointmentItem(appointment, status) {
   const ownerLastName = appointment.user_profiles?.last_name || "";
   const ownerName = `${ownerFirstName} ${ownerLastName}`.trim() || "N/A";
   const petName = appointment.pets?.pet_name || "N/A";
-  const serviceName = appointment.services?.service_name || "N/A";
+  const serviceName = appointment.services?.name || "N/A";
   const date = appointment.appointment_date;
   const time = appointment.appointment_time;
 
