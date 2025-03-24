@@ -12,7 +12,7 @@
 
     <!-- Login Button -->
     <div class="fixed top-20 right-12 z-50">
-        <button class="bg-blue-500 text-white font-bold py-3 px-6 rounded transition duration-300 hover:bg-blue-600" onclick="openModal('loginModal')" >
+        <button  id="openLoginBtn" class="bg-blue-500 text-white font-bold py-3 px-6 rounded transition duration-300 hover:bg-blue-600">
             Login
         </button>
     </div>
@@ -33,58 +33,14 @@
         </ul>
     </nav>
 
-    <script>
-        document.addEventListener("DOMContentLoaded", function () {
-            const sections = document.querySelectorAll("section");
-            const navLinks = document.querySelectorAll("nav ul li a");
-        
-            function setActiveLink() {
-                let scrollPosition = window.scrollY;
-        
-                sections.forEach((section) => {
-                    let sectionTop = section.offsetTop - 100;
-                    let sectionHeight = section.clientHeight;
-                    let sectionId = section.getAttribute("id");
-        
-                    if (scrollPosition >= sectionTop && scrollPosition < sectionTop + sectionHeight) {
-                        navLinks.forEach((link) => {
-                            link.classList.remove("font-extrabold");
-                            if (link.getAttribute("href") === `#${sectionId}`) {
-                                link.classList.add("font-extrabold");
-                            }
-                        });
-                    }
-                });
-            }
-        
-            window.addEventListener("scroll", setActiveLink);
-            setActiveLink();
-        });
-
-        document.querySelectorAll('nav a[href^="#"]').forEach(anchor => {
-        anchor.addEventListener("click", function (e) {
-            e.preventDefault();
-
-            const targetId = this.getAttribute("href").substring(1);
-            const targetElement = document.getElementById(targetId);
-
-            if (targetElement) {
-            targetElement.scrollIntoView({
-                behavior: "smooth",
-                block: "start"
-            });
-            }
-        });
-        });
-    </script>
-
+    
     <!-- Home Section -->
     <section id="home-index" class="flex flex-col justify-center items-center h-screen px-10 bg-gray-100">
         <div class="max-w-5xl flex items-center gap-12">
             <div class="flex-1 text-left">
                 <h1 class="text-6xl font-bold text-gray-800">PetPal Scheduler</h1>
                 <p class="text-lg mt-4 text-gray-700">Hassle booking of appointment onsite? Skip the line with PetPal Scheduler now!</p>
-                <button onclick="openModal('loginModal')" class="bg-blue-500 text-white font-bold py-3 px-6 mt-6 rounded transition duration-300 hover:bg-blue-600">
+                <button id="bookNowBtn" class="bg-blue-500 text-white font-bold py-3 px-6 mt-6 rounded transition duration-300 hover:bg-blue-600">
                     Book Now
                 </button>
             </div>
@@ -97,7 +53,7 @@
     <!-- Signup Modal -->
     <div id="signupModal" class="modal">
         <div class="modal-content">
-            <span class="close" onclick="closeModal('signupModal')">&times;</span>
+            <span class="close" id="closeSignupModalBtn">&times;</span>
     
             <h3>Welcome to PetPal!</h3>
             <p>Create an account.</p>
@@ -128,10 +84,10 @@
 
                 <p style="text-align: center; margin-top: 10px;">
                     Already made an account?
-                    <a href="#" style="color: #007bff; text-decoration: none;" onclick="openModal('loginModal')">Log in here.</a>
+                    <a href="#" style="color: #007bff; text-decoration: none;" id="openLoginFromSignup">Log in here.</a>
                 </p>
             
-                <button type="button" onclick="handleSignup(event)">Sign Up</button>
+                <button type="button" id="signupBtn">Sign Up</button>
             </div>
         </div>
     </div>
@@ -139,7 +95,7 @@
     <!-- Login Modal -->
     <div id="loginModal" class="modal">
         <div class="modal-content">
-            <span class="close" onclick="closeModal('loginModal')">&times;</span>
+            <span class="close" id="closeLoginModalBtn">&times;</span>
     
     
             <h3>Welcome to PetPal!</h3>
@@ -151,12 +107,20 @@
     
                 <label style="display: flex; justify-content: space-between; align-items: center;">
                     Password
-                    <a href="#" style="font-size: 0.9em; text-decoration: none; color: #007bff;">Forgot password?</a>
+                    <a href="#" id="openForgotPasswordLink" style="font-size: 0.9em; text-decoration: none; color: #007bff;">Forgot password?</a>
                 </label>
                 <div style="display: flex; align-items: center; position: relative;">
-                    <input type="password" id="login-password" placeholder="Enter your password" required style="width: 100%;">
-                    <span id="togglePassword" style="position: absolute; right: 10px; cursor: pointer;">👁️</span>
-                </div>
+                    <input type="password" id="login-password" placeholder="Enter your password" required style="width: 100%;"/>
+                    <!-- Span for the icon toggle -->
+                    <span id="togglePassword" style="position: absolute; right: 10px; top: 50%; transform: translateY(-50%); cursor: pointer; color: #6b7280; /* Tailwind gray-600 */">
+                      <!-- Eye icon -->
+                      <svg id="eyeIcon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" style="width: 20px; height: 20px;">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                      </svg>
+                    </span>
+                  </div>
+
                 <div style="display: flex; align-items: center; gap: 5px;">
                     <input type="checkbox" id="rememberMe" style="width: 12px;">
                     <label for="rememberMe" style="margin-bottom: 10px; font-size: 0.9em;">Remember Me</label>
@@ -166,73 +130,33 @@
     
                 <p style="text-align: center; margin-top: 10px;">
                     Don't have an account?
-                    <a href="#" style="color: #007bff; text-decoration: none;" onclick="openModal('signupModal')">Create an account</a>
+                    <a href="#" style="color: #007bff; text-decoration: none;" id="openSignupFromLogin">Create an account</a>
                 </p>
             </div>
         </div>
     </div>
 
-    <!-- JavaScript for Modal Functionality -->
-    <script>
-
-        // Toggle Password Visibility
-        document.getElementById("togglePassword").addEventListener("click", function () {
-            let passwordInput = document.getElementById("login-password");
-            if (passwordInput.type === "password") {
-                passwordInput.type = "text";
-                this.innerText = "🔒"; // Change icon
-            } else {
-                passwordInput.type = "password";
-                this.innerText = "👁️"; // Change back
-            }
-        });
-
-        // Remember Me Function
-        document.addEventListener("DOMContentLoaded", function () {
-            if (localStorage.getItem("rememberMe") === "true") {
-                document.getElementById("login-email").value = localStorage.getItem("email") || "";
-                document.getElementById("login-password").value = localStorage.getItem("password") || "";
-                document.getElementById("rememberMe").checked = true;
-            }
-        });
-
-        function openModal(modalId) {
-            closeAllModals(); // Close all modals before opening the new modal
-            let modal = document.getElementById(modalId);
-            modal.style.display = 'flex'; // Display flex ensures centering
-        }
-
-        function closeModal(modalId) {
-            let modal = document.getElementById(modalId);
-            modal.style.display = 'none';
-            resetModal(modalId);
-        }
-
-        function closeAllModals() {
-            let modals = document.querySelectorAll('.modal');
-            modals.forEach(modal => {
-                modal.style.display = 'none';
-            });
-        }
-
-        function resetModal(modalId) {
-            if (modalId === "loginModal") {
-                document.getElementById("login-email").value = "";
-                document.getElementById("login-password").value = "";
-                document.getElementById("rememberMe").checked = false;
-            }
-        }
-
-        // Close modal when clicking outside
-        window.onclick = function(event) {
-            let modals = document.querySelectorAll('.modal');
-            modals.forEach(modal => {
-                if (event.target === modal) {
-                    modal.style.display = 'none';
-                }
-            });
-        };
-    </script>
+    <!-- Forgot Password Modal -->
+    <div id="forgotPasswordModal" class="modal">
+        <div class="modal-content">
+            <span id="closeForgotPasswordModalBtn" class="close">&times;</span>
+        
+            <h3>Forgot Password</h3>
+            <p>Enter your email or phone number</p>
+        
+            <label for="forgot-email">Gmail</label>
+            <input type="email" id="forgot-email" placeholder="Enter your email">
+        
+            <label for="forgot-phone">Phone Number  <span style="color: red;">(Available soon)</span></label>
+            <input type="tel" id="forgot-phone" placeholder="Enter your phone number" disabled>
+        
+            <button id="forgotPasswordSubmitBtn" class="btn-modal">Send Reset Link</button>
+        
+            <p style="text-align: center; margin-top: 10px;">
+                <a href="#" id="backToLoginLink" style="color: #007bff;">Back to Login</a>
+            </p>
+        </div>
+    </div>
 
     <!-- CSS for Modals -->
     <style>
@@ -333,7 +257,7 @@
         button {
             width: 100%;
             padding: 10px;
-            background: #166396;
+            background: #007bff;
             color: white;
             border: none;
             border-radius: 5px;
@@ -390,5 +314,10 @@
      <script type="module" src="./js/signUp.js"></script>
      <script type="module" src="./js/login.js"></script>
 
+     <script type="module" src="./js/modal/smoothScroll.js"></script>
+
+     <script type="module" src="./js/modal/modal.js"></script>
+     <script type="module" src="./js/modal/forgotPassword.js"></script>
+     
 </body>
 </html>
