@@ -11,48 +11,71 @@
 <body class="scroll-smooth font-sans" style="font-family: 'Bricolage Grotesque', Arial, sans-serif;">
 
     <!-- Login Button -->
-    <div class="fixed top-20 right-12 z-50">
-        <button  id="openLoginBtn" class="bg-blue-500 text-white font-bold py-3 px-6 rounded transition duration-300 hover:bg-blue-600">
+    <div class="fixed top-4 md:top-20 right-4 md:right-12 z-50">
+        <button id="openLoginBtn" class="bg-blue-500 text-white font-bold py-2 px-4 md:py-3 md:px-6 rounded transition duration-300 hover:bg-blue-600 text-sm md:text-base">
             Login
         </button>
     </div>
 
     <!-- Navigation Bar -->
-    <nav class="fixed top-0 w-full bg-gradient-to-r from-blue-500 to-blue-800 text-white flex justify-between items-center px-10 py-4 shadow-lg z-50">
-        <div class="flex items-center space-x-3 text-2xl font-bold">
+    <nav class="fixed top-0 w-full bg-gradient-to-r from-blue-500 to-blue-800 text-white flex flex-col md:flex-row justify-between items-center px-4 md:px-10 py-2 md:py-4 shadow-lg z-50">
+        <div class="flex items-center space-x-3 text-xl md:text-2xl font-bold">
             <!-- Logo Image -->
-            <img src="./assets/1-removebg-preview.png" alt="PetPal Logo" class="h-10 w-10 object-contain">
+            <img src="./assets/1-removebg-preview.png" alt="PetPal Logo" class="h-8 w-8 md:h-10 md:w-10 object-contain">
             <!-- Title -->
             <span>PetPal Scheduler</span>
         </div>
-        <ul class="flex space-x-6">
-            <li><a href="#home-index" class="text-lg relative after:block after:content-[''] after:absolute after:w-full after:h-[3px] after:bg-white after:scale-x-0 after:origin-left after:transition-transform after:duration-300 hover:after:scale-x-100 active:font-extrabold" id="home-link">Home</a></li>
-            <li><a href="#services-index" class="text-lg relative after:block after:content-[''] after:absolute after:w-full after:h-[3px] after:bg-white after:scale-x-0 after:origin-left after:transition-transform after:duration-300 hover:after:scale-x-100 active:font-extrabold" id="services-link">Services</a></li>
-            <li><a href="#about-index" class="text-lg relative after:block after:content-[''] after:absolute after:w-full after:h-[3px] after:bg-white after:scale-x-0 after:origin-left after:transition-transform after:duration-300 hover:after:scale-x-100 active:font-extrabold" id="about-link">About Us</a></li>
-            <li><a href="#book-index" class="text-lg relative after:block after:content-[''] after:absolute after:w-full after:h-[3px] after:bg-white after:scale-x-0 after:origin-left after:transition-transform after:duration-300 hover:after:scale-x-100 active:font-extrabold" id="book-link">Book Now</a></li>
+        <ul class="flex space-x-2 md:space-x-6 mt-2 md:mt-0">
+            <li><a href="#home-index" class="text-sm md:text-lg relative after:block after:content-[''] after:absolute after:w-full after:h-[2px] md:after:h-[3px] after:bg-white after:scale-x-0 after:origin-left after:transition-transform after:duration-300 hover:after:scale-x-100 active:font-extrabold" id="home-link">Home</a></li>
+            <li><a href="#services-index" class="text-sm md:text-lg relative after:block after:content-[''] after:absolute after:w-full after:h-[2px] md:after:h-[3px] after:bg-white after:scale-x-0 after:origin-left after:transition-transform after:duration-300 hover:after:scale-x-100 active:font-extrabold" id="services-link">Services</a></li>
+            <li><a href="#about-index" class="text-sm md:text-lg relative after:block after:content-[''] after:absolute after:w-full after:h-[2px] md:after:h-[3px] after:bg-white after:scale-x-0 after:origin-left after:transition-transform after:duration-300 hover:after:scale-x-100 active:font-extrabold" id="about-link">About Us</a></li>
+            <li><a href="#book-index" class="text-sm md:text-lg relative after:block after:content-[''] after:absolute after:w-full after:h-[2px] md:after:h-[3px] after:bg-white after:scale-x-0 after:origin-left after:transition-transform after:duration-300 hover:after:scale-x-100 active:font-extrabold" id="book-link">Book Now</a></li>
         </ul>
     </nav>
 
-    
     <!-- Home Section -->
-    <section id="home-index" class="flex flex-col justify-center items-center h-screen px-10 bg-gray-100">
-        <div class="max-w-5xl flex items-center gap-12">
-            <div class="flex-1 text-left">
-                <h1 class="text-6xl font-bold text-gray-800">PetPal Scheduler</h1>
-                <p class="text-lg mt-4 text-gray-700">Hassle booking of appointment onsite? Skip the line with PetPal Scheduler now!</p>
-                <button id="bookNowBtn" class="bg-blue-500 text-white font-bold py-3 px-6 mt-6 rounded transition duration-300 hover:bg-blue-600">
-                    Book Now
+    <section id="home-index" class="relative flex items-center justify-center min-h-screen bg-white pt-20 md:pt-0">
+        <div class="absolute inset-0 flex flex-col md:flex-row">
+            <!-- Left Side - Full width on mobile, diagonal on desktop -->
+            <div class="relative w-full md:w-[55%] bg-blue-500 text-white flex flex-col justify-center items-center md:items-start px-6 md:px-12 clip-mobile md:clip-left py-12 md:py-0">
+                <h1 class="text-4xl md:text-6xl font-bold mb-4 md:mb-6 text-center md:text-left">PetPal Scheduler</h1>
+                <p class="text-lg md:text-xl mb-6 md:mb-8 text-center md:text-left max-w-md">
+                    Hassle booking of appointment onsite?<br>
+                    Skip the line with <strong>PetPal</strong> now!
+                </p>
+                <button id="bookNowBtn" class="bg-white text-blue-500 w-full md:w-48 py-3 md:py-4 rounded-lg font-semibold shadow-lg text-lg hover:bg-gray-200 transition duration-300">
+                    Getting Ready
                 </button>
             </div>
-            <div class="flex-1">
-                <img src="./assets/catdog-home.png" alt="Pet Grooming" class="w-96 h-auto">
+            
+            <!-- Right Side - Hidden on mobile, properly positioned on desktop -->
+            <div class="hidden md:flex relative md:w-[45%] bg-white justify-center items-center clip-right overflow-hidden">
+                <img src="./assets/catdog-home.png" alt="Pet Grooming" 
+                    class="w-full max-w-[500px] h-auto transform md:translate-x-10 lg:translate-x-20 z-10">
             </div>
         </div>
     </section>
 
+    <style>
+        .clip-left {
+            clip-path: polygon(0 0, 100% 0, 85% 100%, 0 100%);
+        }
+        .clip-right {
+            clip-path: polygon(15% 0, 100% 0, 100% 100%, 0 100%);
+        }
+        .clip-mobile {
+            clip-path: polygon(0 0, 100% 0, 100% 92%, 0 100%);
+        }
+        @media (min-width: 768px) {
+            .clip-mobile {
+                clip-path: polygon(0 0, 100% 0, 85% 100%, 0 100%);
+            }
+        }
+    </style>
+                
     <!-- Signup Modal -->
     <div id="signupModal" class="modal">
-        <div class="modal-content">
+        <div class="modal-content w-11/12 md:w-[350px]">
             <span class="close" id="closeSignupModalBtn">&times;</span>
     
             <h3>Welcome to PetPal!</h3>
@@ -94,9 +117,8 @@
 
     <!-- Login Modal -->
     <div id="loginModal" class="modal">
-        <div class="modal-content">
+        <div class="modal-content w-11/12 md:w-[350px]">
             <span class="close" id="closeLoginModalBtn">&times;</span>
-    
     
             <h3>Welcome to PetPal!</h3>
             <p>Please sign in to your account.</p>
@@ -112,8 +134,7 @@
                 <div style="display: flex; align-items: center; position: relative;">
                     <input type="password" id="login-password" placeholder="Enter your password" required style="width: 100%;"/>
                     <!-- Span for the icon toggle -->
-                    <span id="togglePassword" style="position: absolute; right: 10px; top: 50%; transform: translateY(-50%); cursor: pointer; color: #6b7280; /* Tailwind gray-600 */">
-                      <!-- Eye icon -->
+                    <span id="togglePassword" style="position: absolute; right: 10px; top: 50%; transform: translateY(-50%); cursor: pointer; color: #6b7280;">
                       <svg id="eyeIcon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" style="width: 20px; height: 20px;">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
@@ -126,7 +147,7 @@
                     <label for="rememberMe" style="margin-bottom: 10px; font-size: 0.9em;">Remember Me</label>
                 </div>
     
-                <button type="button" class="loginBtn"  style="margin-top: 15px;">Log In</button>
+                <button type="button" class="loginBtn" style="margin-top: 15px;">Log In</button>
     
                 <p style="text-align: center; margin-top: 10px;">
                     Don't have an account?
@@ -138,7 +159,7 @@
 
     <!-- Forgot Password Modal -->
     <div id="forgotPasswordModal" class="modal">
-        <div class="modal-content">
+        <div class="modal-content w-11/12 md:w-[350px]">
             <span id="closeForgotPasswordModalBtn" class="close">&times;</span>
         
             <h3>Forgot Password</h3>
@@ -162,7 +183,7 @@
     <style>
         /* Modal Styles */
         .modal {
-            display: none; /* Ensures modals are hidden on refresh */
+            display: none;
             position: fixed;
             z-index: 1000;
             left: 0;
@@ -170,8 +191,6 @@
             width: 100%;
             height: 100%;
             background-color: rgba(0, 0, 0, 0.5);
-
-            /* Centering */
             justify-content: center;
             align-items: center;
         }
@@ -180,9 +199,10 @@
             background: white;
             padding: 20px;
             border-radius: 10px;
-            width: 350px;
-            position: relative; /* Allows positioning of close button */
+            position: relative;
             box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.2);
+            max-height: 90vh;
+            overflow-y: auto;
         }
 
         h3 {
@@ -198,7 +218,6 @@
             font-weight: bold;
             margin-top: 10px;
         }
-
 
         .close {
             position: absolute;
@@ -270,24 +289,24 @@
     </style>
 
     <!-- Services Section -->
-    <section id="services-index" class="flex flex-col justify-center items-center h-screen bg-gray-200 px-10">
-        <h2 class="text-5xl font-bold text-gray-800">Our Services</h2>
-        <div class="flex gap-16 mt-10">
-            <div class="relative w-64 h-96 overflow-hidden rounded-lg shadow-lg">
+    <section id="services-index" class="flex flex-col justify-center items-center h-screen bg-gray-200 px-4 md:px-10 py-16 md:py-0">
+        <h2 class="text-3xl md:text-5xl font-bold text-gray-800">Our Services</h2>
+        <div class="flex flex-col md:flex-row gap-8 md:gap-16 mt-8 md:mt-10">
+            <div class="relative w-full md:w-64 h-64 md:h-96 overflow-hidden rounded-lg shadow-lg">
                 <img src="./assets/service1.jpg" alt="Grooming Service" class="w-full h-full object-cover transition-transform duration-300 hover:scale-105">
-                <div class="absolute bottom-5 left-1/2 transform -translate-x-1/2 text-white font-bold text-xl bg-black bg-opacity-50 px-4 py-2 rounded">
+                <div class="absolute bottom-5 left-1/2 transform -translate-x-1/2 text-white font-bold text-lg md:text-xl bg-black bg-opacity-50 px-4 py-2 rounded">
                     Grooming
                 </div>
             </div>
-            <div class="relative w-64 h-96 overflow-hidden rounded-lg shadow-lg">
+            <div class="relative w-full md:w-64 h-64 md:h-96 overflow-hidden rounded-lg shadow-lg">
                 <img src="./assets/service2.jpg" alt="Veterinary Check-up" class="w-full h-full object-cover transition-transform duration-300 hover:scale-105">
-                <div class="absolute bottom-5 left-1/2 transform -translate-x-1/2 text-white font-bold text-xl bg-black bg-opacity-50 px-4 py-2 rounded">
+                <div class="absolute bottom-5 left-1/2 transform -translate-x-1/2 text-white font-bold text-lg md:text-xl bg-black bg-opacity-50 px-4 py-2 rounded">
                     Veterinary Check-up
                 </div>
             </div>
-            <div class="relative w-64 h-96 overflow-hidden rounded-lg shadow-lg">
+            <div class="relative w-full md:w-64 h-64 md:h-96 overflow-hidden rounded-lg shadow-lg">
                 <img src="./assets/service3.jpg" alt="Pet Training" class="w-full h-full object-cover transition-transform duration-300 hover:scale-105">
-                <div class="absolute bottom-5 left-1/2 transform -translate-x-1/2 text-white font-bold text-xl bg-black bg-opacity-50 px-4 py-2 rounded">
+                <div class="absolute bottom-5 left-1/2 transform -translate-x-1/2 text-white font-bold text-lg md:text-xl bg-black bg-opacity-50 px-4 py-2 rounded">
                     Pet Training Also
                 </div>
             </div>
@@ -295,18 +314,18 @@
     </section>
 
     <!-- About Section -->
-    <section id="about-index" class="flex flex-col justify-center items-center h-screen bg-gray-300 px-10">
-        <h2 class="text-5xl font-bold text-gray-800">About Us</h2>
-        <p class="text-lg mt-6 text-center max-w-2xl text-gray-700">
+    <section id="about-index" class="flex flex-col justify-center items-center h-screen bg-gray-300 px-4 md:px-10 py-16 md:py-0">
+        <h2 class="text-3xl md:text-5xl font-bold text-gray-800">About Us</h2>
+        <p class="text-base md:text-lg mt-4 md:mt-6 text-center max-w-2xl text-gray-700 px-4 md:px-0">
             We provide professional pet grooming, veterinary check-ups, and training services to ensure the best care for your furry friends.
         </p>
     </section>
 
     <!-- Booking Section -->
-    <section id="book-index" class="flex flex-col justify-center items-center h-screen bg-gray-400 px-10">
-        <h2 class="text-5xl font-bold text-gray-800">Book an Appointment</h2>
-        <p class="text-lg mt-6 text-center max-w-2xl text-gray-700">
-            Schedule your pet’s net appointment with ease.
+    <section id="book-index" class="flex flex-col justify-center items-center h-screen bg-gray-400 px-4 md:px-10 py-16 md:py-0">
+        <h2 class="text-3xl md:text-5xl font-bold text-gray-800">Book an Appointment</h2>
+        <p class="text-base md:text-lg mt-4 md:mt-6 text-center max-w-2xl text-gray-700 px-4 md:px-0">
+            Schedule your pet's next appointment with ease.
         </p>
     </section>
 
