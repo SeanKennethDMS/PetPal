@@ -501,14 +501,15 @@
             
                 <!-- Add to Cart -->
                 <div class="mt-4 bg-white p-4 rounded-lg shadow-md border-l-4 border-blue-500">
-                    <h2 class="text-lg font-semibold">🛍 Quick Add to Cart</h2>
+                    <h2 class="text-lg font-semibold">Quick Add to Cart</h2>
                     <input type="text" id="searchItem" placeholder="Search product or service" class="mt-2 p-2 w-full border border-gray-300 rounded">
-                    <button class="mt-2 bg-green-500 text-white px-4 py-2 rounded hover:bg-green-700">Add to Cart</button>
+                    <button id="addToCartBtn" class="mt-2 bg-green-500 text-white px-4 py-2 rounded hover:bg-green-700">Add to Cart</button>
+                    <button id="browseMoreBtn" class="mt-2 bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-700">Browse for More</button>
                 </div>
             
                 <!-- Shopping Cart -->
                 <div class="mt-4 bg-white p-4 rounded-lg shadow-md border-l-4 border-orange-500">
-                    <h2 class="text-lg font-semibold">🛒 Shopping Cart</h2>
+                    <h2 class="text-lg font-semibold">Shopping Cart</h2>
                     <table class="w-full mt-2 border-collapse border border-gray-300">
                         <thead>
                             <tr class="bg-gray-200">
@@ -519,48 +520,41 @@
                             </tr>
                         </thead>
                         <tbody id="cartTable">
-                            <tr>
-                                <td class="border border-gray-300 p-2">Dog Grooming</td>
-                                <td class="border border-gray-300 p-2">1</td>
-                                <td class="border border-gray-300 p-2">₱500.00</td>
-                                <td class="border border-gray-300 p-2">
-                                    <button class="bg-yellow-500 text-white px-2 py-1 rounded hover:bg-yellow-700">Edit</button>
-                                    <button class="bg-red-500 text-white px-2 py-1 rounded hover:bg-red-700">Remove</button>
-                                </td>
-                            </tr>
+                            <!-- Cart items will be dynamically inserted here by JavaScript -->
                         </tbody>
                     </table>
                 </div>
             
                 <!-- Billing Section -->
                 <div class="mt-4 bg-white p-4 rounded-lg shadow-md border-l-4 border-purple-500">
-                    <h2 class="text-lg font-semibold">💵 Billing Summary</h2>
-                    <p class="mt-2 text-gray-700">Subtotal: <span class="font-bold">₱500.00</span></p>
-                    <p class="text-gray-700">Discount: <span class="font-bold">₱50.00</span></p>
-                    <p class="text-gray-700">Tax (12%): <span class="font-bold">₱54.00</span></p>
-                    <p class="text-lg font-bold mt-2">Total: <span class="text-green-600">₱504.00</span></p>
+                    <h2 class="text-lg font-semibold">Billing Summary</h2>
+                    <p class="mt-2 text-gray-700">Subtotal: <span class="subtotal-amount font-bold">₱0.00</span></p>
+                    <p class="text-gray-700">Discount: <span class="discount-amount font-bold">₱0.00</span></p>
+                    <p class="text-gray-700">Tax (12%): <span class="tax-amount font-bold">₱0.00</span></p>
+                    <p class="text-lg font-bold mt-2">Total: <span class="total-amount text-green-600">₱0.00</span></p>
                 </div>
             
                 <!-- Payment Options -->
                 <div class="mt-4 bg-white p-4 rounded-lg shadow-md border-l-4 border-teal-500">
-                    <h2 class="text-lg font-semibold">💳 Select Payment Method</h2>
-                    <select class="mt-2 p-2 w-full border border-gray-300 rounded">
-                        <option>Cash</option>
-                        <option>Credit/Debit Card</option>
-                        <option>GCash</option>
+                    <h2 class="text-lg font-semibold">Select Payment Method</h2>
+                    <select id="paymentMethod" class="mt-2 p-2 w-full border border-gray-300 rounded">
+                        <option value="Cash">Cash</option>
+                        <option value="GCash">GCash</option>
+                        <option value="Credit Card">Credit Card</option>
+                        <option value="Other">Other</option>
                     </select>
                 </div>
             
                 <!-- Checkout -->
                 <div class="mt-4 flex gap-2">
-                    <button class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-700">Print Receipt</button>
-                    <button class="bg-gray-500 text-white px-4 py-2 rounded hover:bg-gray-700">Email Receipt</button>
-                    <button class="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-700">Complete Transaction</button>
+                    <button id="printReceiptBtn" class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-700">Print Receipt</button>
+                    <button id="emailReceiptBtn" class="bg-gray-500 text-white px-4 py-2 rounded hover:bg-gray-700">Email Receipt</button>
+                    <button id="completeTransactionBtn" class="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-700">Complete Transaction</button>
                 </div>
             
                 <!-- Transaction History -->
                 <div class="mt-4 bg-white p-4 rounded-lg shadow-md border-l-4 border-indigo-500">
-                    <h2 class="text-lg font-semibold">📜 Transaction History</h2>
+                    <h2 class="text-lg font-semibold">Transaction History</h2>
                     <table class="w-full mt-2 border-collapse border border-gray-300">
                         <thead>
                             <tr class="bg-gray-200">
@@ -571,19 +565,14 @@
                             </tr>
                         </thead>
                         <tbody id="transactionTable">
-                            <tr>
-                                <td class="border border-gray-300 p-2">#20250227</td>
-                                <td class="border border-gray-300 p-2">Feb 27, 2025</td>
-                                <td class="border border-gray-300 p-2">₱504.00</td>
-                                <td class="border border-gray-300 p-2 text-green-600">Completed</td>
-                            </tr>
+                           
                         </tbody>
                     </table>
                 </div>
             
                 <!-- Export Reports -->
                 <div class="mt-4 bg-white p-4 rounded-lg shadow-md border-l-4 border-gray-500">
-                    <h2 class="text-lg font-semibold">📊 Sales Reports</h2>
+                    <h2 class="text-lg font-semibold">Sales Reports</h2>
                     <button class="mt-2 bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-700">Daily Report (CSV)</button>
                     <button class="mt-2 bg-gray-500 text-white px-4 py-2 rounded hover:bg-gray-700">Monthly Report (PDF)</button>
                 </div>
@@ -748,5 +737,7 @@
 
     <script type="module" src="../js/appointments.js"></script>
     <script type="module" src="../js/inventoryManagement.js"></script>
+    <script type="module" src="../js/posManagement.js"></script>
+
 </body>
 </html>

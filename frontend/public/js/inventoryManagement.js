@@ -48,13 +48,13 @@ document.addEventListener('DOMContentLoaded', async () => {
     
         if (error) {
             alert('Failed to add product: ' + error.message);
-            console.error(error);
             return;
         }
     
-        alert('Product added successfully!');
-        addProductForm.reset();
         await loadProducts();
+        window.dispatchEvent(new Event('productAdded')); 
+        showToast('Product added successfully!');
+        addProductForm.reset();
     });
   
     // Debounced Search
@@ -73,6 +73,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         lowStockList.innerHTML = '';
     
         try {
+            // Initial load
             const { data, error } = await supabase
                 .from('products')
                 .select('*')
@@ -87,6 +88,14 @@ document.addEventListener('DOMContentLoaded', async () => {
             products = data || [];
             displayProducts(products);
     
+            // Subscribe to real-time updates
+            supabase
+                .channel('products_changes')
+                .on('postgres_changes', { event: '*', schema: 'public', table: 'products' }, async (payload) => {
+                    await loadProducts(); // Refresh the list on any change
+                })
+                .subscribe();
+    
         } catch (err) {
             console.error('Unexpected error:', err);
             alert('An unexpected error occurred while loading products');
@@ -95,10 +104,10 @@ document.addEventListener('DOMContentLoaded', async () => {
   
     function displayProducts(productsToShow) {
         inventoryTable.innerHTML = '';
-        lowStockList.innerHTML = '';
-    
+        lowStockList.innerHTML = ''; // Clear previous low stock items
+        
         const LOW_STOCK_THRESHOLD = 5;
-    
+        
         if (productsToShow.length === 0) {
             inventoryTable.innerHTML = `
                 <tr>
@@ -108,20 +117,20 @@ document.addEventListener('DOMContentLoaded', async () => {
                 </tr>`;
             return;
         }
-    
+        
         productsToShow.forEach(product => {
-            // Add to low stock list if applicable
+            // Add to low stock list if applicable (but don't show modal)
             if (product.quantity <= LOW_STOCK_THRESHOLD) {
                 const li = document.createElement('li');
                 li.className = 'flex items-center py-1';
                 li.innerHTML = `
                     <span class="w-2 h-2 bg-red-500 rounded-full mr-2"></span>
-                    ${product.name} - Only ${product.quantity} left!
+                    ${product.name} - ${product.quantity} left
                 `;
                 lowStockList.appendChild(li);
             }
-    
-            // Create table row
+            
+            // Create table row (existing code remains)
             const row = document.createElement('tr');
             row.className = 'hover:bg-gray-50';
             row.innerHTML = `
@@ -146,7 +155,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             `;
             inventoryTable.appendChild(row);
         });
-    
+        
         addEditDeleteListeners();
     }
   
