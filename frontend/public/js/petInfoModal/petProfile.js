@@ -2,6 +2,32 @@
 
 import supabase from "../supabaseClient.js";
 
+const breedData = {
+  dog: [
+      "Aspin",
+      "Labrador Retriever",
+      "German Shepherd",
+      "Golden Retriever",
+      "Bulldog",
+      "Beagle",
+      "Poodle",
+      "Rottweiler",
+      "Yorkshire Terrier",
+      "Others"
+  ],
+  cat: [
+      "Puspin",
+      "Siamese",
+      "Persian",
+      "Maine Coon",
+      "Ragdoll",
+      "Bengal",
+      "British Shorthair",
+      "Sphynx",
+      "Scottish Fold"
+  ]
+};
+
 //DOM Elements
 const petTableBody = document.getElementById("pet-table-body");
 const addPetForm = document.getElementById("add-pet-form");
@@ -75,45 +101,82 @@ async function getAppointmentStatus(petId) {
 //Add Pet Form Submit Handler
 if (addPetForm) {
   addPetForm.addEventListener("submit", async (e) => {
-    e.preventDefault();
+      e.preventDefault();
 
-    const userId = await getUser();
-    if (!userId) {
-      alert("No user found!");
-      return;
-    }
+      // Debug: Log all form values
+      const formData = new FormData(addPetForm);
+      for (const [key, value] of formData.entries()) {
+          console.log(`${key}: ${value}`);
+      }
 
-    const petName = document.getElementById("pet-name").value.trim();
-    const species = document.getElementById("species").value.trim();
-    const breed = document.getElementById("breed").value.trim();
-    const weight = document.getElementById("weight").value.trim();
-    const birthDate = document.getElementById("birthdate").value;
+      const userId = await getUser();
+      if (!userId) {
+          alert("No user found!");
+          return;
+      }
 
-    if (!petName || !species || !breed || !weight || !birthDate) {
-      alert("Please fill out all fields.");
-      return;
-    }
+      // Get values
+      const petName = document.getElementById("pet-name").value.trim();
+      const species = document.getElementById("species").value;
+      const breed = document.getElementById("breed").value;
+      const weight = document.getElementById("weight").value;
+      const birthDate = document.getElementById("pets_birthdate").value;
 
-    const { error } = await supabase
-      .from("pets")
-      .insert([{
-        pet_name: petName,
-        species: species,
-        breed: breed,
-        weight: weight,
-        pets_birthdate: birthDate,
-        owner_id: userId,
-      }]);
+      // Validate
+      let isValid = true;
+      const fields = [
+          { id: "pet-name", value: petName },
+          { id: "species", value: species },
+          { id: "breed", value: breed },
+          { id: "weight", value: weight },
+          { id: "pets_birthdate", value: birthDate }
+      ];
 
-    if (error) {
-      console.error("Error adding pet:", error);
-      alert("Failed to add pet.");
-      return;
-    }
+      // Clear previous errors
+      document.querySelectorAll(".border-red-500").forEach(el => {
+          el.classList.remove("border-red-500");
+      });
 
-    alert("Pet added successfully!");
-    addPetForm.reset();
-    loadPets();
+      // Check each field
+      fields.forEach(field => {
+          const isEmpty = field.id === "breed" 
+              ? field.value === ""
+              : !field.value.trim();
+          
+          if (isEmpty) {
+              document.getElementById(field.id).classList.add("border-red-500");
+              isValid = false;
+          }
+      });
+
+      if (!isValid) {
+          alert("Please fill out all required fields.");
+          return;
+      }
+
+      // Submit data
+      try {
+          const { error } = await supabase
+              .from("pets")
+              .insert([{
+                  pet_name: petName,
+                  species: species,
+                  breed: breed,
+                  weight: parseFloat(weight),
+                  pets_birthdate: birthDate,
+                  owner_id: userId,
+              }]);
+
+          if (error) throw error;
+
+          alert("Pet added successfully!");
+          addPetForm.reset();
+          document.getElementById("add-pet-modal").classList.add("hidden");
+          loadPets();
+      } catch (error) {
+          console.error("Error adding pet:", error);
+          alert(`Failed to add pet: ${error.message}`);
+      }
   });
 }
 
@@ -140,13 +203,43 @@ async function getUser() {
   return data.user.id;
 }
 
+function updateBreedOptions() {
+  const speciesSelect = document.getElementById("species");
+  const breedSelect = document.getElementById("breed");
+
+  if (!speciesSelect || !breedSelect) return;
+  
+  const selectedSpecies = speciesSelect.value;
+
+  breedSelect.innerHTML = '<option value ="">Select Breed</option>';
+
+  if (selectedSpecies && breedData[selectedSpecies]){
+    breedData[selectedSpecies].forEach(breed => {
+      const option = document.createElement("option");
+      option.value = breed;
+      option.textContent = breed;
+      breedSelect.appendChild(option);
+    })
+  }
+}
+
 // Initial Load
 document.addEventListener("DOMContentLoaded", () => {
   loadPets();
 
+  // Add species change listener 
+  const speciesSelect = document.getElementById("species");
+  if (speciesSelect) { 
+    speciesSelect.addEventListener("change", updateBreedOptions);
+  }
+
   if (addPetBtn) {
     addPetBtn.addEventListener("click", () => {
-      document.getElementById("add-pet-modal").classList.remove("hidden");
+      const modal = document.getElementById("add-pet-modal");
+      modal.classList.remove("hidden");
+
+      document.getElementById("species").selectedIndex = 0;
+      updateBreedOptions();
     });
   }
 
