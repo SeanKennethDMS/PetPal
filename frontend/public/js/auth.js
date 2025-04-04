@@ -10,7 +10,7 @@ document.addEventListener("DOMContentLoaded", function () {
         return;
     }
 
-    // ✅ Ensure correct role-based access
+    // Ensure correct role-based access
     const currentPage = window.location.pathname;
 
     if (currentPage.includes("admin-dashboard.html") && userRole !== "admin") {

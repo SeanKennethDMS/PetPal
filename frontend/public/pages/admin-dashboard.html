@@ -153,26 +153,57 @@
         <!-- Main Content -->
         <main class="flex-1 p-4 md:p-6 overflow-y-auto">
             <!-- Dashboard -->
-            <section id="dashboard" class="content-section grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
-                <div class="box border-2 border-blue-500 p-6 rounded-lg shadow-md bg-white">
-                    <h2 class="font-bold text-xl flex items-center"><span class="mr-2">📅</span> Upcoming Appointments</h2>
-                    <p class="text-gray-600 mt-2">It goes here.</p>
+            <section id="dashboard" class="content-section grid grid-cols-1 lg:grid-cols-4 gap-4 md:gap-6">
+                <div class="welcome-header mb-8 px-4">
+                    <h1 class="text-xl sm:text-2xl md:text-3xl font-bold text-gray-800">PetPal Scheduler Dashboard</h1>
+                    <p class="text-gray-600 mt-1">Here's what's happening today</p>
                 </div>
-                <div class="box border-2 border-green-500 p-6 rounded-lg shadow-md bg-white">
-                    <h2 class="font-bold text-xl flex items-center"><span class="mr-2">✅</span> Completed Appointments</h2>
-                    <p class="text-gray-600 mt-2">It goes here.</p>
+            
+                <!-- Row 1: Summary Cards -->
+                <div class="lg:col-span-4 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                    <div class="summary-card bg-white p-4 rounded-lg shadow border-l-4 border-blue-500">
+                        <h3 class="font-semibold text-gray-600">Today's Appointments</h3>
+                        <p id="todayAppointments" class="text-2xl font-bold">0</p>
+                        <p id="appointmentsChange" class="text-sm text-green-600">Loading...</p>
+                    </div>
+                    <div class="summary-card bg-white p-4 rounded-lg shadow border-l-4 border-green-500">
+                        <h3 class="font-semibold text-gray-600">Monthly Revenue</h3>
+                        <p id="monthlyRevenue" class="text-2xl font-bold">$0</p>
+                        <p id="revenueChange" class="text-sm text-green-600">Loading...</p>
+                    </div>
+                    <div class="summary-card bg-white p-4 rounded-lg shadow border-l-4 border-yellow-500">
+                        <h3 class="font-semibold text-gray-600">Pending Requests</h3>
+                        <p id="pendingRequests" class="text-2xl font-bold">0</p>
+                        <p class="text-sm">Waiting approval</p>
+                    </div>
+                    <div class="summary-card bg-white p-4 rounded-lg shadow border-l-4 border-red-500">
+                        <h3 class="font-semibold text-gray-600">Low Stock Items</h3>
+                        <p id="lowStockItems" class="text-2xl font-bold">0</p>
+                        <p class="text-sm text-red-600">Needs reorder</p>
+                    </div>
                 </div>
-                <div class="box border-2 border-yellow-500 p-6 rounded-lg shadow-md bg-white">
-                    <h2 class="font-bold text-xl flex items-center"><span class="mr-2">🕒</span> Pending Requests</h2>
-                    <p class="text-gray-600 mt-2">It goes here.</p>
+                
+                <!-- Row 2: Main Content -->
+                <div class="lg:col-span-3 bg-white p-6 rounded-lg shadow">
+                    <div id="appointments-container" class="max-h-[calc(100vh-200px)] overflow-y-auto">
+                        <!-- Appointments will be rendered here -->
+                    </div>
                 </div>
-                <div class="box border-2 border-red-500 p-6 rounded-lg shadow-md bg-white">
-                    <h2 class="font-bold text-xl flex items-center"><span class="mr-2">⚠️</span> Low Stock Items</h2>
-                    <p class="text-gray-600 mt-2">It goes here.</p>
-                </div>
-                <div class="box border-2 border-purple-500 p-6 rounded-lg shadow-md bg-white">
-                    <h2 class="font-bold text-xl flex items-center"><span class="mr-2">💰</span> Monthly Revenue</h2>
-                    <p class="text-gray-600 mt-2">It goes here.</p>
+                
+                <div class="lg:col-span-1 space-y-4">
+                    <div class="bg-white p-4 rounded-lg shadow">
+                        <h3 class="font-bold mb-2">⚠️ Critical Alerts</h3>
+                        <div id="critical-alerts" class="space-y-2">
+                            <!-- Dynamic alerts will appear here -->
+                        </div>
+                    </div>
+                    
+                    <div class="bg-white p-4 rounded-lg shadow">
+                        <h3 class="font-bold mb-2">📊 Quick Stats</h3>
+                        <div id="quick-stats" class="grid grid-cols-2 gap-2">
+                            <!-- Stats will be rendered here -->
+                        </div>
+                    </div>
                 </div>
             </section>
 
@@ -738,6 +769,9 @@
     <script type="module" src="../js/appointments.js"></script>
     <script type="module" src="../js/inventoryManagement.js"></script>
     <script type="module" src="../js/posManagement.js"></script>
+
+    <script type="module" src="../js/adminDashboard.js"></script>
+    <script type="module" src="../js/dashboardStats.js"></script>
 
 </body>
 </html>

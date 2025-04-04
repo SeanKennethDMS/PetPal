@@ -269,7 +269,7 @@ async function loadNotificationHistory(userId, role) {
   let query = supabase
     .from('notifications')
     .select('*')
-    .order('created_at', { ascending: false })
+    .order('created_at', { ascending: true })
     .limit(50);
 
   if (role === 'customer') {
