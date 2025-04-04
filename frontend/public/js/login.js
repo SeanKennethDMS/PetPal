@@ -4,7 +4,7 @@ import supabase from "./supabaseClient.js";
 const loginBtn = document.querySelector(".loginBtn");
 loginBtn.addEventListener("click", async function (event) {
     event.preventDefault(); 
-    console.log("Login button clicked!");  // ✅ Check if this appears
+    console.log("Login button clicked!");  //Check if this appears
 
     const email = document.getElementById("login-email")?.value.trim();
     const password = document.getElementById("login-password")?.value.trim();
@@ -33,7 +33,7 @@ loginBtn.addEventListener("click", async function (event) {
 
     alert("Login successful!");
 
-    // 🛠 Fix: Ensure `userData` is correctly retrieved
+    // Fix: Ensure `userData` is correctly retrieved
     const { data: userData, error: userError } = await supabase
         .from("users_table")
         .select("role")
@@ -46,7 +46,7 @@ loginBtn.addEventListener("click", async function (event) {
         return;
     }
 
-    // ✅ Save user role in local storage
+    // Save user role in local storage
     localStorage.setItem("userSession", JSON.stringify(data.user));
     localStorage.setItem("userRole", userData.role);  
 

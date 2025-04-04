@@ -82,35 +82,41 @@
             <p>Create an account.</p>
     
             <div class="sign-up-form">
-                <!-- Personal Information Section -->
-                <h4 class="section-title">PERSONAL INFORMATION</h4>
-            
-                <label for="lastname">Last Name</label>
-                <input type="text" id="last_name" placeholder="Last Name" required>
-            
-                <label for="firstname">First Name</label>
-                <input type="text" id="first_name" placeholder="First Name" required>
-            
-                <br><br> <!-- Space -->
-            
-                <!-- Account Section -->
-                <h4 class="section-title">ACCOUNT</h4>
-            
-                <label for="email">Email</label>
-                <p class="text-sm text-gray-500">Use an exsiting gmail.</p>
-                <input type="email" id="sign-up-email" placeholder="Enter your email" required>
-            
-                <label for="password">Password</label>
-                <div class="password-field">
-                    <input type="password" id="sign-up-password" placeholder="Password" required>
-                </div>
+                <form id="signupForm">
+                    <!-- Personal Information Section -->
+                    <h4 class="section-title">PERSONAL INFORMATION</h4>
+                
+                    <label for="lastname">Last Name</label>
+                    <input type="text" id="last_name" placeholder="Last Name" required>
+                
+                    <label for="firstname">First Name</label>
+                    <input type="text" id="first_name" placeholder="First Name" required>
+                
+                    <br><br> <!-- Space -->
+                
+                    <!-- Account Section -->
+                    <h4 class="section-title">ACCOUNT</h4>
+                
+                    <label for="email">Email</label>
+                    <p class="text-sm text-gray-500">Use an exsiting gmail.</p>
+                    <input type="email" id="sign-up-email" placeholder="Enter your email" required>
+                
+                    <label for="password">Password</label>
+                    <div class="password-field">
+                        <input type="password" id="sign-up-password" placeholder="Password" required>
+                    </div>
 
-                <p style="text-align: center; margin-top: 10px;">
-                    Already made an account?
-                    <a href="#" style="color: #007bff; text-decoration: none;" id="openLoginFromSignup">Log in here.</a>
-                </p>
-            
-                <button type="button" id="signupBtn">Sign Up</button>
+                    <div id="signup-error-container"></div>
+
+                    <p style="text-align: center; margin-top: 10px;">
+                        Already made an account?
+                        <a href="#" style="color: #007bff; text-decoration: none;" id="openLoginFromSignup">Log in here.</a>
+                    </p>
+
+                    
+                
+                    <button type="submit" id="signupBtn">Sign Up</button>
+                </form>
             </div>
         </div>
     </div>
