@@ -394,6 +394,30 @@
                             </button>
                         </div>
                     </div>
+
+                    <!-- Other Services -->
+                    <div 
+                        id="special-card"
+                        class="relative w-full md:w-64 h-64 md:h-96 overflow-hidden rounded-lg shadow-lg transition-all duration-500 ease-in-out cursor-pointer"
+                        onclick="expandService('special')"
+                    >
+                         <img src="./assets/service4.jpg" alt="Special Service" class="w-full h-full object-cover transition-transform duration-300 hover:scale-105">
+                            <div class="text-center absolute bottom-5 left-1/2 transform -translate-x-1/2 text-white font-bold text-lg md:text-xl px-4 py-2 rounded">
+                                Special Services
+                            </div>
+                        
+                        <div id="special-content" class="absolute inset-0 bg-blue-600 bg-opacity-90 p-6 text-white opacity-0 invisible transition-all duration-300">
+                            <div class="flex justify-between items-start">
+                                <h3 class="text-2xl font-bold mb-4">Special Services</h3>
+                            </div>
+                            <ul class="space-y-3">
+                                <li>• Pet Cremation</li>
+                            </ul>
+                            <button class="bookNowBtn mt-6 bg-white text-blue-600 px-6 py-2 rounded-lg font-semibold hover:bg-gray-100 transition">
+                                Book Now
+                            </button>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
@@ -510,7 +534,7 @@
                     <div class="w-24 h-24 bg-yellow-500 rounded-full flex items-center justify-center text-xl font-bold text-white">DA</div>
                     <h4 class="mt-4 text-lg font-semibold text-gray-800">Cabanela, Denisse Andrea</h4>
                     <p class="text-sm text-gray-600">Data Analyst</p>
-                    <p class="text-xs mt-2 text-gray-500">Handled data accuracy, structure, and secure database planning.</p>
+                    <p class="text-xs mt-2 text-gray-500">Handled data, structure, and secure database planning.</p>
                 </div>
             
                 <!-- Member 4 -->
@@ -518,7 +542,7 @@
                     <div class="w-24 h-24 bg-red-500 rounded-full flex items-center justify-center text-xl font-bold text-white">QA</div>
                     <h4 class="mt-4 text-lg font-semibold text-gray-800">Dalida, Jasmin</h4>
                     <p class="text-sm text-gray-600">Quality Assurance</p>
-                    <p class="text-xs mt-2 text-gray-500">Tested features, fixed bugs, and ensured a smooth user experience.</p>
+                    <p class="text-xs mt-2 text-gray-500">Tested features and ensured a smooth user experience.</p>
                 </div>
             </div>
 
@@ -575,75 +599,82 @@
         <div class="container mx-auto text-center px-4">
         <!-- Section Title -->
         <h2 class="text-3xl font-bold text-gray-800 mb-4">Book Your Appointment</h2>
-    
         <p class="text-lg text-gray-700 mb-8">Easily book your pet’s grooming or veterinary check-up with us. Fill out the form, and we'll confirm your appointment right away!</p>
     
-        <div class="bg-white p-6 rounded-lg shadow-lg max-w-3xl mx-auto">
-            <form action="#">
-            <div class="mb-4">
-                <label for="petName" class="block text-gray-600 font-medium">Pet Name</label>
-                <input type="text" id="petName" name="petName" class="mt-2 p-2 w-full border rounded-md" placeholder="Enter pet's name" required>
-            </div>
-    
-            <div class="mb-4">
-                <label for="serviceType" class="block text-gray-600 font-medium">Select Service</label>
-                <select id="serviceType" name="serviceType" class="mt-2 p-2 w-full border rounded-md">
-                    <option value="">Default</option>
-                    <option value="">Grooming</option>
-                    <option value="">Vet Check-up</option>
-                    <option value="">Other</option>
-                </select>
+            <div class="bg-white p-6 rounded-lg shadow-lg max-w-3xl mx-auto">
+                <form action="#">
+                <div class="mb-4">
+                    <label for="petName" class="block text-gray-600 font-medium">Pet Name</label>
+                    <input type="text" id="petName" name="petName" class="mt-2 p-2 w-full border rounded-md" placeholder="Enter pet's name" required>
+                </div>
+        
+                <div class="mb-4">
+                    <label for="serviceType" class="block text-gray-600 font-medium">Select Service</label>
+                    <select id="serviceType" name="serviceType" class="mt-2 p-2 w-full border rounded-md">
+                        <option value="">Default</option>
+                        <option value="">Grooming</option>
+                        <option value="">Vet Check-up</option>
+                        <option value="">Other</option>
+                    </select>
 
-                <label for="subServiceType" class="block text-gray-600 font-medium">Select Sub Service</label>
-                <select id="subServiceType" name="subServiceType" class="mt-2 p-2 w-full border rounded-md">
-                    <option value="">Default</option>
-                    <option value="">SubCategory 1</option>
-                    <option value="">SubCategory 2</option>
-                    <option value="">SubCategory 3</option>
-                </select>
-            </div>
-    
-            <div class="mb-4 md:flex md:space-x-4">
-                <div class="w-full md:w-1/2">
-                <label for="date" class="block text-gray-600 font-medium">Select Date</label>
-                <input type="date" id="date" name="date" class="mt-2 p-2 w-full border rounded-md" required>
+                    <label for="subServiceType" class="block text-gray-600 font-medium">Select Sub Service</label>
+                    <select id="subServiceType" name="subServiceType" class="mt-2 p-2 w-full border rounded-md">
+                        <option value="">Default</option>
+                        <option value="">SubCategory 1</option>
+                        <option value="">SubCategory 2</option>
+                        <option value="">SubCategory 3</option>
+                    </select>
                 </div>
-                <div class="w-full md:w-1/2">
-                <label for="time" class="block text-gray-600 font-medium">Select Time</label>
-                <input type="time" id="time" name="time" class="mt-2 p-2 w-full border rounded-md" required>
+        
+                <div class="mb-4 md:flex md:space-x-4">
+                    <div class="w-full md:w-1/2">
+                    <label for="date" class="block text-gray-600 font-medium">Select Date</label>
+                    <input type="date" id="date" name="date" class="mt-2 p-2 w-full border rounded-md" required>
+                    </div>
+                    <div class="w-full md:w-1/2">
+                    <label for="time" class="block text-gray-600 font-medium">Select Time</label>
+                    <input type="time" id="time" name="time" class="mt-2 p-2 w-full border rounded-md" required>
+                    </div>
                 </div>
-            </div>
-    
-            <div class="mb-4">
-                <label for="petAge" class="block text-gray-600 font-medium">Pet Age</label>
-                <input type="number" id="petAge" name="petAge" class="mt-2 p-2 w-full border rounded-md" placeholder="Enter pet's age in years" required>
-            </div>
-    
-            <div class="mb-4">
-                <label for="specialRequests" class="block text-gray-600 font-medium">Special Requests</label>
-                <textarea id="specialRequests" name="specialRequests" rows="3" class="mt-2 p-2 w-full border rounded-md" placeholder="Any special requests?"></textarea>
-            </div>
-    
-            <div class="mb-4 md:flex md:space-x-4">
-                <div class="w-full md:w-1/2">
-                <label for="email" class="block text-gray-600 font-medium">Email</label>
-                <input type="email" id="email" name="email" class="mt-2 p-2 w-full border rounded-md" placeholder="Enter your email">
+        
+                <div class="mb-4">
+                    <label for="petAge" class="block text-gray-600 font-medium">Pet Age</label>
+                    <input type="number" id="petAge" name="petAge" class="mt-2 p-2 w-full border rounded-md" placeholder="Enter pet's age in years" required>
                 </div>
-                <div class="w-full md:w-1/2">
-                <label for="phone" class="block text-gray-600 font-medium">Phone</label>
-                <input type="tel" id="phone" name="phone" class="mt-2 p-2 w-full border rounded-md" placeholder="Enter your phone number">
+        
+                <div class="mb-4">
+                    <label for="specialRequests" class="block text-gray-600 font-medium">Special Requests</label>
+                    <textarea id="specialRequests" name="specialRequests" rows="3" class="mt-2 p-2 w-full border rounded-md" placeholder="Any special requests?"></textarea>
                 </div>
+        
+                <div class="mb-4 md:flex md:space-x-4">
+                    <div class="w-full md:w-1/2">
+                    <label for="email" class="block text-gray-600 font-medium">Email</label>
+                    <input type="email" id="email" name="email" class="mt-2 p-2 w-full border rounded-md" placeholder="Enter your email">
+                    </div>
+                    <div class="w-full md:w-1/2">
+                    <label for="phone" class="block text-gray-600 font-medium">Phone</label>
+                    <input type="tel" id="phone" name="phone" class="mt-2 p-2 w-full border rounded-md" placeholder="Enter your phone number">
+                    </div>
+                </div>
+        
+                <button type="submit" class="w-full py-3 bg-blue-600 text-white rounded-md mt-4 hover:bg-blue-700">
+                    Confirm Appointment
+                </button>
+                </form>
             </div>
-    
-            <button type="submit" class="w-full py-3 bg-blue-600 text-white rounded-md mt-4 hover:bg-blue-700">
-                Confirm Appointment
-            </button>
-            </form>
         </div>
-        </div>
+
+        
+
     </section>
-  
 
+    <footer class="bg-[#36454F] py-12">
+        <div class="container mx-auto text-center text-white">
+          <p>© 2025 PetPal Scheduler. All rights reserved.</p>
+        </div>
+    </footer>
+    
      <!-- Script Supabase -->
      <script type="module" src="./js/signUp.js"></script>
      <script type="module" src="./js/login.js"></script>
