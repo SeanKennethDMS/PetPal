@@ -1,36 +1,32 @@
 'use strict';
 
-// === DOM CONTENT LOADED ===
 document.addEventListener("DOMContentLoaded", () => {
 
-  // === OPEN MODAL BUTTONS ===
   const openLoginBtn = document.getElementById("openLoginBtn");
-  const bookNowBtn = document.getElementById("bookNowBtn");
+  const bookNowBtns = document.querySelectorAll(".bookNowBtn");
   const openLoginFromSignup = document.getElementById("openLoginFromSignup");
   const openSignupFromLogin = document.getElementById("openSignupFromLogin");
 
-  // === CLOSE MODAL BUTTONS ===
   const closeSignupModalBtn = document.getElementById("closeSignupModalBtn");
   const closeLoginModalBtn = document.getElementById("closeLoginModalBtn");
 
-  // === REMEMBER ME ===
   loadRememberMe();
 
-  // === PASSWORD VISIBILITY TOGGLE ===
   const togglePassword = document.getElementById("togglePassword");
   togglePassword?.addEventListener("click", togglePasswordVisibility);
 
-  // === OPEN MODALS ===
   openLoginBtn?.addEventListener("click", () => openModal("loginModal"));
-  bookNowBtn?.addEventListener("click", () => openModal("loginModal"));
+  
+  bookNowBtns.forEach((btn) => {
+    btn.addEventListener('click', () => openModal("loginModal"));
+  });
+
   openLoginFromSignup?.addEventListener("click", () => openModal("loginModal"));
   openSignupFromLogin?.addEventListener("click", () => openModal("signupModal"));
 
-  // === CLOSE MODALS ===
   closeSignupModalBtn?.addEventListener("click", () => closeModal("signupModal"));
   closeLoginModalBtn?.addEventListener("click", () => closeModal("loginModal"));
 
-  // === CLOSE MODALS ON OUTSIDE CLICK ===
   window.addEventListener("click", (event) => {
     document.querySelectorAll(".modal").forEach((modal) => {
       if (event.target === modal) {
@@ -39,21 +35,16 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   });
 
-  // === CLOSE MODALS ON ESC KEY ===
   window.addEventListener("keydown", (event) => {
     if (event.key === "Escape") {
       closeAllModals();
     }
   });
 
-  // === REMEMBER ME CHECKBOX ===
   const rememberMeCheckbox = document.getElementById("rememberMe");
   rememberMeCheckbox?.addEventListener("change", handleRememberMe);
 });
 
-// ============================================
-// MODAL CONTROLS
-// ============================================
 function openModal(modalId) {
   closeAllModals();
   const modal = document.getElementById(modalId);
@@ -97,9 +88,6 @@ function resetModal(modalId) {
   }
 }
 
-// ============================================
-// REMEMBER ME LOGIC
-// ============================================
 function handleRememberMe() {
   const rememberMe = document.getElementById("rememberMe").checked;
   const email = document.getElementById("login-email").value;
@@ -128,9 +116,6 @@ function loadRememberMe() {
   }
 }
 
-// ============================================
-// PASSWORD VISIBILITY TOGGLE
-// ============================================
 function togglePasswordVisibility() {
   const passwordInput = document.getElementById("login-password");
   const toggleSpan = document.getElementById("togglePassword");

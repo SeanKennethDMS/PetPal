@@ -7,6 +7,7 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="icon" type="image/png" href="./assets/1-removebg-preview.png">
     <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@400;700&display=swap" rel="stylesheet">
+
 </head>
 <body class="scroll-smooth font-sans" style="font-family: 'Bricolage Grotesque', Arial, sans-serif;">
 
@@ -43,7 +44,7 @@
                     Hassle booking of appointment onsite?<br>
                     Skip the line with <strong>PetPal</strong> now!
                 </p>
-                <button id="bookNowBtn" class="bg-white text-blue-500 w-full md:w-48 py-3 md:py-4 rounded-lg font-semibold shadow-lg text-lg hover:bg-gray-200 transition duration-300">
+                <button class="bookNowBtn bg-white text-blue-500 w-full md:w-48 py-3 md:py-4 rounded-lg font-semibold shadow-lg text-lg hover:bg-gray-200 transition duration-300">
                     Let's Get Started
                 </button>
             </div>
@@ -295,29 +296,186 @@
     </style>
 
     <!-- Services Section -->
-    <section id="services-index" class="flex flex-col justify-center items-center h-screen bg-gray-200 px-4 md:px-10 py-16 md:py-0">
+    <section id="services-index" class="flex flex-col justify-center items-center min-h-screen bg-gray-200 px-4 md:px-10 py-16">
         <h2 class="text-3xl md:text-5xl font-bold text-gray-800">Our Services</h2>
-        <div class="flex flex-col md:flex-row gap-8 md:gap-16 mt-8 md:mt-10">
-            <div class="relative w-full md:w-64 h-64 md:h-96 overflow-hidden rounded-lg shadow-lg">
-                <img src="./assets/service1.jpg" alt="Grooming Service" class="w-full h-full object-cover transition-transform duration-300 hover:scale-105">
-                <div class="absolute bottom-5 left-1/2 transform -translate-x-1/2 text-white font-bold text-lg md:text-xl bg-black bg-opacity-50 px-4 py-2 rounded">
-                    Grooming
-                </div>
-            </div>
-            <div class="relative w-full md:w-64 h-64 md:h-96 overflow-hidden rounded-lg shadow-lg">
-                <img src="./assets/service2.jpg" alt="Veterinary Check-up" class="w-full h-full object-cover transition-transform duration-300 hover:scale-105">
-                <div class="absolute bottom-5 left-1/2 transform -translate-x-1/2 text-white font-bold text-lg md:text-xl bg-black bg-opacity-50 px-4 py-2 rounded">
-                    Veterinary Check-up
-                </div>
-            </div>
-            <div class="relative w-full md:w-64 h-64 md:h-96 overflow-hidden rounded-lg shadow-lg">
-                <img src="./assets/service3.jpg" alt="Pet Training" class="w-full h-full object-cover transition-transform duration-300 hover:scale-105">
-                <div class="absolute bottom-5 left-1/2 transform -translate-x-1/2 text-white font-bold text-lg md:text-xl bg-black bg-opacity-50 px-4 py-2 rounded">
-                    Pet Training Also
+        <p class="text-base md:text-lg mt-4 md:mt-6 text-center max-w-2xl text-gray-700 px-4 md:px-0">
+            Discover our comprehensive pet care services designed to keep your furry friends happy, healthy, and looking their best.
+        </p>
+        
+        <!-- Services Container -->
+        <div class="w-full flex justify-center">
+            <div class="flex flex-wrap justify-center gap-8 md:gap-16 max-w-6xl">
+                <div class="flex flex-col md:flex-row gap-8 md:gap-16 mt-8 md:mt-10 w-full max-w-6xl">
+                    <!-- Grooming Service -->
+                    <div 
+                        id="grooming-card"
+                        class="relative w-full md:w-64 h-64 md:h-96 overflow-hidden rounded-lg shadow-lg transition-all duration-500 ease-in-out cursor-pointer"
+                        onclick="expandService('grooming')"
+                    >
+                        <img src="./assets/service1.jpg" alt="Grooming Service" class="w-full h-full object-cover transition-transform duration-300 hover:scale-105">
+                        <div class="text-center absolute bottom-5 left-1/2 transform -translate-x-1/2 text-white font-bold text-lg md:text-xl px-4 py-2 rounded">
+                            Grooming Services
+                        </div>
+                        
+                        <!-- Expanded Content (Hidden by default) -->
+                        <div id="grooming-content" class="absolute inset-0 bg-blue-600 bg-opacity-90 p-6 text-white opacity-0 invisible transition-all duration-300">
+                            <div class="flex justify-between items-start">
+                                <h3 class="text-2xl font-bold mb-4">Grooming Services</h3>
+                            </div>
+                            <ul class="space-y-3">
+                                <li>• Basic Bath & Brush</li>
+                                <li>• Full Grooming Package</li>
+                                <li>• Haircut & Styling</li>
+                                <li>• Nail Trimming</li>
+                                <li>• Ear Cleaning</li>
+                            </ul>
+                            <button class="bookNowBtn mt-6 bg-white text-blue-600 px-6 py-2 rounded-lg font-semibold hover:bg-gray-100 transition">
+                                Book Now
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <!-- Pet Vaccination -->
+                    <div 
+                        id="vaccination-card"
+                        class="relative w-full md:w-64 h-64 md:h-96 overflow-hidden rounded-lg shadow-lg transition-all duration-500 ease-in-out cursor-pointer"
+                        onclick="expandService('vaccination')"
+                    >
+                        <img src="./assets/service2.jpg" alt="Vaccination Service" class="w-full h-full object-cover transition-transform duration-300 hover:scale-105">
+                            <div class="text-center absolute bottom-5 left-1/2 transform -translate-x-1/2 text-white font-bold text-lg md:text-xl px-4 py-2 rounded">
+                                Vaccination Services
+                            </div>
+                        
+                        <div id="vaccination-content" class="absolute inset-0 bg-blue-600 bg-opacity-90 p-6 text-white opacity-0 invisible transition-all duration-300">
+                            <div class="flex justify-between items-start">
+                                <h3 class="text-2xl font-bold mb-4">Vaccination Services</h3>
+                            </div>
+                            <ul class="space-y-3">
+                                <li>• Deworming</li>
+                                <li>• 4 in 1 Vaccine for Cats</li>
+                                <li>• 5 in 1 Vaccine</li>
+                                <li>• 8 in 1 Vaccine</li>
+                                <li>• Anti-Rabbies</li>
+                                <li>• Kennel Cough Vaccine</li>
+                            </ul>
+                            <button class="bookNowBtn mt-6 bg-white text-blue-600 px-6 py-2 rounded-lg font-semibold hover:bg-gray-100 transition">
+                                Book Now
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <!-- Single Services -->
+                    <div 
+                        id="single-card"
+                        class="relative w-full md:w-64 h-64 md:h-96 overflow-hidden rounded-lg shadow-lg transition-all duration-500 ease-in-out cursor-pointer"
+                        onclick="expandService('single')"
+                    >
+                         <img src="./assets/service3.jpg" alt="Single Service" class="w-full h-full object-cover transition-transform duration-300 hover:scale-105">
+                            <div class="text-center absolute bottom-5 left-1/2 transform -translate-x-1/2 text-white font-bold text-lg md:text-xl px-4 py-2 rounded">
+                                Single Services
+                            </div>
+                        
+                        <div id="single-content" class="absolute inset-0 bg-blue-600 bg-opacity-90 p-6 text-white opacity-0 invisible transition-all duration-300">
+                            <div class="flex justify-between items-start">
+                                <h3 class="text-2xl font-bold mb-4">Single Services</h3>
+                            </div>
+                            <ul class="space-y-3">
+                                <li>• Bath</li>
+                                <li>• Ear Cleaning</li>
+                                <li>• Face Trimming</li>
+                                <li>• Nail Trimming</li>
+                                <li>• Paws Trimming</li>
+                                <li>• Poodle Feet</li>
+                                <li>• Private Part Shaving</li>
+                                <li>• Anal Sac Draining</li>
+                            </ul>
+                            <button class="bookNowBtn mt-6 bg-white text-blue-600 px-6 py-2 rounded-lg font-semibold hover:bg-gray-100 transition">
+                                Book Now
+                            </button>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
+        
     </section>
+    
+    <script>
+        document.addEventListener("click", collapseAll); 
+
+    function expandService(service) {
+        event.stopPropagation(); 
+        collapseAll();
+
+        const card = document.getElementById(`${service}-card`);
+        const content = document.getElementById(`${service}-content`);
+
+        if (card && content) {
+            const isMobile = window.innerWidth < 768;
+
+            if (isMobile) {
+                card.classList.add('w-full');
+            } else {
+                card.classList.remove('md:w-64');
+                card.classList.add('md:w-[800px]');
+            }
+
+            content.classList.remove('opacity-0', 'invisible');
+            content.classList.add('opacity-100', 'visible');
+        }
+    }
+
+    function collapseAll(event) {
+        const allCards = document.querySelectorAll('[id$="-card"]');
+        const allContents = document.querySelectorAll('[id$="-content"], [id$="-service-content"]');
+
+        allCards.forEach(card => {
+            card.classList.remove('md:w-[800px]', 'w-full');
+            card.classList.add('md:w-64');
+        });
+
+        allContents.forEach(content => {
+            content.classList.add('opacity-0', 'invisible');
+            content.classList.remove('opacity-100', 'visible');
+        });
+    }
+    </script>
+    
+    <style>
+        [id$="-card"] {
+            transition: width 0.5s, height 0.5s, transform 0.5s;
+            transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        [id$="-content"] {
+            transition: opacity 0.3s ease, visibility 0.3s ease;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+
+        /* Make service lists wrap after 5 items into 2 columns */
+        [id$="-content"] ul {
+            column-count: 1;
+        }
+
+        @media (min-width: 768px) {
+            [id$="-content"] ul {
+                column-count: 2;
+                column-gap: 1.5rem;
+            }
+        }
+
+        [id$="-content"] ul li {
+            break-inside: avoid;
+        }
+
+        [id$="-content"] button {
+            align-self: center;
+            margin-top: auto;
+        }
+    </style>
 
     <!-- About Section -->
     <section id="about-index" class="flex flex-col justify-center items-center h-screen bg-gray-300 px-4 md:px-10 py-16 md:py-0">
