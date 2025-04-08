@@ -491,7 +491,7 @@
             <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-6 mt-6 w-full max-w-6xl mx-auto">
                 <!-- Member 1 -->
                 <div class="bg-white rounded-2xl shadow-lg p-4 flex flex-col items-center text-center">
-                    <div class="w-24 h-24 bg-blue-500 rounded-full flex items-center justify-center text-xl font-bold text-white">PM</div>
+                    <div class="w-24 h-24 bg-[#FF69B4] rounded-full flex items-center justify-center text-xl font-bold text-white">PM</div>
                     <h4 class="mt-4 text-lg font-semibold text-gray-800">Nivera, Princess Althea</h4>
                     <p class="text-sm text-gray-600">Project Manager</p>
                     <p class="text-xs mt-2 text-gray-500">Managed timelines, goals, and collaboration with Deloso Vet.</p>
@@ -499,7 +499,7 @@
             
                 <!-- Member 2 -->
                 <div class="bg-white rounded-2xl shadow-lg p-4 flex flex-col items-center text-center">
-                    <div class="w-24 h-24 bg-green-500 rounded-full flex items-center justify-center text-xl font-bold text-white">LP</div>
+                    <div class="w-24 h-24 bg-blue-500 rounded-full flex items-center justify-center text-xl font-bold text-white">LP</div>
                     <h4 class="mt-4 text-lg font-semibold text-gray-800">Damasco, Sean Kenneth</h4>
                     <p class="text-sm text-gray-600">Lead Programmer</p>
                     <p class="text-xs mt-2 text-gray-500">Built and maintained the system's functionality and user experience.</p>
@@ -571,12 +571,78 @@
   
 
     <!-- Booking Section -->
-    <section id="book-index" class="flex flex-col justify-center items-center h-screen bg-gray-400 px-4 md:px-10 py-16 md:py-0">
-        <h2 class="text-3xl md:text-5xl font-bold text-gray-800">Book an Appointment</h2>
-        <p class="text-base md:text-lg mt-4 md:mt-6 text-center max-w-2xl text-gray-700 px-4 md:px-0">
-            Schedule your pet's next appointment with ease.
-        </p>
+    <section id="book-index" class="bg-gray-200 py-16">
+        <div class="container mx-auto text-center px-4">
+        <!-- Section Title -->
+        <h2 class="text-3xl font-bold text-gray-800 mb-4">Book Your Appointment</h2>
+    
+        <p class="text-lg text-gray-700 mb-8">Easily book your pet’s grooming or veterinary check-up with us. Fill out the form, and we'll confirm your appointment right away!</p>
+    
+        <div class="bg-white p-6 rounded-lg shadow-lg max-w-3xl mx-auto">
+            <form action="#">
+            <div class="mb-4">
+                <label for="petName" class="block text-gray-600 font-medium">Pet Name</label>
+                <input type="text" id="petName" name="petName" class="mt-2 p-2 w-full border rounded-md" placeholder="Enter pet's name" required>
+            </div>
+    
+            <div class="mb-4">
+                <label for="serviceType" class="block text-gray-600 font-medium">Select Service</label>
+                <select id="serviceType" name="serviceType" class="mt-2 p-2 w-full border rounded-md">
+                    <option value="">Default</option>
+                    <option value="">Grooming</option>
+                    <option value="">Vet Check-up</option>
+                    <option value="">Other</option>
+                </select>
+
+                <label for="subServiceType" class="block text-gray-600 font-medium">Select Sub Service</label>
+                <select id="subServiceType" name="subServiceType" class="mt-2 p-2 w-full border rounded-md">
+                    <option value="">Default</option>
+                    <option value="">SubCategory 1</option>
+                    <option value="">SubCategory 2</option>
+                    <option value="">SubCategory 3</option>
+                </select>
+            </div>
+    
+            <div class="mb-4 md:flex md:space-x-4">
+                <div class="w-full md:w-1/2">
+                <label for="date" class="block text-gray-600 font-medium">Select Date</label>
+                <input type="date" id="date" name="date" class="mt-2 p-2 w-full border rounded-md" required>
+                </div>
+                <div class="w-full md:w-1/2">
+                <label for="time" class="block text-gray-600 font-medium">Select Time</label>
+                <input type="time" id="time" name="time" class="mt-2 p-2 w-full border rounded-md" required>
+                </div>
+            </div>
+    
+            <div class="mb-4">
+                <label for="petAge" class="block text-gray-600 font-medium">Pet Age</label>
+                <input type="number" id="petAge" name="petAge" class="mt-2 p-2 w-full border rounded-md" placeholder="Enter pet's age in years" required>
+            </div>
+    
+            <div class="mb-4">
+                <label for="specialRequests" class="block text-gray-600 font-medium">Special Requests</label>
+                <textarea id="specialRequests" name="specialRequests" rows="3" class="mt-2 p-2 w-full border rounded-md" placeholder="Any special requests?"></textarea>
+            </div>
+    
+            <div class="mb-4 md:flex md:space-x-4">
+                <div class="w-full md:w-1/2">
+                <label for="email" class="block text-gray-600 font-medium">Email</label>
+                <input type="email" id="email" name="email" class="mt-2 p-2 w-full border rounded-md" placeholder="Enter your email">
+                </div>
+                <div class="w-full md:w-1/2">
+                <label for="phone" class="block text-gray-600 font-medium">Phone</label>
+                <input type="tel" id="phone" name="phone" class="mt-2 p-2 w-full border rounded-md" placeholder="Enter your phone number">
+                </div>
+            </div>
+    
+            <button type="submit" class="w-full py-3 bg-blue-600 text-white rounded-md mt-4 hover:bg-blue-700">
+                Confirm Appointment
+            </button>
+            </form>
+        </div>
+        </div>
     </section>
+  
 
      <!-- Script Supabase -->
      <script type="module" src="./js/signUp.js"></script>
