@@ -41,7 +41,7 @@ function checkEditLock() {
 
 async function loadAddressData() {
     try {
-        const response = await fetch('../../../frontend/public/js/data/philippines-addresses.json');
+        const response = await fetch('/js/data/philippine-addresses.json');
         if (!response.ok) throw new Error('Failed to load address data');
         phAddresses = await response.json();
     } catch (error) {
