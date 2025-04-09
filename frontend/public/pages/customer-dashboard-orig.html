@@ -305,26 +305,26 @@
                 <!-- Box container -->
                 <div class="box border-2 border-blue-400 p-6 rounded-lg shadow-md bg-white">
                     <div class="flex flex-col md:flex-row space-y-6 md:space-y-0 md:space-x-6">
-                
-                        <!-- Accepted Appointments -->
-                        <div id="accepted-appointments" class="flex-1 p-4 bg-green-100 rounded-lg border-2 border-green-500 shadow-md flex flex-col space-y-4 max-h-[500px] overflow-y-auto">
-                        <h2 class="font-bold text-xl flex items-center text-green-600">Accepted Appointments</h2>
-                            <div id="accepted-details" class="overflow-y-auto max-h-64 space-y-3 pr-2">
-                                <p class="text-gray-500 italic">No accepted appointments.</p>
-                            </div>
-                        </div>
-                
+                    
                         <!-- Pending Appointments -->
-                        <div id="pending-appointment" class="flex-1 p-4 bg-yellow-100 rounded-lg border-2 border-yellow-500 shadow-md flex flex-col space-y-4 max-h-[500px] overflow-y-auto">
-                        <h2 class="font-bold text-xl flex items-center text-yellow-600">Pending Appointments</h2>
+                        <div id="pending-appointment" class="flex-1 p-4 bg-yellow-100 rounded-lg border-2 border-yellow-500 shadow-md flex flex-col space-y-4 min-h-[400px] overflow-y-auto">
+                            <h2 class="font-bold text-xl flex items-center text-yellow-600">Pending Appointments</h2>
                             <div id="appointment-details" class="overflow-y-auto max-h-64 space-y-3 pr-2">
                                 <p class="text-gray-500 italic">No pending appointments.</p>
                             </div>
                         </div>
                 
+                        <!-- Accepted Appointments -->
+                        <div id="accepted-appointments" class="flex-1 p-4 bg-green-100 rounded-lg border-2 border-green-500 shadow-md flex flex-col space-y-4 min-h-[400px] overflow-y-auto">
+                            <h2 class="font-bold text-xl flex items-center text-green-600">Accepted Appointments</h2>
+                            <div id="accepted-details" class="overflow-y-auto max-h-64 space-y-3 pr-2">
+                                <p class="text-gray-500 italic">No accepted appointments.</p>
+                            </div>
+                        </div>
+                
                         <!-- Cancelled Appointments -->
-                        <div id="cancelled-appointments" class="flex-1 p-4 bg-red-100 rounded-lg border-2 border-red-500 shadow-md flex flex-col space-y-4 max-h-[500px] overflow-y-auto">
-                        <h2 class="font-bold text-xl flex items-center text-red-600">Cancelled Appointments</h2>
+                        <div id="cancelled-appointments" class="flex-1 p-4 bg-red-100 rounded-lg border-2 border-red-500 shadow-md flex flex-col space-y-4 min-h-[400px] overflow-y-auto">
+                            <h2 class="font-bold text-xl flex items-center text-red-600">Cancelled Appointments</h2>
                             <div id="cancelled-details" class="overflow-y-auto max-h-64 space-y-3 pr-2">
                                 <p class="text-gray-500 italic">No cancelled appointments.</p>
                             </div>
@@ -335,41 +335,48 @@
                     <!-- Booking Modal -->
                     <div id="booking-modal" class="modal hidden fixed inset-0 flex items-center justify-center bg-black bg-opacity-50">
                         <div class="bg-white p-6 rounded-lg w-96 border-2 border-gray-400">
-                        <!-- Modal Content -->
-                        <h3 class="text-xl font-bold mb-3">Select Service, Pet, and Date</h3>
-                        
-                        <!-- Category Select -->
-                        <label for="category-select" class="block text-sm font-medium text-gray-700">Select Category</label>
-                        <select id="category-select" class="w-full p-2 border rounded mb-2">
-                            <option value="" disabled selected>Select Category</option>
-                        </select>
+                            <!-- Modal Content -->
+                            <h3 class="text-xl font-bold mb-3">Select Service, Pet, and Date</h3>
+                            
+                            <!-- Category Select -->
+                            <label for="category-select" class="block text-sm font-medium text-gray-700">Select Category</label>
+                            <select id="category-select" class="w-full p-2 border rounded mb-2">
+                                <option value="" disabled selected>Select Category</option>
+                            </select>
 
-                        <!-- Services Select (Filtered) -->
-                        <label for="service-select" class="block text-sm font-medium text-gray-700">Select Service</label>
-                        <select id="service-select" class="w-full p-2 border rounded mb-2">
-                            <option value="" disabled selected>Select Service</option>
-                        </select>
-                
-                        <!-- Pet Select -->
-                        <label for="pet-select" class="block text-sm font-medium text-gray-700">Select Your Pet</label>
-                        <select id="pet-select" class="w-full p-2 border rounded mb-2">
-                            <option value="" disabled selected>Loading pets...</option>
-                        </select>
-                
-                        <!-- Date & Time -->
-                        <label for="appointment-date" class="block text-sm font-medium text-gray-700">Select Date</label>
-                        <input type="date" id="appointment-date" class="w-full p-2 border rounded mb-3">
-                
-                        <label for="appointment-time" class="block text-sm font-medium text-gray-700">Select Time</label>
-                        <input type="time" id="appointment-time" class="w-full p-2 border rounded mb-3">
-                
-                        <!-- Confirm & Cancel Buttons -->
-                        <button id="confirm-booking" class="w-full bg-green-500 text-white py-2 rounded-lg hover:bg-green-600">
-                            Confirm Booking
-                        </button>
-                        <button id="close-modal" class="w-full bg-gray-300 py-2 rounded-lg mt-2 hover:bg-gray-400">
-                            Cancel
-                        </button>
+                            <!-- Services Select (Filtered) -->
+                            <label for="service-select" class="block text-sm font-medium text-gray-700">Select Service</label>
+                            <select id="service-select" class="w-full p-2 border rounded mb-2">
+                                <option value="" disabled selected>Select Service</option>
+                            </select>
+                        
+                            <!-- Pet Select -->
+                            <label for="pet-select" class="block text-sm font-medium text-gray-700">Select Your Pet</label>
+                            <select id="pet-select" class="w-full p-2 border rounded mb-2">
+                                <option value="" disabled selected>Loading pets...</option>
+                            </select>
+
+                            <button id="add-pet" class="w-full bg-yellow-500 py-2 rounded-lg mt-2 hover:bg-yellow-600">
+                                Add Pet
+                            </button>
+                        
+                            <!-- Date & Time -->
+                            <label for="appointment-date" class="block text-sm font-medium text-gray-700">Select Date</label>
+                            <input type="date" id="appointment-date" class="w-full p-2 border rounded mb-3">
+                        
+                            <label for="appointment-time" class="block text-sm font-medium text-gray-700">Select Time</label>
+                            <select id="appointment-time" class="w-full p-2 border rounded mb-3">
+                                <!-- Options will be dynamically populated by your populateTimeDropdown() function -->
+                                <option value="" disabled selected>Select Date & Service First</option>
+                            </select>
+                        
+                            <!-- Confirm & Cancel Buttons -->
+                            <button id="confirm-booking" class="w-full bg-green-500 text-white py-2 rounded-lg hover:bg-green-600">
+                                Confirm Booking
+                            </button>
+                            <button id="close-modal" class="w-full bg-gray-300 py-2 rounded-lg mt-2 hover:bg-gray-400">
+                                Cancel
+                            </button>
                         </div>
                     </div>
 
