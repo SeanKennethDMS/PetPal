@@ -31,8 +31,7 @@ const DEFAULT_TIME_SLOTS = [
 document.addEventListener("DOMContentLoaded", async () => {
 
   userId = await getUserId();
-  console.log("User ID:", userId);
-
+ 
   if (!userId) {
     console.error("User ID is missing. Redirecting to login...");
     window.location.href = "../index.html";

@@ -293,26 +293,32 @@ async function loadProfileData() {
     const userId = await getUserId();
     if (!userId) return;
 
-    const { data, error } = await supabase
-        .from('user_profiles')
-        .select('*')
-        .eq('user_id', userId)
-        .single();
+    try {
+        const { data, error } = await supabase
+            .from('user_profiles')
+            .select('*')
+            .eq('user_id', userId)
+            .maybeSingle(); 
 
-    if (data) {
-        document.getElementById('last-name').textContent = data.last_name || '—';
-        document.getElementById('first-name').textContent = data.first_name || '—';
-        document.getElementById('middle-name').textContent = data.middle_name || '—';
-        document.getElementById('birthdate').textContent = data.birthdate || '—';
-        document.getElementById('phone').textContent = data.phone_number || '—';
-        document.getElementById('email').textContent = data.email || '—';
-        document.getElementById('region').textContent = data.region || '—';
-        document.getElementById('province').textContent = data.province || '—';
-        document.getElementById('municipality').textContent = data.municipality || '—';
-        document.getElementById('barangay').textContent = data.barangay || '—';
-    } else if (error) {
-        console.error('Error loading profile:', error);
-        alert('Failed to load profile.');
+        if (error) throw error;
+        
+        if (data) {
+            document.getElementById('last-name').textContent = data.last_name || '—';
+            document.getElementById('first-name').textContent = data.first_name || '—';
+            document.getElementById('middle-name').textContent = data.middle_name || '—';
+            document.getElementById('birthdate').textContent = data.birthdate || '—';
+            document.getElementById('phone').textContent = data.phone_number || '—';
+            document.getElementById('email').textContent = data.email || '—';
+            document.getElementById('region').textContent = data.region || '—';
+            document.getElementById('province').textContent = data.province || '—';
+            document.getElementById('municipality').textContent = data.municipality || '—';
+            document.getElementById('barangay').textContent = data.barangay || '—';
+        } else {
+            console.log('No profile data found');
+        }
+    } catch (error) {
+        console.error('Error loading profile:', error.message);
+        showAlert('Failed to load profile.', 'error');
     }
 }
 

@@ -312,9 +312,6 @@ async function markAllNotificationsAsRead(userId) {
   console.log(`Marked ${data?.length || 0} notifications as read.`);
 }
 
-/**
- * Initializes the notification listeners.
- */
 async function initNotificationListener() {
   const { data: { user }, error } = await supabase.auth.getUser();
 
@@ -329,23 +326,23 @@ async function initNotificationListener() {
   }
 
   try {
-    const { data: userData, error: roleError } = await supabase
+    const { data: roleData, error } = await supabase
       .from('users_table')
       .select('role')
       .eq('id', user.id)
-      .single();
+      .maybeSingle();
 
-    if (roleError) {
-      console.error("Error fetching user role:", roleError.message);
+    if (error) {
+      console.error("Error fetching user role:", error.message);
       return;
     }
 
-    if (!userData) {
+    if (!roleData) {
       console.warn("No user data found.");
       return;
     }
 
-    const userRole = userData.role;
+    const userRole = roleData.role;
 
     window.currentUserId = user.id;
     window.currentUserRole = userRole;
