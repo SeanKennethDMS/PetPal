@@ -134,8 +134,8 @@ async function showPetDetails(petId) {
       petDisplayImage.src = pet.image_url;
     } else {
       petDisplayImage.src = pet.species === 'dog' 
-        ? '/frontend/public/assets/images/defaultDogIcon.png' 
-        : '/frontend/public/assets/images/defaultCatIcon.png';
+        ? '/public/assets/images/defaultDogIcon.png' 
+        : '/public/assets/images/defaultCatIcon.png';
     }
 
     await loadPetAppointments(petId);
