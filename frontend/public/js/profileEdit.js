@@ -41,7 +41,7 @@ function checkEditLock() {
 
 async function loadAddressData() {
     try {
-        const response = await fetch('/js/data/philippines-addresses.json'); // this file path is working on local but not in vercel
+        const response = await fetch('../../../frontend/public/js/data/philippines-addresses.json'); // this file path is working on local but not in vercel
         // ../../../frontend/public/js/data/philippines-addresses.json for local
         // /js/data/philippines-addresses.json for deployment
         if (!response.ok) throw new Error('Failed to load address data');

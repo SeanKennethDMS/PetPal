@@ -219,54 +219,91 @@
                 <p class="text-gray-600 mt-2">Manage your pets' details.</p>
 
                 <!-- Main Container -->
-                <div class="mt-4 p-4 border-2 border-blue-400 rounded-lg shadow-md bg-white flex flex-col md:flex-row space-y-4 md:space-y-0">
-
-                    <!-- Table Section (4/4 width) -->
-                    <div id="pet-table-container" class="w-full overflow-x-auto">
-                        <table class="w-full min-w-[800px] border-collapse border border-gray-300 shadow-md">
-                            <thead class="bg-blue-500 text-white">
-                                <tr>
-                                    <th class="border border-gray-300 px-4 py-2">Pet's Name</th>
-                                    <th class="border border-gray-300 px-4 py-2">Species</th>
-                                    <th class="border border-gray-300 px-4 py-2">Breed</th>
-                                    <th class="border border-gray-300 px-4 py-2">Weight (kg)</th>
-                                    <th class="border border-gray-300 px-4 py-2">Birthdate</th>
-                                    <th class="border border-gray-300 px-4 py-2">Appointment</th>
-                                </tr>
-                            </thead>
-                            <tbody id="pet-table-body" class="text-center">
-                                <tr>
-                                    <td colspan="6" class="border border-gray-300 px-4 py-2 text-gray-500">
-                                        No pets available. Add a pet to get started.
-                                    </td>
-                                </tr>
-                            </tbody>
-                        </table>
+                <div class="mt-4 p-4 border-2 border-blue-400 rounded-lg shadow-md bg-white flex flex-col md:flex-row gap-4">
+                    <!-- Left Section - Pet Display (3/4 width) -->
+                    <div class="w-full md:w-3/4">
+                        <!-- Default state when no pet is selected -->
+                        <div id="pet-display-default" class="flex flex-col items-center justify-center h-full py-12 bg-gray-50 rounded-lg">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-16 w-16 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
+                            </svg>
+                            <p class="mt-4 text-gray-500">Select a pet to view details</p>
+                        </div>
+                        
+                        <!-- Pet details display (hidden by default) -->
+                        <div id="pet-display" class="hidden">
+                            <div class="flex flex-col md:flex-row gap-6">
+                                <!-- Pet Image -->
+                                <div class="w-full md:w-1/3 flex justify-center">
+                                    <img id="pet-display-image" src="" alt="Pet Image" class="w-48 h-48 object-cover rounded-full border-4 border-blue-200">
+                                </div>
+                                
+                                <!-- Pet Info -->
+                                <div class="w-full md:w-2/3">
+                                    <h2 id="pet-display-name" class="text-2xl font-bold"></h2>
+                                    <div class="mt-4 grid grid-cols-2 gap-4">
+                                        <div>
+                                            <p class="text-gray-500">Species</p>
+                                            <p id="pet-display-species" class="font-medium"></p>
+                                        </div>
+                                        <div>
+                                            <p class="text-gray-500">Breed</p>
+                                            <p id="pet-display-breed" class="font-medium"></p>
+                                        </div>
+                                        <div>
+                                            <p class="text-gray-500">Weight</p>
+                                            <p id="pet-display-weight" class="font-medium"></p>
+                                        </div>
+                                        <div>
+                                            <p class="text-gray-500">Age</p>
+                                            <p id="pet-display-age" class="font-medium"></p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- Appointment History -->
+                            <div class="mt-8">
+                                <h3 class="text-xl font-semibold border-b pb-2">Appointment History</h3>
+                                <div id="pet-appointments" class="mt-2">
+                                    <p class="text-gray-500 py-4">No appointment history yet</p>
+                                </div>
+                            </div>
+                        </div>
                     </div>
 
-                    
-
-                </div>
-
-                <!-- Blank Column with Add Button -->
-                <div class="flex justify-end mt-4">
-                    <button id="add-pet-btn" class="w-40 h-12 bg-blue-500 text-white rounded-lg shadow-lg hover:bg-blue-600">
-                      Add Pet
-                    </button>
+                    <!-- Right Section - Pet List (1/4 width) -->
+                    <div class="w-full md:w-1/4 flex flex-col gap-4">
+                        <!-- Add Pet Button -->
+                        <button id="add-pet-btn" class="w-full h-12 bg-blue-500 text-white rounded-lg shadow-lg hover:bg-blue-600 flex items-center justify-center gap-2">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                                <path fill-rule="evenodd" d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z" clip-rule="evenodd" />
+                            </svg>
+                            Add Pet
+                        </button>
+                        
+                        <!-- Pet List -->
+                        <div class="border rounded-lg p-2 bg-gray-50">
+                            <h3 class="font-medium text-gray-700 mb-2">Your Pets</h3>
+                            <ul id="pet-list" class="space-y-2">
+                                <li class="text-gray-500 italic">No pets added</li>
+                            </ul>
+                        </div>
+                    </div>
                 </div>
 
                 <!-- Modal to Add Pet -->
-                <div id="add-pet-modal" class="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center hidden">
+                <div id="add-pet-modal" class="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center hidden z-50">
                     <div class="bg-white p-6 rounded-lg shadow-lg w-full max-w-md">
                         <h2 class="text-2xl font-semibold mb-4">Add a Pet</h2>
                         <form id="add-pet-form">
                             <div class="mb-4">
                                 <label for="pet_name" class="block text-sm font-medium text-gray-700">Pet Name</label>
-                                <input type="text" id="pet-name" name="pet_name" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm" required />
+                                <input type="text" id="pet-name" name="pet_name" class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm px-3 py-2 focus:outline-none focus:ring-blue-500 focus:border-blue-500" required />
                             </div>
                             <div class="mb-4">
                                 <label for="species" class="block text-sm font-medium text-gray-700">Species</label>
-                                <select id="species" name="species" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm" required>
+                                <select id="species" name="species" class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm px-3 py-2 focus:outline-none focus:ring-blue-500 focus:border-blue-500" required>
                                     <option value="">Select Species</option>
                                     <option value="dog">Dog</option>
                                     <option value="cat">Cat</option>
@@ -274,21 +311,25 @@
                             </div>
                             <div class="mb-4">
                                 <label for="breed" class="block text-sm font-medium text-gray-700">Breed</label>
-                                <select id="breed" name="breed" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm" required>
+                                <select id="breed" name="breed" class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm px-3 py-2 focus:outline-none focus:ring-blue-500 focus:border-blue-500" required>
                                     <option value="">Select Breed</option>
                                 </select>
                             </div>
                             <div class="mb-4">
                                 <label for="pets_birthdate" class="block text-sm font-medium text-gray-700">Birthdate</label>
-                                <input type="date" id="pets_birthdate" name="pets_birthdate" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm" />
+                                <input type="date" id="pets_birthdate" name="pets_birthdate" class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm px-3 py-2 focus:outline-none focus:ring-blue-500 focus:border-blue-500" />
                             </div>
                             <div class="mb-4">
                                 <label for="weight" class="block text-sm font-medium text-gray-700">Weight (kg)</label>
-                                <input type="number" id="weight" name="weight" min="0.1" step="0.1" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm" required />
+                                <input type="number" id="weight" name="weight" min="0.1" step="0.1" class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm px-3 py-2 focus:outline-none focus:ring-blue-500 focus:border-blue-500" required />
+                            </div>
+                            <div class="mb-4">
+                                <label for="pet-image" class="block text-sm font-medium text-gray-700">Pet Image (Optional)</label>
+                                <input type="file" id="pet-image" name="pet_image" accept="image/*" class="mt-1 block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100" />
                             </div>
                             <div class="flex justify-end">
-                                <button type="button" id="cancel-add-pet" class="text-gray-500 hover:text-gray-700">Cancel</button>
-                                <button type="submit" class="ml-4 bg-blue-500 text-white py-2 px-4 rounded-md hover:bg-blue-600">Add Pet</button>
+                                <button type="button" id="cancel-add-pet" class="px-4 py-2 text-gray-500 hover:text-gray-700 rounded-md hover:bg-gray-100">Cancel</button>
+                                <button type="submit" class="ml-4 bg-blue-500 text-white py-2 px-4 rounded-md hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">Add Pet</button>
                             </div>
                         </form>
                     </div>

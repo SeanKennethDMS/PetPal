@@ -4,36 +4,47 @@ import supabase from "../supabaseClient.js";
 
 const breedData = {
   dog: [
-      "Aspin",
-      "Labrador Retriever",
-      "German Shepherd",
-      "Golden Retriever",
-      "Bulldog",
-      "Beagle",
-      "Poodle",
-      "Rottweiler",
-      "Yorkshire Terrier",
-      "Others"
+    "Aspin",
+    "Labrador Retriever",
+    "German Shepherd",
+    "Golden Retriever",
+    "Bulldog",
+    "Beagle",
+    "Poodle",
+    "Rottweiler",
+    "Yorkshire Terrier",
+    "Others"
   ],
   cat: [
-      "Puspin",
-      "Siamese",
-      "Persian",
-      "Maine Coon",
-      "Ragdoll",
-      "Bengal",
-      "British Shorthair",
-      "Sphynx",
-      "Scottish Fold"
+    "Puspin",
+    "Siamese",
+    "Persian",
+    "Maine Coon",
+    "Ragdoll",
+    "Bengal",
+    "British Shorthair",
+    "Sphynx",
+    "Scottish Fold"
   ]
 };
 
-//DOM Elements
-const petTableBody = document.getElementById("pet-table-body");
+// DOM Elements
+const petList = document.getElementById("pet-list");
+const petDisplay = document.getElementById("pet-display");
+const petDisplayDefault = document.getElementById("pet-display-default");
+const petDisplayImage = document.getElementById("pet-display-image");
+const petDisplayName = document.getElementById("pet-display-name");
+const petDisplaySpecies = document.getElementById("pet-display-species");
+const petDisplayBreed = document.getElementById("pet-display-breed");
+const petDisplayWeight = document.getElementById("pet-display-weight");
+const petDisplayAge = document.getElementById("pet-display-age");
+const petAppointments = document.getElementById("pet-appointments");
 const addPetForm = document.getElementById("add-pet-form");
 const addPetBtn = document.getElementById("add-pet-btn");
 
-// Load Pets Function (Main)
+// Current selected pet ID
+let currentPetId = null;
+
 async function loadPets() {
   try {
     const userId = await getUser();
@@ -53,134 +64,229 @@ async function loadPets() {
       return;
     }
 
-    renderPetsTable(pets);
+    renderPetList(pets);
+    
+    if (pets.length > 0 && !currentPetId) {
+      showPetDetails(pets[0].pet_id || pets[0].id);
+    } else if (pets.length === 0) {
+      petDisplayDefault.classList.remove("hidden");
+      petDisplay.classList.add("hidden");
+    }
 
   } catch (error) {
     console.error("Unexpected error loading pets:", error);
   }
 }
 
-// Render Pets Table Function
-async function renderPetsTable(pets) {
-  // Clear existing table content
-  petTableBody.innerHTML = "";
+async function renderPetList(pets) {
+  petList.innerHTML = "";
 
   if (!pets.length) {
-    petTableBody.innerHTML = `
-      <tr>
-        <td colspan="6" class="text-center py-4">No pets available. Add a pet to get started.</td>
-      </tr>`;
+    petList.innerHTML = '<li class="text-gray-500 italic">No pets added</li>';
     return;
   }
 
-  let rowsHTML = "";
+  pets.forEach(pet => {
+    const petItem = document.createElement("li");
+    petItem.className = "cursor-pointer p-2 rounded hover:bg-blue-50 transition-colors";
+    petItem.textContent = pet.pet_name;
+    petItem.dataset.petId = pet.pet_id || pet.id;
+    
+    // Highlight currently selected pet
+    if (currentPetId === petItem.dataset.petId) {
+      petItem.className += " bg-blue-100 font-medium";
+    }
 
-  for (const pet of pets) {
-    const appointmentStatus = await getAppointmentStatus(pet.pet_id || pet.id);
+    petItem.addEventListener("click", () => {
+      showPetDetails(petItem.dataset.petId);
+    });
 
-    rowsHTML += `
-      <tr data-pet-id="${pet.pet_id || pet.id}" class="hover:bg-gray-50 transition-all duration-300">
-        <td class="border px-4 py-2">${pet.pet_name}</td>
-        <td class="border px-4 py-2">${pet.species}</td>
-        <td class="border px-4 py-2">${pet.breed}</td>
-        <td class="border px-4 py-2">${pet.weight}</td>
-        <td class="border px-4 py-2">${pet.pets_birthdate}</td>
-        <td class="border px-4 py-2">${appointmentStatus}</td>
-      </tr>`;
-  }
-
-  petTableBody.innerHTML = rowsHTML;
-}
-
-// Get Appointment Status Function (Dummy Placeholder)
-async function getAppointmentStatus(petId) {
-  // Placeholder logic (replace with your real logic!)
-  return "No Appointments"; // or "Upcoming Appointment"
-}
-
-//Add Pet Form Submit Handler
-if (addPetForm) {
-  addPetForm.addEventListener("submit", async (e) => {
-      e.preventDefault();
-
-      // Debug: Log all form values
-      const formData = new FormData(addPetForm);
-      for (const [key, value] of formData.entries()) {
-          console.log(`${key}: ${value}`);
-      }
-
-      const userId = await getUser();
-      if (!userId) {
-          alert("No user found!");
-          return;
-      }
-
-      // Get values
-      const petName = document.getElementById("pet-name").value.trim();
-      const species = document.getElementById("species").value;
-      const breed = document.getElementById("breed").value;
-      const weight = document.getElementById("weight").value;
-      const birthDate = document.getElementById("pets_birthdate").value;
-
-      // Validate
-      let isValid = true;
-      const fields = [
-          { id: "pet-name", value: petName },
-          { id: "species", value: species },
-          { id: "breed", value: breed },
-          { id: "weight", value: weight },
-          { id: "pets_birthdate", value: birthDate }
-      ];
-
-      // Clear previous errors
-      document.querySelectorAll(".border-red-500").forEach(el => {
-          el.classList.remove("border-red-500");
-      });
-
-      // Check each field
-      fields.forEach(field => {
-          const isEmpty = field.id === "breed" 
-              ? field.value === ""
-              : !field.value.trim();
-          
-          if (isEmpty) {
-              document.getElementById(field.id).classList.add("border-red-500");
-              isValid = false;
-          }
-      });
-
-      if (!isValid) {
-          alert("Please fill out all required fields.");
-          return;
-      }
-
-      // Submit data
-      try {
-          const { error } = await supabase
-              .from("pets")
-              .insert([{
-                  pet_name: petName,
-                  species: species,
-                  breed: breed,
-                  weight: parseFloat(weight),
-                  pets_birthdate: birthDate,
-                  owner_id: userId,
-              }]);
-
-          if (error) throw error;
-
-          alert("Pet added successfully!");
-          addPetForm.reset();
-          document.getElementById("add-pet-modal").classList.add("hidden");
-          loadPets();
-      } catch (error) {
-          console.error("Error adding pet:", error);
-          alert(`Failed to add pet: ${error.message}`);
-      }
+    petList.appendChild(petItem);
   });
 }
 
-// Supabase Real-time Listener for Pets Table
+async function showPetDetails(petId) {
+  try {
+    currentPetId = petId;
+    
+    const { data: pet, error } = await supabase
+      .from('pets')
+      .select('*')
+      .eq('id', petId)
+      .single();
+
+    if (error) throw error;
+
+    petDisplayName.textContent = pet.pet_name;
+    petDisplaySpecies.textContent = pet.species;
+    petDisplayBreed.textContent = pet.breed;
+    petDisplayWeight.textContent = `${pet.weight} kg`;
+    
+    if (pet.pets_birthdate) {
+      const birthDate = new Date(pet.pets_birthdate);
+      const ageInYears = new Date().getFullYear() - birthDate.getFullYear();
+      petDisplayAge.textContent = `${ageInYears} years`;
+    } else {
+      petDisplayAge.textContent = "Unknown";
+    }
+
+    if (pet.image_url) {
+      petDisplayImage.src = pet.image_url;
+    } else {
+      petDisplayImage.src = pet.species === 'dog' 
+        ? '/frontend/public/assets/images/defaultDogIcon.png' 
+        : '/frontend/public/assets/images/defaultCatIcon.png';
+    }
+
+    await loadPetAppointments(petId);
+
+    petDisplayDefault.classList.add("hidden");
+    petDisplay.classList.remove("hidden");
+
+    document.querySelectorAll("#pet-list li").forEach(item => {
+      if (item.dataset.petId === petId) {
+        item.classList.add("bg-blue-100", "font-medium");
+      } else {
+        item.classList.remove("bg-blue-100", "font-medium");
+      }
+    });
+
+  } catch (error) {
+    console.error("Error loading pet details:", error);
+  }
+}
+
+async function loadPetAppointments(petId) {
+  try {
+    const { data: appointments, error } = await supabase
+      .from('appointments')
+      .select('*')
+      .eq('pet_id', petId)
+      .order('appointment_date', { ascending: false });
+
+    if (error) throw error;
+
+    petAppointments.innerHTML = "";
+
+    if (!appointments.length) {
+      petAppointments.innerHTML = '<p class="text-gray-500 py-4">No appointment history yet</p>';
+      return;
+    }
+
+    appointments.forEach(appt => {
+      const apptDate = new Date(appt.appointment_date);
+      const apptItem = document.createElement("div");
+      apptItem.className = "py-2 border-b";
+      apptItem.innerHTML = `
+        <p class="font-medium">${appt.service_type}</p>
+        <p class="text-sm text-gray-500">${apptDate.toLocaleDateString()}</p>
+        <p class="text-sm">Status: ${appt.status || 'Completed'}</p>
+      `;
+      petAppointments.appendChild(apptItem);
+    });
+
+  } catch (error) {
+    console.error("Error loading appointments:", error);
+    petAppointments.innerHTML = '<p class="text-red-500 py-4">Error loading appointments</p>';
+  }
+}
+
+if (addPetForm) {
+  addPetForm.addEventListener("submit", async (e) => {
+    e.preventDefault();
+
+    const userId = await getUser();
+    if (!userId) {
+      alert("No user found!");
+      return;
+    }
+
+    const formData = new FormData(addPetForm);
+    const petName = formData.get("pet_name").trim();
+    const species = formData.get("species");
+    const breed = formData.get("breed");
+    const weight = formData.get("weight");
+    const birthDate = formData.get("pets_birthdate");
+    const petImage = formData.get("pet_image");
+
+    let isValid = true;
+    const fields = [
+      { id: "pet-name", value: petName },
+      { id: "species", value: species },
+      { id: "breed", value: breed },
+      { id: "weight", value: weight }
+    ];
+
+    document.querySelectorAll(".border-red-500").forEach(el => {
+      el.classList.remove("border-red-500");
+    });
+
+    fields.forEach(field => {
+      const isEmpty = field.id === "breed" 
+        ? field.value === ""
+        : !field.value.trim();
+      
+      if (isEmpty) {
+        document.getElementById(field.id).classList.add("border-red-500");
+        isValid = false;
+      }
+    });
+
+    if (!isValid) {
+      alert("Please fill out all required fields.");
+      return;
+    }
+
+    try {
+      let imageUrl = null;
+      if (petImage && petImage.size > 0) {
+        const fileExt = petImage.name.split('.').pop();
+        const fileName = `${Math.random()}.${fileExt}`;
+        const filePath = `pet_images/${fileName}`;
+
+        const { error: uploadError } = await supabase.storage
+          .from('pet-images')
+          .upload(filePath, petImage);
+
+        if (uploadError) throw uploadError;
+
+        const { data: { publicUrl } } = supabase.storage
+          .from('pet-images')
+          .getPublicUrl(filePath);
+
+        imageUrl = publicUrl;
+      }
+
+      const { data: newPet, error } = await supabase
+        .from("pets")
+        .insert([{
+          pet_name: petName,
+          species: species,
+          breed: breed,
+          weight: parseFloat(weight),
+          pets_birthdate: birthDate,
+          owner_id: userId,
+          image_url: imageUrl
+        }])
+        .select()
+        .single();
+
+      if (error) throw error;
+
+      alert("Pet added successfully!");
+      addPetForm.reset();
+      document.getElementById("add-pet-modal").classList.add("hidden");
+      
+      await loadPets();
+      showPetDetails(newPet.pet_id || newPet.id);
+
+    } catch (error) {
+      console.error("Error adding pet:", error);
+      alert(`Failed to add pet: ${error.message}`);
+    }
+  });
+}
+
 supabase
   .channel("public:pets")
   .on("postgres_changes", {
@@ -189,11 +295,14 @@ supabase
     table: "pets",
   }, (payload) => {
     console.log("Change received:", payload);
-    loadPets(); // Auto-refresh table
+    loadPets(); 
+    
+    if (payload.new && (payload.new.pet_id === currentPetId || payload.new.id === currentPetId)) {
+      showPetDetails(currentPetId);
+    }
   })
   .subscribe();
 
-// Dummy User Function (Replace with Real Logic)
 async function getUser() {
   const { data, error } = await supabase.auth.getUser();
   if (error || !data.user) {
@@ -211,23 +320,21 @@ function updateBreedOptions() {
   
   const selectedSpecies = speciesSelect.value;
 
-  breedSelect.innerHTML = '<option value ="">Select Breed</option>';
+  breedSelect.innerHTML = '<option value="">Select Breed</option>';
 
-  if (selectedSpecies && breedData[selectedSpecies]){
+  if (selectedSpecies && breedData[selectedSpecies]) {
     breedData[selectedSpecies].forEach(breed => {
       const option = document.createElement("option");
       option.value = breed;
       option.textContent = breed;
       breedSelect.appendChild(option);
-    })
+    });
   }
 }
 
-// Initial Load
 document.addEventListener("DOMContentLoaded", () => {
   loadPets();
 
-  // Add species change listener 
   const speciesSelect = document.getElementById("species");
   if (speciesSelect) { 
     speciesSelect.addEventListener("change", updateBreedOptions);
@@ -243,7 +350,6 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 
-  // Cancel button to close modal
   const cancelAddPetBtn = document.getElementById("cancel-add-pet");
   if (cancelAddPetBtn) {
     cancelAddPetBtn.addEventListener("click", () => {
@@ -252,4 +358,3 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 });
-
