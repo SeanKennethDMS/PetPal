@@ -1,6 +1,7 @@
 'use strict';
 
 import supabase from '../js/supabaseClient.js';
+import { getBasePath } from './path-config.js';
 
 const profileModal = document.getElementById('profile-edit-modal');
 const modalFormContainer = document.getElementById('modal-form-container');
@@ -38,17 +39,9 @@ function checkEditLock() {
         });
     }
 }
-function getBasePath() {
-    if (window.location.hostname.includes('vercel.app')) {
-      return '/frontend';
-    }
-    if (window.location.hostname === '127.0.0.1' && window.location.port === '5501') {
-      return '/frontend/public';
-    }
-    return '';
-  }
+
   
-  async function loadAddressData() {
+async function loadAddressData() {
     try {
       const basePath = getBasePath();
       const response = await fetch(`${basePath}/js/data/philippines-addresses.json`);
@@ -59,7 +52,7 @@ function getBasePath() {
       console.error('Error loading address JSON:', error);
       alert('Unable to load address data. Please try again later.');
     }
-  }
+}
 
 function showAlert(message, type = 'success'){
     const alert = document.createElement('div');

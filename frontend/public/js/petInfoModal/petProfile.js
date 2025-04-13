@@ -1,6 +1,7 @@
 "use strict";
 
 import supabase from "../supabaseClient.js";
+import { getBasePath } from "../path-config.js";
 
 const breedData = {
   dog: [
@@ -127,26 +128,13 @@ async function showPetDetails(petId) {
       petDisplayAge.textContent = "Unknown";
     }
 
-    function getBasePath() {
-      // For Vercel deployment
-      if (window.location.hostname.includes('vercel.app')) {
-        return '/frontend';
-      }
-      // For local Live Server (127.0.0.1:5501)
-      if (window.location.hostname === '127.0.0.1' && window.location.port === '5501') {
-        return '/frontend/public';
-      }
-      // Default local development
-      return '';
-    }
-    
     if (pet.image_url) {
       petDisplayImage.src = pet.image_url;
     } else {
       const basePath = getBasePath();
-      petDisplayImage.src = pet.species === 'dog' 
-        ? `${basePath}/assets/images/defaultDogIcon.png`
-        : `${basePath}/assets/images/defaultCatIcon.png`;
+      petDisplayImage.src = `${basePath}/assets/images/${
+        pet.species === 'dog' ? 'defaultDogIcon.png' : 'defaultCatIcon.png'
+      }`;
     }
 
     await loadPetAppointments(petId);
