@@ -38,19 +38,28 @@ function checkEditLock() {
         });
     }
 }
-
-async function loadAddressData() {
-    try {
-        const response = await fetch('/js/data/philippines-addresses.json'); // this file path is working on local but not in vercel
-        // ../../../frontend/public/js/data/philippines-addresses.json for local
-        // /js/data/philippines-addresses.json for deployment
-        if (!response.ok) throw new Error('Failed to load address data');
-        phAddresses = await response.json();
-    } catch (error) {
-        console.error('Error loading address JSON:', error);
-        alert('Unable to load address data.');
+function getBasePath() {
+    if (window.location.hostname.includes('vercel.app')) {
+      return '/frontend';
     }
-}
+    if (window.location.hostname === '127.0.0.1' && window.location.port === '5501') {
+      return '/frontend/public';
+    }
+    return '';
+  }
+  
+  async function loadAddressData() {
+    try {
+      const basePath = getBasePath();
+      const response = await fetch(`${basePath}/js/data/philippines-addresses.json`);
+      
+      if (!response.ok) throw new Error('Failed to load address data');
+      phAddresses = await response.json();
+    } catch (error) {
+      console.error('Error loading address JSON:', error);
+      alert('Unable to load address data. Please try again later.');
+    }
+  }
 
 function showAlert(message, type = 'success'){
     const alert = document.createElement('div');
