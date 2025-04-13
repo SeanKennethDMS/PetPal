@@ -28,7 +28,6 @@ const breedData = {
   ]
 };
 
-// DOM Elements
 const petList = document.getElementById("pet-list");
 const petDisplay = document.getElementById("pet-display");
 const petDisplayDefault = document.getElementById("pet-display-default");
@@ -42,7 +41,6 @@ const petAppointments = document.getElementById("pet-appointments");
 const addPetForm = document.getElementById("add-pet-form");
 const addPetBtn = document.getElementById("add-pet-btn");
 
-// Current selected pet ID
 let currentPetId = null;
 
 async function loadPets() {
@@ -92,7 +90,6 @@ async function renderPetList(pets) {
     petItem.textContent = pet.pet_name;
     petItem.dataset.petId = pet.pet_id || pet.id;
     
-    // Highlight currently selected pet
     if (currentPetId === petItem.dataset.petId) {
       petItem.className += " bg-blue-100 font-medium";
     }
@@ -134,8 +131,8 @@ async function showPetDetails(petId) {
       petDisplayImage.src = pet.image_url;
     } else {
       petDisplayImage.src = pet.species === 'dog' 
-        ? '/public/assets/images/defaultDogIcon.png' 
-        : '/public/assets/images/defaultCatIcon.png';
+        ? '/assets/images/defaultDogIcon.png' 
+        : '/assets/images/defaultCatIcon.png';
     }
 
     await loadPetAppointments(petId);
@@ -160,7 +157,9 @@ async function loadPetAppointments(petId) {
   try {
     const { data: appointments, error } = await supabase
       .from('appointments')
-      .select('*')
+      .select(`
+        *, services: service_id (name, description)
+        `)
       .eq('pet_id', petId)
       .order('appointment_date', { ascending: false });
 
@@ -178,7 +177,7 @@ async function loadPetAppointments(petId) {
       const apptItem = document.createElement("div");
       apptItem.className = "py-2 border-b";
       apptItem.innerHTML = `
-        <p class="font-medium">${appt.service_type}</p>
+        <p class="font-medium">${appt.services?.name || 'Unknown Service'}</p>
         <p class="text-sm text-gray-500">${apptDate.toLocaleDateString()}</p>
         <p class="text-sm">Status: ${appt.status || 'Completed'}</p>
       `;
