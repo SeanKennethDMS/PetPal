@@ -12,33 +12,39 @@
 <body class="scroll-smooth font-sans" style="font-family: 'Bricolage Grotesque', Arial, sans-serif;">
 
     <!-- Navbar -->
-    <nav class="text-white p-4 flex justify-between items-center bg-gradient-to-r from-blue-500 to-blue-800">
-    <!-- Logo and App Name -->
-    <div class="flex items-center space-x-3 text-2xl font-bold">
-        <img src="../assets/1-removebg-preview.png" alt="PetPal Logo" class="h-10 w-10 object-contain">
-        <span>PetPal Scheduler</span>
-    </div>
-
-    <!-- User Greeting and Notification Icon -->
-    <div class="flex items-center space-x-3 pr-6"> 
-        <span id="userGreeting" class="mr-4 text-white">Welcome, Customer</span>
-      
-        <div class="relative">
-          <button id="notificationBtn" class="relative focus:outline-none">
-            <!-- Bell Icon -->
-            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-white hover:text-yellow-300 transition" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V4a2 2 0 10-4 0v1.341C8.67 7.165 8 9.388 8 12v2.159c0 .538-.214 1.055-.595 1.436L6 17h5m4 0v1a3 3 0 11-6 0v-1m6 0H9" />
-            </svg>
-      
-            <!-- Notification Badge -->
-            <span id="notificationCount" 
-                  class="hidden absolute -top-2 -right-2 bg-red-500 text-white text-xs font-bold rounded-full h-5 w-5 flex items-center justify-center">
-              0
-            </span>
-          </button>
+    <nav class="text-white p-4 flex flex-col sm:flex-row justify-between items-center bg-gradient-to-r from-blue-500 to-blue-800 relative z-50">
+        <!-- Logo and App Name -->
+        <div class="flex items-center space-x-3 text-2xl font-bold">
+            <img src="../assets/1-removebg-preview.png" alt="PetPal Logo" class="h-10 w-10 object-contain">
+            <span>PetPal Scheduler</span>
         </div>
-      </div>
+
+        <!-- User Greeting and Notification Icon -->
+        <div class="flex items-center space-x-4 pr-2">
+            <span id="userGreeting" class="hidden md:block text-white">Welcome, Customer</span>
+          
+            <!-- Notification Bell -->
+            <div class="relative">
+              <button id="notificationBtn" class="relative focus:outline-none">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-white hover:text-yellow-300 transition" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                    d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V4a2 2 0 10-4 0v1.341C8.67 7.165 8 9.388 8 12v2.159c0 .538-.214 1.055-.595 1.436L6 17h5m4 0v1a3 3 0 11-6 0v-1m6 0H9" />
+                </svg>
+                <span id="notificationCount" 
+                      class="hidden absolute -top-2 -right-2 bg-red-500 text-white text-xs font-bold rounded-full h-5 w-5 flex items-center justify-center">
+                  0
+                </span>
+              </button>
+            </div>
+
+            <!-- Hamburger Icon (Mobile Only) -->
+            <button id="hamburgerBtn" class="md:hidden focus:outline-none">
+              <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                  d="M4 6h16M4 12h16M4 18h16" />
+              </svg>
+            </button>
+        </div>
     </nav>
 
     <!-- Notification Modal -->
@@ -64,12 +70,19 @@
         </div>
       </div>
 
-
     <!-- Sidebar + Content Container -->
-    <div class="flex h-screen">
+    <div class="flex flex-col md:flex-row h-screen">
         <!-- Sidebar -->
-        <aside class="w-64 bg-gray-800 h-screen p-5 text-white">
-            <h2 class="text-xl font-bold mb-4">Customer Dashboard</h2>
+        <aside id="sidebarMenu" class="fixed md:relative top-0 md:top-0 left-0 w-64 bg-gray-800 h-full p-5 text-white transform -translate-x-full md:translate-x-0 transition-transform duration-300 ease-in-out z-50">
+            <!-- Close button for mobile -->
+            <button id="closeSidebar" class="md:hidden absolute top-5 right-4 text-white focus:outline-none">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                    d="M6 18L18 6M6 6l12 12" />
+                </svg>
+            </button>
+
+            <h2 class="text-xl font-bold mb-4 mt-10 md:mt-0">Customer Dashboard</h2>
             
             <div class="mb-4">
                 <h3 class="text-gray-400 uppercase text-sm mb-2">Main</h3>
@@ -81,16 +94,16 @@
             <div class="mb-4">
                 <h3 class="text-gray-400 uppercase text-sm mb-2">Profiles</h3>
                 <ul>
-                    <li><a href="#" class="block py-2 px-3 rounded sidebar-link" data-target="your-profile">Your Profile</a></li>
-                    <li><a href="#" class="block py-2 px-3 rounded sidebar-link" data-target="pet-profile">Pet Profile</a></li>
+                    <li><a href="#" class="sidebar-link block py-2 px-3 hover:bg-gray-700 rounded" data-target="your-profile">Your Profile</a></li>
+                    <li><a href="#" class="sidebar-link block py-2 px-3 hover:bg-gray-700 rounded" data-target="pet-profile">Pet Profile</a></li>
                 </ul>
             </div>
         
             <div class="mb-4">
                 <h3 class="text-gray-400 uppercase text-sm mb-2">Booking</h3>
                 <ul>
-                    <li><a href="#" class="block py-2 px-3 rounded sidebar-link" data-target="book-appointment">Book an Appointment</a></li>
-                    <li><a href="#" class="block py-2 px-3 rounded sidebar-link" data-target="booking-history">Booking History</a></li>
+                    <li><a href="#" class="sidebar-link block py-2 px-3 hover:bg-gray-700 rounded" data-target="book-appointment">Book an Appointment</a></li>
+                    <li><a href="#" class="sidebar-link block py-2 px-3 hover:bg-gray-700 rounded" data-target="booking-history">Booking History</a></li>
                 </ul>
             </div>
         
@@ -104,7 +117,7 @@
         </aside>
 
         <!-- Main Content -->
-        <main class="flex-1 p-6">
+        <main class="flex-1 p-4 md:p-6 overflow-y-auto">
             <!-- Dashboard -->
             <section id="dashboard" class="content-section">
                 <h1 class="text-3xl font-bold">Dashboard Overview</h1>
@@ -301,11 +314,7 @@
                         </div>
                     </div>
                 </div>
-
-                
             </section>
-
-            
 
             <!-- Book an Appointment Section -->
             <section id="book-appointment" class="content-section hidden">
@@ -317,7 +326,7 @@
                     <div class="flex flex-col md:flex-row space-y-6 md:space-y-0 md:space-x-6">
                     
                         <!-- Pending Appointments -->
-                        <div id="pending-appointment" class="flex-1 p-4 bg-yellow-100 rounded-lg border-2 border-yellow-500 shadow-md flex flex-col space-y-4 min-h-[400px] overflow-y-auto">
+                        <div id="pending-appointment" class="flex-1 p-4 bg-yellow-50 rounded-lg border-2 border-blue-300 shadow-md flex flex-col space-y-4 min-h-[400px] overflow-y-auto">
                             <h2 class="font-bold text-xl flex items-center text-yellow-600">Pending Appointments</h2>
                             <div id="pending-details" class="overflow-y-auto max-h-64 space-y-3 pr-2">
                                 <p class="text-gray-500 italic">No pending appointments.</p>
@@ -325,7 +334,7 @@
                         </div>
                 
                         <!-- Accepted Appointments -->
-                        <div id="accepted-appointments" class="flex-1 p-4 bg-green-100 rounded-lg border-2 border-green-500 shadow-md flex flex-col space-y-4 min-h-[400px] overflow-y-auto">
+                        <div id="accepted-appointments" class="flex-1 p-4 bg-green-50 rounded-lg border-2 border-blue-300 shadow-md flex flex-col space-y-4 min-h-[400px] overflow-y-auto">
                             <h2 class="font-bold text-xl flex items-center text-green-600">Accepted Appointments</h2>
                             <div id="accepted-details" class="overflow-y-auto max-h-64 space-y-3 pr-2">
                                 <p class="text-gray-500 italic">No accepted appointments.</p>
@@ -333,7 +342,7 @@
                         </div>
                 
                         <!-- Cancelled Appointments -->
-                        <div id="cancelled-appointments" class="flex-1 p-4 bg-red-100 rounded-lg border-2 border-red-500 shadow-md flex flex-col space-y-4 min-h-[400px] overflow-y-auto">
+                        <div id="cancelled-appointments" class="flex-1 p-4 bg-red-50 rounded-lg border-2 border-blue-300 shadow-md flex flex-col space-y-4 min-h-[400px] overflow-y-auto">
                             <h2 class="font-bold text-xl flex items-center text-red-600">Cancelled Appointments</h2>
                             <div id="cancelled-details" class="overflow-y-auto max-h-64 space-y-3 pr-2">
                                 <p class="text-gray-500 italic">No cancelled appointments.</p>
@@ -449,6 +458,7 @@
                     Download PDF
                 </button>
             </section>
+            
         </main>
     </div>
 
@@ -476,7 +486,6 @@
                 });
             });
 
-            // Set default active section
             setActive(document.querySelector(".default-active"));
             showSection("dashboard");
         });
@@ -665,18 +674,39 @@
 
     <script>
         document.addEventListener("DOMContentLoaded", function () {
+            const hamburgerBtn = document.getElementById('hamburgerBtn');
+            const closeSidebar = document.getElementById('closeSidebar');
+            const sidebarMenu = document.getElementById('sidebarMenu');
+
+            hamburgerBtn.addEventListener('click', () => {
+                sidebarMenu.classList.remove('-translate-x-full');
+            });
+
+            closeSidebar.addEventListener('click', () => {
+                sidebarMenu.classList.add('-translate-x-full');
+            });
+
+            document.addEventListener('click', (e) => {
+                if (!sidebarMenu.contains(e.target) && !hamburgerBtn.contains(e.target)) {
+                    sidebarMenu.classList.add('-translate-x-full');
+                }
+            });
+        });
+    </script>
+
+
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
             const userSession = localStorage.getItem("userSession");
             const userRole = localStorage.getItem("userRole");
             const currentPage = window.location.pathname;
 
-            // Check if user is logged in
             if (!userSession) {
                 alert("Access denied. Please log in.");
                 window.location.href = "/frontend/public/index.html";
                 return;
             }
 
-            // Ensure correct role-based access
             if (currentPage.includes("admin-dashboard.html") && userRole !== "admin") {
                 alert("Unauthorized access!");
                 window.location.href = "/frontend/public/index.html";
@@ -689,7 +719,6 @@
                 return;
             }
 
-            //If authorized, show the page
             document.body.classList.remove("hidden");
         });
     </script>
