@@ -2,10 +2,12 @@
 
 import supabase from "../supabaseClient.js";
 
-// GLOBAL VARIABLES
 let userId = null;
 let appointmentChannel = null;
 let debounceTimer;
+let currentTab = 'pending';
+
+const pageSize = 5;
 
 const paginationState = {
   pending: { page: 1 },
@@ -13,7 +15,6 @@ const paginationState = {
   cancelled: { page: 1 }
 };
 
-// DOM ELEMENTS
 const elements = {
   petSelect: document.getElementById("pet-select"),
   appointmentDate: document.getElementById("appointment-date"),
@@ -24,10 +25,12 @@ const elements = {
   refreshBookingBtn: document.getElementById("refresh-booking"),
   categorySelect: document.getElementById("category-select"),
   serviceSelect: document.getElementById("service-select"),
-  addPetBtn: document.getElementById("add-pet")
+  addPetBtn: document.getElementById("add-pet"),
+  appointmentsContainer: document.getElementById("appointmentsContainer"),
+  noAppointmentsMessage: document.getElementById("noAppointmentsMessage"),
+  tabButtons: document.querySelectorAll('.tab-button')
 };
 
-// BUSINESS HOURS (8AM-6PM in 30-minute increments)
 const BUSINESS_HOURS = Array.from({ length: 21 }, (_, i) => {
   const hour = 8 + Math.floor(i / 2);
   const minute = i % 2 === 0 ? '00' : '30';
@@ -36,7 +39,6 @@ const BUSINESS_HOURS = Array.from({ length: 21 }, (_, i) => {
   return `${displayHour}:${minute} ${period}`;
 }).slice(0, -1);
 
-// INITIALIZATION
 document.addEventListener("DOMContentLoaded", async () => {
   userId = await getUserId();
   
@@ -50,6 +52,7 @@ document.addEventListener("DOMContentLoaded", async () => {
   await loadInitialData();
   setupEventListeners();
   setupRealtimeUpdates();
+  setupTabNavigation();
 });
 
 function openModal(modalId) {
@@ -80,14 +83,28 @@ async function loadInitialData() {
   ]);
 }
 
+function setupTabNavigation() {
+  elements.tabButtons.forEach(button => {
+    button.addEventListener('click', function() {
+      elements.tabButtons.forEach(btn => {
+        btn.classList.remove('text-blue-600', 'border-b-2', 'border-blue-600');
+        btn.classList.add('text-gray-600', 'hover:text-blue-600');
+      });
+      this.classList.add('text-blue-600', 'border-b-2', 'border-blue-600');
+      this.classList.remove('text-gray-600', 'hover:text-blue-600');
+      currentTab = this.getAttribute('data-tab');
+      paginationState[currentTab].page = 1;
+      loadAppointments();
+    });
+  });
+}
+
 function setupEventListeners() {
-  // Bind the cancel button of the Booking Modal with new unique id "close-booking-modal"
   document.getElementById("close-booking-modal")?.addEventListener("click", () => {
     closeModal("booking-modal");
     resetAndCloseModal();
   });
 
-  // Bind the cancel button inside the Add Pet Modal
   document.getElementById("cancel-add-pet")?.addEventListener("click", () => {
     closeModal("add-pet-modal");
     openModal("booking-modal");
@@ -118,14 +135,6 @@ function setupEventListeners() {
     };
 
     document.addEventListener("petAdded", handlePetAdded, { once: true });
-  });
-
-  document.addEventListener('click', (e) => {
-    const cancelBtn = e.target.closest('.cancel-btn');
-    if (cancelBtn) {
-      const appointmentId = cancelBtn.dataset.appointmentId;
-      cancelAppointment(appointmentId);
-    }
   });
 
   elements.confirmBookingBtn.addEventListener("click", handleBookingConfirmation);
@@ -247,10 +256,13 @@ async function sendBookingNotification(petId, serviceId, date, time) {
   if (error) console.error("Notification error:", error);
 }
 
-// DATA LOADING FUNCTIONS
 async function loadAppointments() {
   try {
-    const { data: appointments, error } = await supabase
+    const page = paginationState[currentTab].page;
+    const from = (page - 1) * pageSize;
+    const to = from + pageSize - 1;
+
+    const { data: appointments, error, count } = await supabase
       .from("appointments")
       .select(`
         appointment_id,
@@ -261,29 +273,155 @@ async function loadAppointments() {
         service_id,
         pets(pet_name),
         services(name)
-      `)
+      `, { count: "exact" })
       .eq("user_id", userId)
-      .order("appointment_date", { ascending: true });
+      .eq("status", currentTab)
+      .order("appointment_date", { ascending: true })
+      .range(from, to);
 
     if (error) throw error;
 
-    clearAppointmentLists();
+    if (appointments.length > 0) {
+      elements.noAppointmentsMessage.classList.add('hidden');
+      renderAppointments(appointments);
+    } else {
+      elements.noAppointmentsMessage.classList.remove('hidden');
+      elements.appointmentsContainer.innerHTML = '<div class="text-center text-gray-500 mt-16">No appointments found.</div>';
+    }
 
-    const statusGroups = appointments.reduce((groups, app) => {
-      const status = app.status;
-      if (!groups[status]) groups[status] = [];
-      groups[status].push(app);
-      return groups;
-    }, {});
-
-    Object.entries(statusGroups).forEach(([status, apps]) => {
-      renderAppointments(`${status}-details`, apps, status);
-    });
+    renderPagination(count);
 
   } catch (error) {
     console.error("Error loading appointments:", error);
     alert("Failed to load appointments. Please try again.");
   }
+}
+
+
+function renderAppointments(appointments) {
+  let html = '';
+
+  const today = new Date();
+
+  appointments.forEach(app => {
+    const petName = app.pets?.pet_name || "Unknown Pet";
+    const serviceName = app.services?.name || "Unknown Service";
+    const formattedDate = formatDate(app.appointment_date);
+    const formattedTime = convertToAMPM(app.appointment_time);
+    const appointmentDate = new Date(app.appointment_date);
+    const daysUntilAppointment = Math.ceil((appointmentDate - today) / (1000 * 60 * 60 * 24));
+
+    html += `
+      <div class="bg-gray-50 rounded-lg p-4 flex flex-col md:flex-row justify-between items-start md:items-center">
+        <div class="mb-2 md:mb-0">
+          <h3 class="font-semibold">${serviceName}</h3>
+          <p class="text-sm text-gray-600">${petName} • ${formattedDate} at ${formattedTime}</p>
+          ${app.status === 'pending' ? `
+            <p class="text-xs text-yellow-700 mt-1">
+              Wait for staff to accept your booking. Once your booking is not accepted for 7 days it will automatically be cancelled.
+            </p>` : ''
+          }
+        </div>
+        <div class="flex gap-2">`;
+
+    // Buttons by status
+    if (app.status === 'pending') {
+      html += `
+      <button class="px-3 py-1 bg-blue-100 text-blue-800 rounded text-sm hover:bg-blue-200" data-details='${JSON.stringify(app)}'>
+        Details
+      </button>
+      <button class="px-3 py-1 bg-red-100 text-red-800 rounded text-sm hover:bg-red-200" data-id="${app.appointment_id}">
+        Cancel
+      </button>`;
+    }
+
+    if (app.status === 'accepted') {
+      if (daysUntilAppointment > 7) {
+        html += `
+          <button class="px-3 py-1 bg-yellow-100 text-yellow-800 rounded text-sm hover:bg-yellow-200" data-resched="${app.appointment_id}">
+            Reschedule
+          </button>
+          <button class="px-3 py-1 bg-red-100 text-red-800 rounded text-sm hover:bg-red-200" data-id="${app.appointment_id}">
+            Cancel
+          </button>`;
+      } else {
+        html += `<span class="text-sm text-gray-500 italic">Appointment cannot be changed within 7 days.</span>`;
+      }
+    }
+
+    if (app.status === 'cancelled') {
+      html += `
+        <button class="px-3 py-1 bg-gray-100 text-gray-800 rounded text-sm hover:bg-gray-200" disabled>
+          Cancelled
+        </button>`;
+    }
+
+    html += `
+        </div>
+      </div>`;
+  });
+
+  elements.appointmentsContainer.innerHTML = html;
+
+  // Add listeners
+  document.querySelectorAll('[data-id]').forEach(button => {
+    button.addEventListener('click', function () {
+      const appointmentId = this.getAttribute('data-id');
+      cancelAppointment(appointmentId);
+    });
+  });
+
+  document.querySelectorAll('[data-resched]').forEach(button => {
+    button.addEventListener('click', function () {
+      alert("Reschedule clicked. Implement logic here later.");
+      // Future: Open reschedule modal here
+    });
+  });
+}
+
+function renderPagination(totalCount) {
+  const paginationContainer = document.getElementById("pagination");
+  paginationContainer.innerHTML = "";
+
+  const currentPage = paginationState[currentTab].page;
+  const totalPages = Math.ceil(totalCount / pageSize);
+
+  if (totalPages <= 1) {
+    paginationContainer.classList.add("hidden");
+    return;
+  }
+
+  paginationContainer.classList.remove("hidden");
+
+  const prevBtn = document.createElement("button");
+  prevBtn.textContent = "Previous";
+  prevBtn.className = "px-3 py-1 bg-gray-200 rounded hover:bg-gray-300";
+  prevBtn.disabled = currentPage === 1;
+  prevBtn.addEventListener("click", () => {
+    if (currentPage > 1) {
+      paginationState[currentTab].page--;
+      loadAppointments();
+    }
+  });
+
+  const nextBtn = document.createElement("button");
+  nextBtn.textContent = "Next";
+  nextBtn.className = "px-3 py-1 bg-gray-200 rounded hover:bg-gray-300";
+  nextBtn.disabled = currentPage === totalPages;
+  nextBtn.addEventListener("click", () => {
+    if (currentPage < totalPages) {
+      paginationState[currentTab].page++;
+      loadAppointments();
+    }
+  });
+
+  const info = document.createElement("span");
+  info.className = "px-2 py-1 text-sm text-gray-700";
+  info.textContent = `Page ${currentPage} of ${totalPages}`;
+
+  paginationContainer.appendChild(prevBtn);
+  paginationContainer.appendChild(info);
+  paginationContainer.appendChild(nextBtn);
 }
 
 async function loadAvailableTimes() {
@@ -453,86 +591,35 @@ async function cancelAppointment(appointmentId) {
   debounceLoadAppointments();
 }
 
-function clearAppointmentLists() {
-  ["accepted", "pending", "cancelled"].forEach(status => {
-    const element = document.getElementById(`${status}-details`);
-    if (element) element.innerHTML = "";
-  });
-}
+// Handle appointment details modal
+document.addEventListener("click", (e) => {
+  if (e.target.matches("[data-details]")) {
+    const app = JSON.parse(e.target.getAttribute("data-details"));
+    const modal = document.getElementById("appointment-details-modal");
+    const content = document.getElementById("appointment-details-content");
 
-async function renderAppointments(containerId, appointments, status) {
-  const container = document.getElementById(containerId);
-  if (!container) return;
+    const formattedDate = formatDate(app.appointment_date);
+    const formattedTime = convertToAMPM(app.appointment_time);
 
-  container.innerHTML = '';
-
-  const currentPage = paginationState[status]?.page || 1;
-  const itemsPerPage = 5;
-  const startIdx = (currentPage - 1) * itemsPerPage;
-  const paginated = appointments.slice(startIdx, startIdx + itemsPerPage);
-
-  if (!paginated.length) {
-    container.innerHTML = `<p class="text-gray-500 italic">No ${status} appointments.</p>`;
-    return;
-  }
-
-  for (const appt of paginated) {
-    const petName = appt.pets?.pet_name || await getPetName(appt.pet_id);
-    const serviceName = appt.services?.name || await getServiceName(appt.service_id);
-    const apptDate = new Date(appt.appointment_date).toLocaleDateString();
-    const apptTime = appt.appointment_time ? convertToAMPM(appt.appointment_time) : "";
-
-    const apptBox = document.createElement("div");
-    apptBox.className = "p-3 bg-white rounded-lg border border-gray-300 mb-2 shadow-sm";
-    apptBox.innerHTML = `
-      <p><strong>Pet:</strong> ${petName}</p>
-      <p><strong>Service:</strong> ${serviceName}</p>
-      <p><strong>Date:</strong> ${apptDate}</p>
-      ${apptTime ? `<p><strong>Time:</strong> ${apptTime}</p>` : ''}
+    content.innerHTML = `
+      <p><strong>Service:</strong> ${app.services?.name || "N/A"}</p>
+      <p><strong>Pet:</strong> ${app.pets?.pet_name || "N/A"}</p>
+      <p><strong>Date:</strong> ${formattedDate}</p>
+      <p><strong>Time:</strong> ${formattedTime}</p>
+      <p><strong>Status:</strong> ${app.status.charAt(0).toUpperCase() + app.status.slice(1)}</p>
     `;
 
-    if (status === "pending") {
-      const cancelBtn = document.createElement("button");
-      cancelBtn.className = "cancel-btn px-3 py-1 bg-red-500 text-white rounded hover:bg-red-600 mt-2";
-      cancelBtn.textContent = "Cancel";
-      cancelBtn.dataset.appointmentId = appt.appointment_id;
-      apptBox.appendChild(cancelBtn);
-    }
-
-    container.appendChild(apptBox); 
+    modal.classList.remove("hidden");
   }
+});
 
-  renderPaginationControls(container, appointments.length, currentPage, status);
-}
+document.getElementById("close-details-modal").addEventListener("click", () => {
+  document.getElementById("appointment-details-modal").classList.add("hidden");
+});
 
-function renderPaginationControls(container, totalItems, currentPage, status) { 
-  const totalPages = Math.ceil(totalItems / 5);
-  if (totalItems <= 1) return;
-
-  const nav = document.createElement("div");
-  nav.className = "flex justify-center space-x-2 mt-4";
-
-  const prevBtn = document.createElement("button");
-  prevBtn.textContent = "Previous";
-  prevBtn.disabled = currentPage === 1;
-  prevBtn.className = "px-3 py-1 bg-gray-200 rounded hover:bg-gray-300 disabled:opacity-50";
-  prevBtn.addEventListener('click', () => {
-    paginationState[status].page--;
-    loadAppointments();
-  });
-
-  const nextBtn = document.createElement('button');
-  nextBtn.textContent = "Next";
-  nextBtn.disabled = currentPage === totalPages;
-  nextBtn.className = "px-3 py-1 bg-gray-200 rounded hover:bg-gray-300 disabled:opacity-50";
-  nextBtn.addEventListener('click', () => {
-    paginationState[status].page++;
-    loadAppointments();
-  });
-
-  nav.appendChild(prevBtn);
-  nav.appendChild(nextBtn);
-  container.appendChild(nav);
+function formatDate(dateStr) {
+  const date = new Date(dateStr);
+  return date.toLocaleDateString(undefined, { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric' });
 }
 
 function debounceLoadAppointments() {
