@@ -318,13 +318,18 @@ function renderAppointments(appointments) {
           <p class="text-sm text-gray-600">${petName} • ${formattedDate} at ${formattedTime}</p>
           ${app.status === 'pending' ? `
             <p class="text-xs text-yellow-700 mt-1">
-              Wait for staff to accept your booking. Once your booking is not accepted for 7 days it will automatically be cancelled.
+              Wait for staff to accept your booking. 
             </p>` : ''
+          }
+          ${app.status === 'accepted' ? `
+            <p class="text-xs text-yellow-700 mt-1">
+              We are excited to see you on your appointed date!
+            </p>
+          ` : ''
           }
         </div>
         <div class="flex gap-2">`;
 
-    // Buttons by status
     if (app.status === 'pending') {
       html += `
       <button class="px-3 py-1 bg-blue-100 text-blue-800 rounded text-sm hover:bg-blue-200" data-details='${JSON.stringify(app)}'>
@@ -338,6 +343,9 @@ function renderAppointments(appointments) {
     if (app.status === 'accepted') {
       if (daysUntilAppointment > 7) {
         html += `
+          <button class="px-3 py-1 bg-blue-100 text-blue-800 rounded text-sm hover:bg-blue-200" data-details='${JSON.stringify(app)}'>
+            Details
+          </button>
           <button class="px-3 py-1 bg-yellow-100 text-yellow-800 rounded text-sm hover:bg-yellow-200" data-resched="${app.appointment_id}">
             Reschedule
           </button>
@@ -591,7 +599,6 @@ async function cancelAppointment(appointmentId) {
   debounceLoadAppointments();
 }
 
-// Handle appointment details modal
 document.addEventListener("click", (e) => {
   if (e.target.matches("[data-details]")) {
     const app = JSON.parse(e.target.getAttribute("data-details"));
@@ -607,6 +614,12 @@ document.addEventListener("click", (e) => {
       <p><strong>Date:</strong> ${formattedDate}</p>
       <p><strong>Time:</strong> ${formattedTime}</p>
       <p><strong>Status:</strong> ${app.status.charAt(0).toUpperCase() + app.status.slice(1)}</p>
+      ${app.status === 'pending' ? `
+            <p class="text-xs text-red-700 mt-1">
+              Note: If your booking is not accepted in 7 days. The booking is automatically cancelled.
+            </p>
+          ` : ''
+          }
     `;
 
     modal.classList.remove("hidden");
@@ -636,6 +649,5 @@ async function getUserId() {
   return data.user.id;
 }
 
-// Expose to window if needed
 window.cancelAppointment = cancelAppointment;
 window.loadAppointments = loadAppointments;
