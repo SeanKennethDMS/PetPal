@@ -258,6 +258,11 @@ async function sendBookingNotification(petId, serviceId, date, time) {
 
 async function loadAppointments() {
   try {
+
+    if (currentTab === 'pending') {
+      await autoCancelOldPendingAppointments();
+    }
+
     const page = paginationState[currentTab].page;
     const from = (page - 1) * pageSize;
     const to = from + pageSize - 1;
@@ -268,6 +273,7 @@ async function loadAppointments() {
         appointment_id,
         appointment_date,
         appointment_time,
+        created_at,
         status,
         pet_id,
         service_id,
@@ -462,6 +468,38 @@ async function loadAvailableTimes() {
   }
 }
 
+async function autoCancelOldPendingAppointments() {
+  try {
+    const sevenDaysAgo = new Date();
+    sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
+
+    const { data: oldAppointments, error } = await supabase
+      .from("appointments")
+      .select("appointment_id, appointment_date, created_at")
+      .eq("status", "pending")
+      .eq("user_id", userId);
+
+    if (error) throw error;
+
+    const toCancel = oldAppointments.filter(app => {
+      const createdAt = new Date(app.created_at);
+      return createdAt <= sevenDaysAgo;
+    });
+
+    if (toCancel.length > 0) {
+      const ids = toCancel.map(a => a.appointment_id);
+      await supabase
+        .from("appointments")
+        .update({ status: "cancelled" })
+        .in("appointment_id", ids);
+
+      console.log("Auto-cancelled:", ids.length, "appointment(s).");
+    }
+  } catch (err) {
+    console.error("Error in auto-cancel logic:", err);
+  }
+}
+
 function populateTimeDropdown(times, emptyMessage) {
   elements.appointmentTime.innerHTML = "";
   
@@ -607,12 +645,22 @@ document.addEventListener("click", (e) => {
 
     const formattedDate = formatDate(app.appointment_date);
     const formattedTime = convertToAMPM(app.appointment_time);
+    
+    const dateBooked = new Date(app.created_at).toLocaleDateString(undefined, {
+      year: 'numeric',
+      month: 'short',
+      day: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit' 
+    });
+    
 
     content.innerHTML = `
       <p><strong>Service:</strong> ${app.services?.name || "N/A"}</p>
       <p><strong>Pet:</strong> ${app.pets?.pet_name || "N/A"}</p>
-      <p><strong>Date:</strong> ${formattedDate}</p>
+      <p><strong>Appointment Date:</strong> ${formattedDate}</p>
       <p><strong>Time:</strong> ${formattedTime}</p>
+      <p><strong>Date Booked:</strong> ${dateBooked}</p>
       <p><strong>Status:</strong> ${app.status.charAt(0).toUpperCase() + app.status.slice(1)}</p>
       ${app.status === 'pending' ? `
             <p class="text-xs text-red-700 mt-1">
