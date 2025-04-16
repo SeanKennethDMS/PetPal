@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>PetPal Scheduler | Verify Email</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="icon" type="image/png" href="./assets/1-removebg-preview.png" />
+    <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@400;500;600;700&display=swap" rel="stylesheet" />
+    <style>
+        body {
+            font-family: 'Bricolage Grotesque', sans-serif;
+        }
+    </style>
+</head>
+<body class="bg-gray-100 min-h-screen flex items-center justify-center p-4">
+    <div class="bg-white rounded-xl shadow-lg w-full max-w-md overflow-hidden">
+        <div class="bg-blue-500 text-white p-6">
+            <h1 class="text-3xl font-bold">Verify Your Email</h1>
+            <p class="opacity-90">One last step to secure your PetPal account</p>
+        </div>
+
+        <div class="p-6 text-center">
+            <p id="status-message" class="text-gray-600 mb-6">
+                Please wait while we verify your email...
+            </p>
+
+            <div id="message" class="hidden p-3 rounded-md text-sm text-white font-medium"></div>
+
+            <div class="mt-6">
+                <a href="../index.html" class="text-blue-500 hover:text-blue-700 text-sm font-medium">Back to Login</a>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script type="module" src="../js/verifySignUp.js"></script>
+</body>
+</html>

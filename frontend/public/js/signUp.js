@@ -49,12 +49,11 @@ async function handleSignup(event) {
             email: email,
             password: password,
             options: {
-                data: {
-                    first_name: firstName,
-                    last_name: lastName
-                }
+              emailRedirectTo: window.location.hostname === '127.0.0.1'
+                ? 'http://127.0.0.1:5501/frontend/public/pages/verifySignUp.html'
+                : 'https://pet-pal-alpha.vercel.app/pages/verifySignUp.html'
             }
-        });
+          });
 
         if (error) throw error;
 
