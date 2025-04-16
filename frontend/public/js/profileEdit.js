@@ -305,7 +305,7 @@ async function loadProfileData() {
             .maybeSingle(); 
 
         if (error) throw error;
-        
+
         if (data) {
             document.getElementById('last-name').textContent = data.last_name || '—';
             document.getElementById('first-name').textContent = data.first_name || '—';
@@ -317,8 +317,16 @@ async function loadProfileData() {
             document.getElementById('province').textContent = data.province || '—';
             document.getElementById('municipality').textContent = data.municipality || '—';
             document.getElementById('barangay').textContent = data.barangay || '—';
+
+            if (!lastSavedTimestamp) {
+                lastSavedTimestamp = new Date().getTime();
+                localStorage.setItem('profileLastSaved', lastSavedTimestamp);
+            }
         } else {
             console.log('No profile data found');
+           
+            lastSavedTimestamp = new Date().getTime();
+            localStorage.setItem('profileLastSaved', lastSavedTimestamp);
         }
     } catch (error) {
         console.error('Error loading profile:', error.message);
