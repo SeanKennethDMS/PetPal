@@ -7,10 +7,9 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="icon" type="image/png" href="../assets/1.png">
     <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@400;700&display=swap" rel="stylesheet">
-    
+    <link href="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.10/index.global.min.css" rel="stylesheet" />
 </head>
 <body class="scroll-smooth font-sans" style="font-family: 'Bricolage Grotesque', Arial, sans-serif;">
-
     <!-- Navbar -->
     <nav class="text-white p-4 flex flex-col sm:flex-row justify-between items-center bg-gradient-to-r from-blue-500 to-blue-800 relative z-50">
         <!-- Logo and App Name -->
@@ -18,11 +17,9 @@
             <img src="../assets/1-removebg-preview.png" alt="PetPal Logo" class="h-10 w-10 object-contain">
             <span>PetPal Scheduler</span>
         </div>
-
         <!-- User Greeting and Notification Icon -->
         <div class="flex items-center space-x-4 pr-2">
             <span id="userGreeting" class="hidden md:block text-white">Welcome, Customer</span>
-          
             <!-- Notification Bell -->
             <div class="relative">
               <button id="notificationBtn" class="relative focus:outline-none">
@@ -36,7 +33,6 @@
                 </span>
               </button>
             </div>
-
             <!-- Hamburger Icon (Mobile Only) -->
             <button id="hamburgerBtn" class="md:hidden focus:outline-none">
               <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -46,30 +42,24 @@
             </button>
         </div>
     </nav>
-
     <!-- Notification Modal -->
     <div id="notificationModal" class="fixed inset-0 bg-black bg-opacity-50 hidden justify-center items-start pt-24 z-50">
         <div class="bg-white rounded-lg shadow-lg w-80">
-          
           <!-- Header -->
           <div class="flex justify-between items-center px-4 py-2 border-b">
             <h2 class="text-lg font-semibold">Notifications</h2>
             <button id="closeNotification" class="text-gray-500 hover:text-red-500">&times;</button>
           </div>
-      
           <!-- Notification Content (Dynamic List) -->
           <div id="notificationList" class="p-4 max-h-64 overflow-y-auto space-y-2">
             <!-- Notifications will be dynamically added here -->
           </div>
-      
           <!-- Footer -->
           <div class="flex justify-end px-4 py-2 border-t">
             <button id="closeNotificationFooter" class="text-blue-600 hover:underline">Close</button>
           </div>
-          
         </div>
       </div>
-
     <!-- Sidebar + Content Container -->
     <div class="flex flex-col md:flex-row h-screen">
         <!-- Sidebar -->
@@ -81,16 +71,13 @@
                     d="M6 18L18 6M6 6l12 12" />
                 </svg>
             </button>
-
             <h2 class="text-xl font-bold mb-4 mt-10 md:mt-0">Customer Dashboard</h2>
-            
             <div class="mb-4">
                 <h3 class="text-gray-400 uppercase text-sm mb-2">Main</h3>
                 <ul>
                     <li><a href="#" class="block py-2 px-3 rounded sidebar-link default-active" data-target="dashboard">Dashboard</a></li>
                 </ul>
             </div>
-        
             <div class="mb-4">
                 <h3 class="text-gray-400 uppercase text-sm mb-2">Profiles</h3>
                 <ul>
@@ -98,7 +85,6 @@
                     <li><a href="#" class="sidebar-link block py-2 px-3 hover:bg-gray-700 rounded" data-target="pet-profile">Pet Profile</a></li>
                 </ul>
             </div>
-        
             <div class="mb-4">
                 <h3 class="text-gray-400 uppercase text-sm mb-2">Booking</h3>
                 <ul>
@@ -106,7 +92,6 @@
                     <li><a href="#" class="sidebar-link block py-2 px-3 hover:bg-gray-700 rounded" data-target="booking-history">Booking History</a></li>
                 </ul>
             </div>
-        
             <div class="mb-4">
                 <h3 class="text-gray-400 uppercase text-sm mb-2">Others</h3>
                 <ul>
@@ -115,21 +100,108 @@
                 </ul>
             </div>
         </aside>
-
         <!-- Main Content -->
         <main class="flex-1 p-4 md:p-6 overflow-y-auto">
             <!-- Dashboard -->
-            <section id="dashboard" class="content-section">
-                <h1 class="text-3xl font-bold">Dashboard Overview</h1>
-                <p class="text-gray-600 mt-2">Welcome to your customer panel.</p>
-
-            </section>
-
+            <section id="dashboard" class="content-section space-y-6">
+                <h1 class="text-3xl font-bold">
+                    Welcome, <span id="customerName">Customer</span>!
+                  </h1>
+                  <p class="text-gray-600" id="dashboardWelcomeText">
+                    Loading your dashboard...
+                  </p>
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mt-6">
+                  <div class="lg:col-span-2 space-y-6">
+                    <div class="bg-white rounded-xl shadow p-5">
+                      <div class="flex justify-between items-center mb-3">
+                        <h2 class="text-xl font-semibold">Recent Activities</h2>
+                        <button class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 transition text-sm">
+                          <svg class="w-5 h-5 inline mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                              d="M12 4v16m8-8H4" />
+                          </svg>
+                          Book Appointment
+                        </button>
+                      </div>
+                      <ul class="space-y-2 text-sm text-gray-700">
+                        <li class="flex items-center gap-2">
+                          <svg class="w-5 h-5 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                              d="M8 7V3m8 4V3m-9 4h10M5 11h14M5 19h14M5 15h14" />
+                          </svg>
+                          You booked a service for Charlie on Apr 14
+                        </li>
+                        <li class="flex items-center gap-2">
+                          <svg class="w-5 h-5 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                              d="M9 12l2 2 4-4m1 5V7a2 2 0 00-2-2H6a2 2 0 00-2 2v10a2 2 0 002 2h6" />
+                          </svg>
+                          Max's vaccination was completed on Apr 10
+                        </li>
+                      </ul>
+                    </div>
+                    <!-- Bar Chart -->
+                    <div class="bg-white rounded-xl shadow p-5">
+                      <h2 class="text-xl font-semibold mb-4">Pet & Service Statistics</h2>
+                      <canvas id="barChart" class="w-full h-64"></canvas>
+                    </div>
+                  </div>
+                  <!-- Right Column (1/3 width) -->
+                  <div class="space-y-6">
+                    <!-- Upcoming Appointments -->
+                    <div class="bg-white rounded-xl shadow p-5">
+                        <h2 class="text-lg font-semibold mb-2">Upcoming Appointments</h2>
+                        <ul class="text-sm text-gray-700 space-y-1">
+                          <li class="flex items-center gap-2">
+                            <svg class="w-5 h-5 text-purple-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M8 7V3m8 4V3m-9 4h10M5 11h14M5 19h14M5 15h14" />
+                            </svg>
+                            Apr 20 - Luna • Grooming
+                          </li>
+                          <li class="flex items-center gap-2">
+                            <svg class="w-5 h-5 text-purple-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M8 7V3m8 4V3m-9 4h10M5 11h14M5 19h14M5 15h14" />
+                            </svg>
+                            Apr 22 - Charlie • Vaccination
+                          </li>
+                        </ul>
+                    </div>
+                    <!-- Calendar Widget -->
+                    <div class="bg-white rounded-xl shadow p-5">
+                      <h2 class="text-lg font-semibold mb-2">Calendar</h2>
+                      <div id="calendar" class="w-full h-[300px] rounded shadow bg-white text-xs">
+                        <!-- Replace with calendar widget -->
+                      </div>
+                    </div>
+                    <!-- Pet List Summary -->
+                    <div class="bg-white rounded-xl shadow p-5">
+                      <h2 class="text-lg font-semibold mb-2">Your Pets</h2>
+                      <ul class="text-sm text-gray-700 space-y-3">
+                        <li class="flex justify-between items-center">
+                          <div>
+                            <p class="font-medium">Charlie</p>
+                            <p class="text-xs text-gray-500">Dog • Golden Retriever</p>
+                          </div>
+                          <button class="text-blue-500 text-sm hover:underline">View Details</button>
+                        </li>
+                        <li class="flex justify-between items-center">
+                          <div>
+                            <p class="font-medium">Luna</p>
+                            <p class="text-xs text-gray-500">Cat • Siamese</p>
+                          </div>
+                          <button class="text-blue-500 text-sm hover:underline">View Details</button>
+                        </li>
+                      </ul>
+                    </div>
+                  </div>
+                </div>
+              </section>
             <!-- Your Profile -->
             <section id="your-profile" class="content-section hidden">
                 <h1 class="text-3xl font-bold">Your Profile</h1>
                 <p class="text-gray-600 mt-2 mb-8">Manage your personal information.</p>
-            
                 <div class="profile-card box border-2 border-blue-400 p-6 rounded-lg shadow-md bg-white flex flex-col gap-6">
                     <!-- Top Row: Personal & Contact Info -->
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -153,7 +225,6 @@
                             <p class="text-gray-700"><span class="font-medium">Middle Name:</span> <span id="middle-name"></span></p>
                             <p class="text-gray-700 mb-2"><span class="font-medium">Birthdate:</span> <span id="birthdate"></span></p>
                         </div>
-            
                         <!-- Contact Info -->
                         <div class="flex flex-col" data-section="contact">
                             <div class="flex justify-between items-center">
@@ -174,7 +245,6 @@
                             <p class="text-gray-700 mb-2"><span class="font-medium">Email:</span> <span id="email"></span></p>
                         </div>
                     </div>
-            
                     <!-- Full-width Address Info -->
                     <div class="flex flex-col" data-section="address">
                         <div class="flex justify-between items-center">
@@ -198,7 +268,6 @@
                         </div>
                     </div>
                 </div>
-            
                 <!-- Profile Edit Modal -->
                 <div id="profile-edit-modal" class="modal hidden fixed inset-0 flex items-center justify-center bg-black bg-opacity-50">
                     <div class="bg-white p-6 rounded-lg w-96 border-2 border-gray-400 relative">
@@ -207,17 +276,14 @@
                                 <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/>
                             </svg>
                         </button>
-                        
                         <div class="modal-tabs mb-4">
                             <button class="tab-btn active" data-tab="personal">Personal</button>
                             <button class="tab-btn" data-tab="contact">Contact</button>
                             <button class="tab-btn" data-tab="address">Address</button>
                         </div>
-
                         <div class="tab-content" id="modal-form-container">
                             <!-- Content will be loaded dynamically based on selected tab -->
                         </div>
-
                         <!-- Save Button -->
                         <button id="save-changes" class="w-full bg-blue-500 text-white py-2 rounded-lg hover:bg-blue-600 mt-4">
                             Save Changes
@@ -225,12 +291,10 @@
                     </div>
                 </div>
             </section>
-            
             <!-- Pet Profile -->
             <section id="pet-profile" class="content-section hidden">
                 <h1 class="text-3xl font-bold">Pet Profile</h1>
                 <p class="text-gray-600 mt-2">Manage your pets' details.</p>
-
                 <!-- Main Container -->
                 <div class="mt-4 p-4 border-2 border-blue-400 rounded-lg shadow-md bg-white flex flex-col md:flex-row gap-4">
                     <!-- Left Section - Pet Display (3/4 width) -->
@@ -242,20 +306,16 @@
                             </svg>
                             <p class="mt-4 text-gray-500">Select a pet to view details</p>
                         </div>
-                        
                         <!-- Pet details display (hidden by default) -->
                         <div id="pet-display" class="hidden">
                             <div class="flex justify-between items-start mb-4">
                                 <h2 id="pet-display-name" class="text-2xl font-bold"></h2>
-                                
                             </div>
-
                             <div class="flex flex-col md:flex-row gap-6">
                                 <!-- Pet Image -->
                                 <div class="w-full md:w-1/3 flex justify-center">
                                     <img id="pet-display-image" src="" alt="Pet Image" class="w-48 h-48 object-cover rounded-full border-4 border-blue-200">
                                 </div>
-                                
                                 <!-- Pet Info -->
                                 <div class="w-full md:w-2/3">
                                     <div class="mt-4 grid grid-cols-2 gap-4">
@@ -278,7 +338,6 @@
                                     </div>
                                 </div>
                             </div>
-                            
                             <!-- Appointment History -->
                             <div class="mt-8">
                                 <h3 class="text-xl font-semibold border-b pb-2">Appointment History</h3>
@@ -293,7 +352,6 @@
                             </div>
                         </div>
                     </div>
-
                     <!-- Right Section - Pet List (1/4 width) -->
                     <div class="w-full md:w-1/4 flex flex-col gap-4">
                         <!-- Add Pet Button -->
@@ -303,7 +361,6 @@
                             </svg>
                             Add Pet
                         </button>
-                        
                         <!-- Pet List -->
                         <div class="border rounded-lg p-2 bg-gray-50">
                             <h3 class="font-medium text-gray-700 mb-2">Your Pets</h3>
@@ -315,15 +372,12 @@
                     </div>
                 </div>
             </section>
-
             <!-- Book an Appointment Section -->
             <section id="book-appointment" class="content-section hidden">
                 <h1 class="text-3xl font-bold text-left mb-2">Book an Appointment</h1>
                 <p class="text-gray-600 text-left mb-6">Schedule a new appointment.</p>
-            
                 <!-- Appointment Card with Tabs -->
                 <div class="bg-white rounded-2xl shadow-md p-6 max-w-6xl mx-auto my-8">
-                
                 <!-- Tabs -->
                 <div class="flex justify-center gap-6 border-b border-gray-200 pb-2 mb-4">
                     <button class="tab-button text-blue-600 font-semibold flex items-center gap-2 border-b-2 border-blue-600 pb-1" data-tab="pending">
@@ -345,7 +399,6 @@
                     Cancelled
                     </button>
                 </div>
-            
                 <!-- Appointment Content Panels -->
                 <div class="h-[320px] overflow-y-auto space-y-4" id="appointmentsContainer">
                     <!-- Dynamic content injected here -->
@@ -353,7 +406,6 @@
                     No appointments found.
                     </div>
                 </div>
-            
                 <!-- Pagination -->
                 <div class="mt-6 flex justify-center gap-2" id="pagination">
                     <button class="px-3 py-1 rounded bg-gray-200 hover:bg-gray-300">1</button>
@@ -362,7 +414,6 @@
                 </div>
                 </div>
             
-                <!-- Action Buttons -->
                 <div class="flex flex-col md:flex-row justify-between md:justify-end space-y-2 md:space-y-0 md:space-x-4 mt-6 max-w-6xl mx-auto">
                     <button id="refresh-booking"
                         class="w-auto self-start px-5 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition">
@@ -373,7 +424,6 @@
                         Book an Appointment
                     </button>
                 </div>
-
                 <!-- Appointment Details Modal -->
                 <div id="appointment-details-modal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50">
                     <div class="bg-white rounded-lg p-6 w-full max-w-md">
@@ -386,7 +436,6 @@
                       </div>
                     </div>
                   </div>
-            
                 <!-- Booking Modal  -->
                 <div id="booking-modal" class="modal hidden fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
                     <div class="bg-white p-6 rounded-lg w-96 border-2 border-gray-400">
@@ -428,15 +477,10 @@
                     </div>
                 </div>
             </section>
-  
-              
-              
-
             <!-- Booking History -->
             <section id="booking-history" class="content-section hidden">
                 <h1 class="text-3xl font-bold">Booking History</h1>
                 <p class="text-gray-600 mt-2">View past appointments.</p>
-
                 <!-- Filters -->
                 <div class="mt-4 flex flex-wrap gap-4">
                     <input type="date" id="filter-date" class="border p-2 rounded">
@@ -452,7 +496,6 @@
                     <input type="text" id="filter-service" placeholder="Service Name" class="border p-2 rounded">   
                     <button id="filter-btn" class="bg-blue-500 text-white px-4 py-2 rounded">Filter</button>
                 </div>
-
                 <!-- Table -->
                 <div class="mt-4 overflow-x-auto w-full">
                     <table class="w-full border-collapse border border-gray-200">
@@ -476,17 +519,13 @@
                         <button class="pagination-btn bg-gray-300 px-3 py-1 rounded" id="next-page">Next</button>
                     </div>
                 </div>
-
                 <!-- Download Button -->
                 <button id="download-pdf" class="mt-4 bg-green-500 text-white px-4 py-2 rounded">
                     Download PDF
                 </button>
             </section>
-            
         </main>
     </div>
-
-
     <script>
         document.addEventListener("DOMContentLoaded", function() {
             const links = document.querySelectorAll(".sidebar-link");
@@ -514,7 +553,6 @@
             showSection("dashboard");
         });
     </script>
-    
    <!-- Modal to Add Pet -->
    <div id="add-pet-modal" class="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center hidden z-50">
         <div class="bg-white p-6 rounded-lg shadow-lg w-full max-w-md">
@@ -557,7 +595,6 @@
             </form>
         </div>
     </div>
-
     <!-- Modal to Edit Pet -->
     <div id="edit-pet-modal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center hidden z-50">
         <div class="bg-white rounded-lg p-6 w-full max-w-md">
@@ -567,57 +604,48 @@
             ✕
             </button>
         </div>
-        
         <form id="edit-pet-form" class="space-y-4">
             <input type="hidden" id="edit-pet-id" name="id">
-            
             <div>
-            <label for="edit-pet-name" class="block text-sm font-medium text-gray-700">Pet Name</label>
-            <input type="text" id="edit-pet-name" name="pet_name" required class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
+                <label for="edit-pet-name" class="block text-sm font-medium text-gray-700">Pet Name</label>
+                <input type="text" id="edit-pet-name" name="pet_name" required class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
             </div>
-            
             <div>
-            <label for="edit-species" class="block text-sm font-medium text-gray-700">Species</label>
-            <select id="edit-species" name="species" required class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
-                <option value="dog">Dog</option>
-                <option value="cat">Cat</option>
-            </select>
+                <label for="edit-species" class="block text-sm font-medium text-gray-700">Species</label>
+                <select id="edit-species" name="species" required class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
+                    <option value="dog">Dog</option>
+                    <option value="cat">Cat</option>
+                </select>
             </div>
-            
             <div>
-            <label for="edit-breed" class="block text-sm font-medium text-gray-700">Breed</label>
-            <select id="edit-breed" name="breed" required class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
-                <option value="">Select Breed</option>
-            </select>
+                <label for="edit-breed" class="block text-sm font-medium text-gray-700">Breed</label>
+                <select id="edit-breed" name="breed" required class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
+                    <option value="">Select Breed</option>
+                </select>
             </div>
-            
             <div>
-            <label for="edit-weight" class="block text-sm font-medium text-gray-700">Weight (kg)</label>
-            <input type="number" id="edit-weight" name="weight" step="0.1" required class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
+                <label for="edit-weight" class="block text-sm font-medium text-gray-700">Weight (kg)</label>
+                <input type="number" id="edit-weight" name="weight" step="0.1" required class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
             </div>
-            
             <div>
-            <label for="edit-birthdate" class="block text-sm font-medium text-gray-700">Birthdate</label>
-            <input type="date" id="edit-birthdate" name="pets_birthdate" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
+                <label for="edit-birthdate" class="block text-sm font-medium text-gray-700">Birthdate</label>
+                <input type="date" id="edit-birthdate" name="pets_birthdate" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
             </div>
-            
             <div>
-            <label for="edit-pet-image" class="block text-sm font-medium text-gray-700">Pet Image</label>
-            <input type="file" id="edit-pet-image" name="pet_image" accept="image/*" class="mt-1 block w-full text-sm text-gray-500">
+                <label for="edit-pet-image" class="block text-sm font-medium text-gray-700">Pet Image</label>
+                <input type="file" id="edit-pet-image" name="pet_image" accept="image/*" class="mt-1 block w-full text-sm text-gray-500">
             </div>
-            
             <div class="flex justify-end space-x-3 pt-4">
-            <button type="button" id="cancel-edit-pet" class="px-4 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-50">
-                Cancel
-            </button>
-            <button type="submit" class="px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700">
-                Save Changes
-            </button>
+                <button type="button" id="cancel-edit-pet" class="px-4 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-50">
+                    Cancel
+                </button>   
+                <button type="submit" class="px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700">
+                    Save Changes
+                </button>
             </div>
         </form>
         </div>
     </div>
-
     <!-- Logout Confirmation Modal -->
     <div id="logoutModal" class="fixed inset-0 flex items-center justify-center bg-gray-900 bg-opacity-50 hidden">
         <div class="bg-white p-6 rounded-lg shadow-lg w-96">
@@ -629,17 +657,13 @@
             </div>
         </div>
     </div>
-
     <!-- Settings Modal -->
     <div id="settingsModal" class="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 hidden z-50">
         <div class="bg-white p-6 rounded-lg shadow-lg w-[400px] relative">
-        
         <!-- Close Button -->
         <button id="closeSettingsBtn" class="absolute top-2 right-2 text-gray-600 hover:text-gray-900 text-2xl">&times;</button>
-        
         <!-- Modal Header -->
         <h2 class="text-xl font-bold mb-4">Settings</h2>
-    
         <!-- App Info Section -->
         <div class="mb-6">
             <h3 class="font-semibold text-gray-700 mb-2">App Information</h3>
@@ -650,10 +674,8 @@
             <a href="#" class="text-blue-500 hover:underline">Contact Support</a>
             </div>
         </div>
-    
         <!-- Divider -->
         <hr class="my-4">
-    
         <!-- Profile Settings -->
         <div class="mb-4">
             <h3 class="font-semibold text-gray-700 mb-2">Profile</h3>
@@ -664,7 +686,6 @@
             <button class="bg-red-500 text-white rounded px-4 py-2 hover:bg-blue-600">Delete Account</button>
             </div>
         </div>
-    
         <!-- Notification Settings -->
         <div class="mb-4">
             <h3 class="font-semibold text-gray-700 mb-2">Notifications</h3>
@@ -677,7 +698,6 @@
             <label for="smsNotif">SMS Reminders</label>
             </div>
         </div>
-    
         <!-- Theme Preferences -->
         <div class="mb-4">
             <h3 class="font-semibold text-gray-700 mb-2">Theme</h3>
@@ -686,16 +706,13 @@
             <button id="darkModeBtn" class="bg-gray-800 text-white px-4 py-2 rounded hover:bg-gray-900">Dark</button>
             </div>
         </div>
-    
         <!-- Save & Close Buttons -->
         <div class="flex justify-end space-x-3 mt-6">
             <button id="closeSettingsBtn2" class="px-4 py-2 bg-gray-400 text-white rounded hover:bg-gray-600">Close</button>
             <button id="saveSettingsBtn" class="px-4 py-2 bg-green-500 text-white rounded hover:bg-green-600">Save Changes</button>
         </div>
-    
         </div>
     </div>
-
     <script>
         document.addEventListener("DOMContentLoaded", function () {
             const hamburgerBtn = document.getElementById('hamburgerBtn');
@@ -717,8 +734,6 @@
             });
         });
     </script>
-
-
     <script>
         document.addEventListener("DOMContentLoaded", function () {
             const userSession = localStorage.getItem("userSession");
@@ -746,27 +761,19 @@
             document.body.classList.remove("hidden");
         });
     </script>
-
     <script src="../js/logout.js"></script>
     <script src="../js/settingsModal.js"></script>
     <script type="module" src="../js/modal/notification.js"></script>
     <script type="module" src="../js/profile.js"></script>
     <script type="module" src="../js/auth.js"></script>
-
-    <!-- Modals for Personal Information -->
     <script type="module" src="../js/profileEdit.js"></script>
-
-    <!-- Modal for Pet Information -->
     <script type="module" src="../js/petInfoModal/petProfile.js"></script>
-
-    <!-- Modal for Book an Appointment -->
     <script type="module" src="../js/BookAnAppointment/bookAnAppointment.js"></script>
-
-    <!-- Js for Booking History -->
     <script type="module" src="../js/bookingHistory/bookingHistory.js"></script>
-
+    <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.10/index.global.min.js"></script>
+    <script type="module" src="../js/calendar.js"></script>
+    <script type="module" src="../js/customerDashboard.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.25/jspdf.plugin.autotable.min.js"></script>
-
 </body>
 </html>
