@@ -113,33 +113,20 @@
                 <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mt-6">
                   <div class="lg:col-span-2 space-y-6">
                     <div class="bg-white rounded-xl shadow p-5">
-                      <div class="flex justify-between items-center mb-3">
-                        <h2 class="text-xl font-semibold">Recent Activities</h2>
-                        <button class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 transition text-sm">
-                          <svg class="w-5 h-5 inline mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                              d="M12 4v16m8-8H4" />
-                          </svg>
-                          Book Appointment
-                        </button>
+                        <div class="flex justify-between items-center mb-3">
+                          <h2 class="text-xl font-semibold">Recent Activities</h2>
+                          <button id="bookNowBtn" class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 transition text-sm">
+                            <svg class="w-5 h-5 inline mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+                            </svg>
+                            Book Appointment
+                          </button>
+                        </div>
+                      
+                        <div id="recentActivities">
+                          <p class="text-sm text-gray-500">Loading recent activities...</p>
+                        </div>
                       </div>
-                      <ul class="space-y-2 text-sm text-gray-700">
-                        <li class="flex items-center gap-2">
-                          <svg class="w-5 h-5 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                              d="M8 7V3m8 4V3m-9 4h10M5 11h14M5 19h14M5 15h14" />
-                          </svg>
-                          You booked a service for Charlie on Apr 14
-                        </li>
-                        <li class="flex items-center gap-2">
-                          <svg class="w-5 h-5 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                              d="M9 12l2 2 4-4m1 5V7a2 2 0 00-2-2H6a2 2 0 00-2 2v10a2 2 0 002 2h6" />
-                          </svg>
-                          Max's vaccination was completed on Apr 10
-                        </li>
-                      </ul>
-                    </div>
                     <!-- Bar Chart -->
                     <div class="bg-white rounded-xl shadow p-5">
                       <h2 class="text-xl font-semibold mb-4">Pet & Service Statistics</h2>
@@ -761,6 +748,7 @@
             document.body.classList.remove("hidden");
         });
     </script>
+
     <script src="../js/logout.js"></script>
     <script src="../js/settingsModal.js"></script>
     <script type="module" src="../js/modal/notification.js"></script>
