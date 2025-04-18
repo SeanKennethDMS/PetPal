@@ -185,6 +185,7 @@ async function loadRecentActivities() {
 }
 
 
+
 async function loadUpcomingAppointments() {
   const upcomingEl = document.getElementById("upcomingAppointments");
 
@@ -237,26 +238,24 @@ async function loadUpcomingAppointments() {
     upcomingEl.innerHTML = `<p class="text-sm text-red-500">Failed to load upcoming appointments.</p>`;
   }
 }
+function getCountdownMessage(appointmentDate) {
+  const today = new Date();
+  const oneDay = 1000 * 60 * 60 * 24;
+  
+  const todayMid = new Date(today.getFullYear(), today.getMonth(), today.getDate());
+  const appMid = new Date(appointmentDate.getFullYear(), appointmentDate.getMonth(), appointmentDate.getDate());
+  
+  const diff = Math.round((appMid - todayMid) / oneDay);
 
-
-  function getCountdownMessage(appointmentDate) {
-    const today = new Date();
-    const oneDay = 1000 * 60 * 60 * 24;
+  if (diff === 0)
+    return `<span class="text-blue-600">Your appointment is today!</span>`;
+  if (diff === 1)
+    return `<span class="text-amber-600">Your appointment is tomorrow.</span>`;
+  if (diff > 1 && diff <= 5)
+    return `<span class="text-slate-600">Your appointment is in ${diff} days.</span>`;
   
-    const todayMid = new Date(today.getFullYear(), today.getMonth(), today.getDate());
-    const appMid = new Date(appointmentDate.getFullYear(), appointmentDate.getMonth(), appointmentDate.getDate());
-  
-    const diff = Math.round((appMid - todayMid) / oneDay);
-  
-    if (diff === 0)
-      return `<span class="text-blue-600">Your appointment is today!</span>`;
-    if (diff === 1)
-      return `<span class="text-amber-600">Your appointment is tomorrow.</span>`;
-    if (diff > 1 && diff <= 5)
-      return `<span class="text-slate-600">Your appointment is in ${diff} days.</span>`;
-  
-    return `<span class="text-gray-500">See you on your appointed date!</span>`;
-  }
+  return `<span class="text-gray-500">See you on your appointed date!</span>`;
+}
   
 function formatTime(timeStr) {
   if (!timeStr) return '';
