@@ -151,25 +151,24 @@
                     </div>
                     <!-- Pet List Summary -->
                     <div class="bg-white rounded-xl shadow p-5">
-                      <h2 class="text-lg font-semibold mb-2">Your Pets</h2>
-                      <ul class="text-sm text-gray-700 space-y-3">
-                        <li class="flex justify-between items-center">
-                          <div>
-                            <p class="font-medium">Charlie</p>
-                            <p class="text-xs text-gray-500">Dog • Golden Retriever</p>
-                          </div>
-                          <button class="text-blue-500 text-sm hover:underline">View Details</button>
-                        </li>
-                        <li class="flex justify-between items-center">
-                          <div>
-                            <p class="font-medium">Luna</p>
-                            <p class="text-xs text-gray-500">Cat • Siamese</p>
-                          </div>
-                          <button class="text-blue-500 text-sm hover:underline">View Details</button>
-                        </li>
-                      </ul>
-                    </div>
+                        <h2 class="text-lg font-semibold mb-2">Your Pets</h2>
+                        <ul id="petList" class="text-base text-gray-700 font-medium space-y-3">
+                          <li>Loading pets...</li>
+                        </ul>
+                      </div>
                   </div>
+                  <!-- Pet Details Modal -->
+                    <div id="petModal" class="hidden fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center">
+                        <div class="bg-white rounded-lg shadow-xl p-6 w-full max-w-md">
+                        <h3 class="text-xl font-bold mb-4">Pet Details</h3>
+                        <div id="petModalContent" class="text-base space-y-2 font-medium text-gray-700">
+                            <!-- Populated by JS -->
+                        </div>
+                        <div class="flex justify-end mt-4">
+                            <button id="closePetModal" class="bg-gray-200 hover:bg-gray-300 text-sm px-4 py-2 rounded">Close</button>
+                        </div>
+                        </div>
+                    </div>
                 </div>
               </section>
             <!-- Your Profile -->

@@ -2,6 +2,7 @@ import supabase from './supabaseClient.js';
 
 loadRecentActivities();
 loadUpcomingAppointments();
+loadPetList();
 
 document.addEventListener('DOMContentLoaded', async () => {
     const nameEl = document.getElementById('customerName');
@@ -50,6 +51,96 @@ document.getElementById("bookNowBtn").addEventListener("click", () => {
       bookSection.classList.remove("hidden");
     }
   });
+
+async function loadPetList() {
+  const petListEl = document.getElementById ('petList');
+
+  try {
+    const { data: authData } = await supabase.auth.getUser();
+    const userId = authData.user.id;
+
+    const { data: pets, error } = await supabase
+      .from('pets')
+      .select('id, pet_name, species, breed, weight, pets_birthdate, image_url')
+      .eq('owner_id', userId);
+
+    if(error || !pets.length) {
+      petListEl.innerHTML = `<li class="text-sm text-gray-500">You have no pets listed.</li>`;
+      return;
+    }
+    petListEl.innerHTML = pets.map(pet => `
+      <li class="flex justify-between items-center">
+        <div>
+          <p class="font-medium">${pet.pet_name}</p>
+          <p class="text-xs text-gray-500">${pet.species} • ${pet.breed}</p>
+        </div>
+        <button class="text-blue-500 text-sm hover:underline" data-pet='${JSON.stringify(pet)}'>
+          View Details
+        </button>
+      </li>
+    `).join('');
+
+      document.querySelectorAll('[data-pet]').forEach(button => {
+        button.addEventListener('click', () => {
+          const pet = JSON.parse(button.getAttribute('data-pet'));
+          showPetModal(pet);
+        });
+      });
+  } catch (err) {
+    console.error('Error loading pets:', err);
+    petListEl.innerHTML = `<li class="text-lg text-red-500">Failed to load pets.</li>`;
+  }
+}
+
+function showPetModal(pet) {
+  const modal = document.getElementById("petModal");
+  const content = document.getElementById("petModalContent");
+  let imageHTML = `
+    <div class="w-20 h-20 rounded-full mx-auto mb-4 bg-gray-200 flex items-center justify-center text-gray-500 text-sm">
+      No Image
+    </div>
+  `;
+  if (pet.image_url && pet.image_url.startsWith('http')) {
+    imageHTML = `
+      <img src="${pet.image_url}" alt="${pet.pet_name}" 
+           class="w-20 h-20 object-cover rounded-full mx-auto mb-4 shadow" />
+    `;
+  } 
+  else if (pet.image_url && pet.image_url.trim() !== '') {
+    const { data, error } = supabase
+      .storage
+      .from('pet_images')
+      .getPublicUrl(pet.image_url);
+    if (data?.publicUrl && !error) {
+      imageHTML = `
+        <img src="${data.publicUrl}" alt="${pet.pet_name}" 
+             class="w-20 h-20 object-cover rounded-full mx-auto mb-4 shadow" />
+      `;
+    }
+  } 
+  else {
+    imageHTML = `
+      <img src="../assets/images/${pet.species === 'dog' ? 'defaultDogIcon.png' : 'defaultCatIcon.png'}"
+           alt="Default Pet Image"
+           class="w-20 h-20 object-cover rounded-full mx-auto mb-4 shadow" />
+    `;
+  }
+  content.innerHTML = `
+    ${imageHTML}
+    <p class="text-xl font-bold text-center text-gray-800">${pet.pet_name}</p>
+    <p><strong>Species:</strong> ${pet.species}</p>
+    <p><strong>Breed:</strong> ${pet.breed}</p>
+    ${pet.weight ? `<p><strong>Weight:</strong> ${pet.weight} kg</p>` : ""}
+    ${pet.pets_birthdate ? `<p><strong>Birthdate:</strong> ${new Date(pet.pets_birthdate).toLocaleDateString()}</p>` : ""}
+  `;
+  modal.classList.remove("hidden");
+}
+
+
+
+document.getElementById('closePetModal').addEventListener('click', () => {
+  document.getElementById('petModal').classList.add('hidden');
+});
 
 async function loadRecentActivities() {
   const activitiesEl = document.getElementById("recentActivities");
@@ -158,11 +249,14 @@ async function loadUpcomingAppointments() {
   
     const diff = Math.round((appMid - todayMid) / oneDay);
   
-    if (diff === 0) return "Your appointment is today!";
-    if (diff === 1) return "Your appointment is tomorrow.";
-    if (diff > 1 && diff <= 5) return `Your appointment is in ${diff} days.`;
+    if (diff === 0)
+      return `<span class="text-blue-600">Your appointment is today!</span>`;
+    if (diff === 1)
+      return `<span class="text-amber-600">Your appointment is tomorrow.</span>`;
+    if (diff > 1 && diff <= 5)
+      return `<span class="text-slate-600">Your appointment is in ${diff} days.</span>`;
   
-    return "See you on your appointed date!";
+    return `<span class="text-gray-500">See you on your appointed date!</span>`;
   }
   
 function formatTime(timeStr) {
