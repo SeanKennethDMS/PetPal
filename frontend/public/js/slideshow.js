@@ -1,8 +1,8 @@
 const images = [
-    '../assets/Slideshow/2025-Formula1-Ferrari-SF-25-001-1080.jpg',
-    '../assets/Slideshow/2024-Formula1-Mercedes-AMG-W15-F1-E-Performance-001-1080.jpg',
-    '../assets/Slideshow/2024-Formula1-McLaren-MCL38-002-1080.jpg',
-    '../assets/Slideshow/2025-Formula1-Ferrari-SF-25-001-1080.jpg'
+    '../assets/Slideshow/Welcome to PetPal Scheduler.jpg',
+    '../assets/Slideshow/surgerySample.jpg',
+    '../assets/Slideshow/congrats.jpg',
+    '../assets/Slideshow/ceremony.jpg'
   ];
   
   let currentIndex = 0;
