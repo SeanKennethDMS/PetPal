@@ -681,17 +681,13 @@
         </div>
     </div>
 
-    <!-- Settings Modal -->
     <div id="settingsModal" class="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 hidden z-50">
         <div class="bg-white p-6 rounded-lg shadow-lg w-[400px] relative">
         
-        <!-- Close Button -->
         <button id="closeSettingsBtn" class="absolute top-2 right-2 text-gray-600 hover:text-gray-900 text-2xl">&times;</button>
         
-        <!-- Modal Header -->
         <h2 class="text-xl font-bold mb-4">Settings</h2>
     
-        <!-- App Info Section -->
         <div class="mb-6">
             <h3 class="font-semibold text-gray-700 mb-2">App Information</h3>
             <div class="text-sm text-gray-600 space-y-2">
@@ -705,7 +701,6 @@
         <!-- Divider -->
         <hr class="my-4">
     
-        <!-- Profile Settings -->
         <div class="mb-4">
             <h3 class="font-semibold text-gray-700 mb-2">Profile</h3>
             <div class="flex flex-col space-y-2">
@@ -715,7 +710,6 @@
             </div>
         </div>
     
-        <!-- Notification Settings -->
         <div class="mb-4">
             <h3 class="font-semibold text-gray-700 mb-2">Notifications</h3>
             <div class="flex items-center space-x-2">
@@ -728,7 +722,6 @@
             </div>
         </div>
     
-        <!-- Theme Preferences -->
         <div class="mb-4">
             <h3 class="font-semibold text-gray-700 mb-2">Theme</h3>
             <div class="flex items-center space-x-4">
@@ -737,7 +730,6 @@
             </div>
         </div>
     
-        <!-- Save & Close Buttons -->
         <div class="flex justify-end space-x-3 mt-6">
             <button id="closeSettingsBtn2" class="px-4 py-2 bg-gray-400 text-white rounded hover:bg-gray-600">Close</button>
             <button id="saveSettingsBtn" class="px-4 py-2 bg-green-500 text-white rounded hover:bg-green-600">Save Changes</button>
@@ -760,14 +752,11 @@
                 link.addEventListener("click", function (event) {
                     event.preventDefault();
 
-                    // Hide all content sections
                     contentSections.forEach(section => section.classList.add("hidden"));
 
-                    // Show the selected section
                     const targetSection = document.getElementById(this.dataset.target);
                     targetSection.classList.remove("hidden");
 
-                    // Update active sidebar link
                     setActive(this);
                 });
             });
@@ -792,7 +781,6 @@
             const userRole = localStorage.getItem("userRole");
             const currentPage = window.location.pathname;
 
-            // Check if user is logged in
             if (!userSession) {
                 alert("Access denied. Please log in.");
                 window.location.href = "/frontend/public/index.html";
@@ -812,7 +800,6 @@
                 return;
             }
 
-            //If authorized, show the page
             document.body.classList.remove("hidden");
         });
     </script>
