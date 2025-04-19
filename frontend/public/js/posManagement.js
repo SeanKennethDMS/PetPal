@@ -1,13 +1,11 @@
-// posManagement.js
 'use strict';
 
 import supabase from '../js/supabaseClient.js';
 
 document.addEventListener('DOMContentLoaded', async () => {
-    // DOM Elements
     const searchItemInput = document.getElementById('searchItem');
     const addToCartBtn = document.getElementById('addToCartBtn');
-    const browseMoreBtn = document.getElementById('browseMoreBtn'); // New button
+    const browseMoreBtn = document.getElementById('browseMoreBtn');
     const cartTable = document.getElementById('cartTable');
     const transactionTable = document.getElementById('transactionTable');
     const completeTransactionBtn = document.getElementById('completeTransactionBtn');
@@ -15,29 +13,24 @@ document.addEventListener('DOMContentLoaded', async () => {
     const emailReceiptBtn = document.getElementById('emailReceiptBtn');
     const paymentMethodSelect = document.getElementById('paymentMethod');
     
-    // Modal Elements (will be created dynamically)
     let browseModal;
     let productCategorySelect;
     let productSubCategorySelect;
     let serviceCategorySelect;
     let serviceSubCategorySelect;
-    let activeTab = 'products'; // 'products' or 'services'
+    let activeTab = 'products';
     
-    // State
     let cart = [];
     let products = [];
     let services = [];
     let productCategories = [];
     let serviceCategories = [];
     
-    // Initialize POS
     await loadProductsAndServices();
     await loadRecentTransactions();
     
-    // Create the Browse More modal
     createBrowseModal();
     
-    // Event Listeners
     window.addEventListener('productAdded', async () => {
         await loadProductsAndServices();
         if (browseModal && !browseModal.classList.contains('hidden')) {
@@ -123,34 +116,28 @@ document.addEventListener('DOMContentLoaded', async () => {
         
         document.body.appendChild(browseModal);
         
-        // Get references to modal elements
         productCategorySelect = browseModal.querySelector('#productCategory');
         productSubCategorySelect = browseModal.querySelector('#productSubCategory');
         serviceCategorySelect = browseModal.querySelector('#serviceCategory');
         serviceSubCategorySelect = browseModal.querySelector('#serviceSubCategory');
         
-        // Add event listeners for modal
         browseModal.querySelector('.close-modal').addEventListener('click', closeBrowseModal);
         browseModal.querySelector('.cancel-btn').addEventListener('click', closeBrowseModal);
         browseModal.querySelector('.add-to-cart-btn').addEventListener('click', addSelectedToCart);
         
-        // Tab switching
         browseModal.querySelectorAll('.tab-btn').forEach(btn => {
             btn.addEventListener('click', () => {
                 activeTab = btn.dataset.tab;
                 
-                // Update all tab buttons
                 browseModal.querySelectorAll('.tab-btn').forEach(t => {
                     const isActive = t.dataset.tab === activeTab;
                     
-                    // Toggle each class individually
                     t.classList.toggle('text-blue-600', isActive);
                     t.classList.toggle('border-b-2', isActive);
                     t.classList.toggle('border-blue-600', isActive);
                     t.classList.toggle('text-gray-600', !isActive);
                 });
                 
-                // Toggle tab content visibility
                 browseModal.querySelector('#products-tab').classList.toggle('hidden', activeTab !== 'products');
                 browseModal.querySelector('#services-tab').classList.toggle('hidden', activeTab !== 'services');
                 
@@ -158,7 +145,6 @@ document.addEventListener('DOMContentLoaded', async () => {
             });
         });
         
-        // Category selection changes
         productCategorySelect.addEventListener('change', () => {
             updateProductSubCategories();
             updateAddToCartButtonState();
@@ -169,18 +155,15 @@ document.addEventListener('DOMContentLoaded', async () => {
             updateAddToCartButtonState();
         });
         
-        // Subcategory selection changes
         productSubCategorySelect.addEventListener('change', updateAddToCartButtonState);
         serviceSubCategorySelect.addEventListener('change', updateAddToCartButtonState);
         
-        // Close modal when clicking outside
         browseModal.addEventListener('click', (e) => {
             if (e.target === browseModal) {
                 closeBrowseModal();
             }
         });
         
-        // Close modal with ESC key
         document.addEventListener('keydown', (e) => {
             if (e.key === 'Escape' && !browseModal.classList.contains('hidden')) {
                 closeBrowseModal();
@@ -188,12 +171,9 @@ document.addEventListener('DOMContentLoaded', async () => {
         });
     }
     
-    // Open the Browse More modal
     function openBrowseModal() {
-        // Populate categories
         populateCategories();
         
-        // Reset selections
         productCategorySelect.value = '';
         productSubCategorySelect.innerHTML = '<option value="">Select an item</option>';
         productSubCategorySelect.disabled = true;
@@ -201,32 +181,26 @@ document.addEventListener('DOMContentLoaded', async () => {
         serviceSubCategorySelect.innerHTML = '<option value="">Select an item</option>';
         serviceSubCategorySelect.disabled = true;
         
-        // Show modal
         browseModal.classList.remove('hidden');
         document.body.style.overflow = 'hidden';
     }
     
-    // Close the Browse More modal
     function closeBrowseModal() {
         browseModal.classList.add('hidden');
         document.body.style.overflow = '';
     }
     
-    // Populate category dropdowns
     function populateCategories() {
         try {
-            // Get unique product categories
             productCategories = Array.from(new Set(products.map(p => p.category))).filter(Boolean);
             productCategorySelect.innerHTML = '<option value="">Select a category</option>' + 
                 productCategories.map(cat => `<option value="${cat}">${cat}</option>`).join('');
             
-            // Get unique service categories
             serviceCategories = Array.from(new Set(services.map(s => s.category))).filter(Boolean);
             serviceCategorySelect.innerHTML = '<option value="">Select a category</option>' + 
                 serviceCategories.map(cat => `<option value="${cat}">${cat}</option>`).join('');
         } catch (error) {
             console.error('Error populating categories:', error);
-            // Fallback to empty categories if error occurs
             productCategories = [];
             serviceCategories = [];
             productCategorySelect.innerHTML = '<option value="">No categories available</option>';
@@ -234,7 +208,6 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
     }
     
-    // Update product subcategories based on selected category
     function updateProductSubCategories() {
         const selectedCategory = productCategorySelect.value;
         productSubCategorySelect.innerHTML = '<option value="">Select an item</option>';
@@ -247,7 +220,6 @@ document.addEventListener('DOMContentLoaded', async () => {
                 const option = document.createElement('option');
                 option.value = product.id;
                 
-                // Visual indicators only - no modal
                 if (product.quantity <= 0) {
                     option.textContent = `${product.name} (Out of stock)`;
                     option.disabled = true;
@@ -264,7 +236,6 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
     }
     
-    // Update service subcategories based on selected category
     function updateServiceSubCategories() {
         const selectedCategory = serviceCategorySelect.value;
         serviceSubCategorySelect.innerHTML = '<option value="">Select an item</option>';
@@ -277,12 +248,10 @@ document.addEventListener('DOMContentLoaded', async () => {
                 const option = document.createElement('option');
                 option.value = service.id;
                 
-                // Handle JSONB price format
                 let priceText = 'Price varies';
                 let priceValue = 0;
                 
                 if (service.price && typeof service.price === 'object') {
-                    // Get the first price value from the JSONB object
                     const firstPriceKey = Object.keys(service.price)[0];
                     if (firstPriceKey) {
                         priceValue = service.price[firstPriceKey];
@@ -302,7 +271,6 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
     }
     
-    // Update the Add to Cart button state based on selections
     function updateAddToCartButtonState() {
         const addToCartBtn = browseModal.querySelector('.add-to-cart-btn');
         
@@ -313,7 +281,6 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
     }
     
-    // Add the selected item to cart
     async function addSelectedToCart() {
         let item, itemType, price;
         
@@ -323,7 +290,6 @@ document.addEventListener('DOMContentLoaded', async () => {
             itemType = 'product';
             price = item.price;
             
-            // Silent stock check (no modal)
             if (item.quantity <= 0) {
                 showToast(`${item.name} is out of stock!`, 'error');
                 return;
@@ -338,7 +304,6 @@ document.addEventListener('DOMContentLoaded', async () => {
         
         if (!item) return;
         
-        // Rest of the logic (add to cart, render, close modal)
         const existingItem = cart.find(i => i.id === item.id && i.type === itemType);
         
         if (existingItem) {
@@ -356,15 +321,13 @@ document.addEventListener('DOMContentLoaded', async () => {
         renderCart();
         calculateTotals();
         closeBrowseModal();
-        showToast(`${item.name} added to cart!`); // Use toast instead of alert
+        showToast(`${item.name} added to cart!`); 
     }
     
-    // Functions
     
     //Load products and services from database
     async function loadProductsAndServices() {
         try {
-            // Load active products
             const { data: productsData, error: productsError } = await supabase
                 .from('products')
                 .select('*')
@@ -373,7 +336,6 @@ document.addEventListener('DOMContentLoaded', async () => {
             
             if (productsError) throw productsError;
             
-            // Load active services
             const { data: servicesData, error: servicesError } = await supabase
                 .from('services')
                 .select('*')
@@ -391,12 +353,10 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
     }
     
-    //Search for products and services
     async function searchItems() {
         const searchTerm = searchItemInput.value.trim().toLowerCase();
         if (!searchTerm) return;
         
-        // Filter products and services
         const filteredProducts = products.filter(p => 
             p.name.toLowerCase().includes(searchTerm) ||
             (p.sku && p.sku.toLowerCase().includes(searchTerm)) ||
@@ -407,7 +367,6 @@ document.addEventListener('DOMContentLoaded', async () => {
             (s.category && s.category.toLowerCase().includes(searchTerm)) ||
             (s.sub_category && s.sub_category.toLowerCase().includes(searchTerm)));
         
-        // In a real app, you might show these in a dropdown
         console.log('Search results - Products:', filteredProducts);
         console.log('Search results - Services:', filteredServices);
     }
@@ -428,7 +387,6 @@ document.addEventListener('DOMContentLoaded', async () => {
         return data.quantity >= quantityToAdd;
     }
     
-    // Add item to cart
     async function addToCart() {
         const searchTerm = searchItemInput.value.trim();
         if (!searchTerm) {
@@ -542,7 +500,6 @@ document.addEventListener('DOMContentLoaded', async () => {
             });
         });
         
-        // Add event listeners for remove buttons
         document.querySelectorAll('.remove-item').forEach(button => {
             button.addEventListener('click', (e) => {
                 const index = parseInt(e.target.getAttribute('data-index'));
@@ -553,20 +510,15 @@ document.addEventListener('DOMContentLoaded', async () => {
         });
     }
     
-    // Calculate and display totals
     function calculateTotals() {
-        // Calculate proper subtotal
         const subtotal = cart.reduce((sum, item) => {
             return sum + (Number(item.price) * item.quantity);
         }, 0);
         
-        // Calculate tax (12% of subtotal)
         const tax = subtotal * 0.12;
         
-        // Calculate total
         const total = subtotal + tax;
         
-        // Safely update the DOM elements
         const updateElement = (selector, value) => {
             const el = document.querySelector(selector);
             if (el) el.textContent = value;
@@ -626,8 +578,6 @@ document.addEventListener('DOMContentLoaded', async () => {
             }
         }
     
-        // Generate a unique transaction code
-        const transactionCode = 'TXN-' + Date.now().toString(36).toUpperCase();
         
         // Calculate amounts
         const subtotal = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
@@ -635,7 +585,6 @@ document.addEventListener('DOMContentLoaded', async () => {
         const total = subtotal + tax;
     
         try {
-            // Insert transaction
             const { data: transaction, error: transactionError } = await supabase
                 .from('transactions')
                 .insert({
@@ -670,7 +619,6 @@ document.addEventListener('DOMContentLoaded', async () => {
             if (itemsError) throw itemsError;
     
     
-            // Update inventory
             const productUpdates = cart
                 .filter(item => item.type === 'product')
                 .map(item => ({
@@ -686,7 +634,6 @@ document.addEventListener('DOMContentLoaded', async () => {
                 if (updateError) throw updateError;
             }
     
-            // Success
             cart = [];
             renderCart();
             calculateTotals();
@@ -702,7 +649,6 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
     }
     
-    // Load recent transactions
     async function loadRecentTransactions() {
         try {
             const { data, error } = await supabase
@@ -732,7 +678,6 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
     }
     
-    // Render transaction history
     function renderTransactions(transactions) {
         transactionTable.innerHTML = '';
         
@@ -750,7 +695,6 @@ document.addEventListener('DOMContentLoaded', async () => {
             const row = document.createElement('tr');
             row.className = 'hover:bg-gray-50';
             
-            // Count total items
             const itemCount = tx.transaction_items.reduce((sum, item) => sum + item.quantity, 0);
             
             row.innerHTML = `
@@ -765,27 +709,22 @@ document.addEventListener('DOMContentLoaded', async () => {
         });
     }
     
-    // Print receipt (placeholder)
     function printReceipt() {
         if (cart.length === 0) {
             alert('No items in cart to print');
             return;
         }
         alert('Receipt printing would be implemented here');
-        // In a real app, you would generate a printable receipt
     }
     
-    // Email receipt (placeholder)
     function emailReceipt() {
         if (cart.length === 0) {
             alert('No items in cart to email');
             return;
         }
         alert('Email receipt would be implemented here');
-        // In a real app, you would send receipt via email
     }
     
-    // Debounce function for search
     function debounce(func, delay = 300) {
         let timeoutId;
         return (...args) => {
