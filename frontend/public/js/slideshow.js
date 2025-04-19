@@ -1,8 +1,6 @@
 const images = [
-    '../assets/Slideshow/Welcome to PetPal Scheduler.jpg',
-    '../assets/Slideshow/surgerySample.jpg',
-    '../assets/Slideshow/congrats.jpg',
-    '../assets/Slideshow/ceremony.jpg'
+    '../assets/Slideshow/Welcome to PetPal Scheduler.jpg'
+    
   ];
   
   let currentIndex = 0;

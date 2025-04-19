@@ -118,7 +118,6 @@
                         <h3 class="text-gray-400 uppercase text-sm mb-2">Others</h3>
                         <ul>
                             <li><a href="#" id="openSettingsModalSidebar" class="block py-2 px-3 rounded hover:bg-blue-600">Settings</a></li>
-                            <li><a href="#" class="sidebar-link block py-2 px-3 hover:bg-gray-700 rounded" data-target="backup">Backup</a></li>
                             <li><a href="#" id="openLogoutModalSidebar" class="block py-2 px-3 rounded text-red-400 hover:bg-red-600">Logout</a></li>
                         </ul>
                     </div>
@@ -153,59 +152,118 @@
         <!-- Main Content -->
         <main class="flex-1 p-4 md:p-6 overflow-y-auto">
             <!-- Dashboard -->
-            <section id="dashboard" class="content-section grid grid-cols-1 lg:grid-cols-4 gap-4 md:gap-6">
-                <div class="welcome-header mb-8 px-4">
-                    <h1 class="text-xl sm:text-2xl md:text-3xl font-bold text-gray-800">PetPal Scheduler Dashboard</h1>
-                    <p class="text-gray-600 mt-1">Here's what's happening today</p>
-                </div>
+            <section id="dashboard" class="content-section space-y-6">
+
+                <!-- Welcome Header -->
+                <h1 class="text-3xl font-bold">Welcome, Admin!</h1>
+                <p class="text-gray-600">Here's what's happening today.</p>
             
-                <!-- Row 1: Summary Cards -->
-                <div class="lg:col-span-4 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-                    <div class="summary-card bg-white p-4 rounded-lg shadow border-l-4 border-blue-500">
-                        <h3 class="font-semibold text-gray-600">Today's Appointments</h3>
-                        <p id="todayAppointments" class="text-2xl font-bold">0</p>
-                        <p id="appointmentsChange" class="text-sm text-green-600">Loading...</p>
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mt-6">
+            
+                <!-- Left Column (2/3 width) -->
+                <div class="lg:col-span-2 space-y-6">
+            
+                    <!-- Special Offer / Empowering Message -->
+                    <div class="bg-gradient-to-r from-blue-500 to-indigo-500 text-white rounded-xl p-5 shadow flex items-center justify-between">
+                    <div>
+                        <h2 class="text-lg font-bold">Have a Good Day Ahead!</h2>
+                        <p class="text-sm">Every paw we care for today brings more love into the world — let's make it a tail-wagging kind of day!</p>
                     </div>
-                    <div class="summary-card bg-white p-4 rounded-lg shadow border-l-4 border-green-500">
-                        <h3 class="font-semibold text-gray-600">Monthly Revenue</h3>
-                        <p id="monthlyRevenue" class="text-2xl font-bold">$0</p>
-                        <p id="revenueChange" class="text-sm text-green-600">Loading...</p>
                     </div>
-                    <div class="summary-card bg-white p-4 rounded-lg shadow border-l-4 border-yellow-500">
-                        <h3 class="font-semibold text-gray-600">Pending Requests</h3>
-                        <p id="pendingRequests" class="text-2xl font-bold">0</p>
-                        <p class="text-sm">Waiting approval</p>
-                    </div>
-                    <div class="summary-card bg-white p-4 rounded-lg shadow border-l-4 border-red-500">
-                        <h3 class="font-semibold text-gray-600">Low Stock Items</h3>
-                        <p id="lowStockItems" class="text-2xl font-bold">0</p>
-                        <p class="text-sm text-red-600">Needs reorder</p>
-                    </div>
-                </div>
-                
-                <!-- Row 2: Main Content -->
-                <div class="lg:col-span-3 bg-white p-6 rounded-lg shadow">
-                    <div id="appointments-container" class="max-h-[calc(100vh-200px)] overflow-y-auto">
-                        <!-- Appointments will be rendered here -->
-                    </div>
-                </div>
-                
-                <div class="lg:col-span-1 space-y-4">
-                    <div class="bg-white p-4 rounded-lg shadow">
-                        <h3 class="font-bold mb-2">⚠️ Critical Alerts</h3>
-                        <div id="critical-alerts" class="space-y-2">
-                            <!-- Dynamic alerts will appear here -->
+            
+                    <!-- Services To-Do -->
+                    <div class="bg-white rounded-xl shadow p-5">
+                        <div class="flex justify-between items-center mb-3">
+                        <h2 class="text-xl font-semibold">Services To-Do</h2>
+                        </div>
+                        <div id="todaysSchedule" class="space-y-3 max-h-[400px] overflow-y-auto">
+                        <!-- Appointment list with pagination, each item expandable -->
+                        </div>
+                        <div id="schedulePagination" class="flex justify-end mt-4 space-x-2">
+                        <!-- Pagination buttons -->
                         </div>
                     </div>
                     
-                    <div class="bg-white p-4 rounded-lg shadow">
-                        <h3 class="font-bold mb-2">📊 Quick Stats</h3>
-                        <div id="quick-stats" class="grid grid-cols-2 gap-2">
-                            <!-- Stats will be rendered here -->
+                    <!-- Low Stock + Critical Alerts -->
+                    <div class="bg-white rounded-xl shadow p-5">
+                        <h2 class="text-lg font-semibold mb-3">⚠️ Low Stock Items & Critical Alerts</h2>
+                        <div id="lowStockAndAlerts" class="space-y-2 max-h-[350px] overflow-y-auto">
+                        <!-- Render low stock and critical alerts -->
                         </div>
                     </div>
+                                
+                    <!-- Quick Stats Section -->
+                    <div class="bg-white rounded-xl shadow p-5">
+                    <h2 class="text-xl font-semibold mb-4">📊 Quick Stats</h2>
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+                        <!-- Summary Metrics -->
+                        <div>
+                        <h3 class="font-medium text-gray-700">Inventory Report</h3>
+                        <p id="inventoryStats" class="text-lg text-blue-500 font-bold">Loading...</p>
+                        </div>
+                        <div>
+                        <h3 class="font-medium text-gray-700">Sales Report</h3>
+                        <p id="salesStats" class="text-lg text-green-500 font-bold">Loading...</p>
+                        </div>
+                        <div>
+                        <h3 class="font-medium text-gray-700">POS Summary</h3>
+                        <p id="posStats" class="text-lg text-purple-500 font-bold">Loading...</p>
+                        </div>
+                    </div>
+            
+                    <!-- Service Pie Chart -->
+                    <div>
+                        <h3 class="text-gray-700 font-semibold mb-2">Most Availed Services</h3>
+                        <canvas id="servicesPieChart" class="w-full max-w-sm mx-auto"></canvas>
+                        <div id="servicesLegend" class="text-sm mt-4 text-gray-600 flex flex-wrap gap-3 justify-center">
+                        <!-- Chart.js Legend -->
+                        </div>
+                    </div>
+                    </div>
                 </div>
+            
+                <!-- Right Column (1/3 width) -->
+                <div class="space-y-6">
+            
+                    <!-- Today's Appointments -->
+                    <div class="bg-white p-4 rounded-lg shadow border-l-4 border-blue-500">
+                        <h3 class="font-semibold text-gray-600 mb-2">Today's Appointments</h3>
+                        <div id="todaysAppointmentsAdmin" class="max-h-[350px] overflow-y-auto text-sm text-gray-700 space-y-2">
+                        <!-- Appointment items will be loaded here -->
+                        </div>
+                        <div id="todaysAppointmentsPagination" class="flex justify-end mt-4 space-x-2">
+                        <!-- Pagination controls -->
+                        </div>
+                    </div>
+                    
+                    <!-- Pending Requests -->
+                    <div class="bg-white p-4 rounded-lg shadow border-l-4 border-yellow-500">
+                        <h3 class="font-semibold text-gray-600 mb-2">Pending Requests</h3>
+                        <div id="pendingRequestsAdmin" class="max-h-[350px] overflow-y-auto text-sm text-gray-700 space-y-2">
+                        <!-- Pending requests will be loaded here -->
+                        </div>
+                        <div id="pendingRequestsPagination" class="flex justify-end mt-4 space-x-2">
+                        <!-- Pagination controls -->
+                        </div>
+                    </div>
+                    
+                    <!-- Upcoming Appointments -->
+                    <div class="bg-white p-4 rounded-lg shadow border-l-4 border-green-500">
+                        <h3 class="font-semibold text-gray-600 mb-2">Upcoming Appointments</h3>
+                        <div id="upcomingAppointmentsAdmin" class="max-h-[350px] overflow-y-auto text-sm text-gray-700 space-y-2">
+                        <!-- Upcoming appointments will be loaded here -->
+                        </div>
+                        <div id="upcomingAppointmentsPagination" class="flex justify-end mt-4 space-x-2">
+                        <!-- Pagination controls -->
+                        </div>
+                    </div>
+            
+                </div>
+                </div>
+            
             </section>
+  
+            
 
 
             <!-- Other Sections (Hidden by Default) -->
@@ -771,7 +829,6 @@
     <script type="module" src="../js/posManagement.js"></script>
 
     <script type="module" src="../js/adminDashboard.js"></script>
-    <script type="module" src="../js/dashboardStats.js"></script>
 
 </body>
 </html>
