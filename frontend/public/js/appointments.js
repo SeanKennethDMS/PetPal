@@ -208,7 +208,7 @@ document.addEventListener("DOMContentLoaded", () => {
       console.error(error.message);
     } else {
       alert("Reschedule cancelled, reverted to original date.");
-      loadAppointments();
+      loadAppointments(activeTab);
     }
   }
   
