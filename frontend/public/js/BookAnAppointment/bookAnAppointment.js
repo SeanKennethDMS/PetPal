@@ -441,8 +441,9 @@ document.getElementById('confirm-reschedule').addEventListener('click', async ()
   const { data: appt, error: fetchErr } = await supabase
     .from('appointments')
     .select('appointment_date, appointment_time, original_appointment_date, original_appointment_time')
-    .eq('appointment_id', id)
+    .eq('appointment_id', Number(id))
     .single();
+    console.log("Fetched appointment:", appt);
 
   if (fetchErr) {
     alert("Failed to fetch original appointment.");
@@ -457,7 +458,7 @@ document.getElementById('confirm-reschedule').addEventListener('click', async ()
     status: 'rescheduled',
   };
 
-  if (!appt.original_appointment_date && !appt.original_appointment_time) {
+  if (!appt.original_appointment_date || !appt.original_appointment_time) {
     updates.original_appointment_date = appt.appointment_date;
     updates.original_appointment_time = appt.appointment_time;
   }
