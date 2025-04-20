@@ -31,6 +31,8 @@ const elements = {
   tabButtons: document.querySelectorAll('.tab-button')
 };
 
+let currentAppointments = [];
+
 const BUSINESS_HOURS = Array.from({ length: 21 }, (_, i) => {
   const hour = 8 + Math.floor(i / 2);
   const minute = i % 2 === 0 ? '00' : '30';
@@ -258,7 +260,6 @@ async function sendBookingNotification(petId, serviceId, date, time) {
 
 async function loadAppointments() {
   try {
-
     if (currentTab === 'pending') {
       await autoCancelOldPendingAppointments();
     }
@@ -281,7 +282,7 @@ async function loadAppointments() {
         services(name)
       `, { count: "exact" })
       .eq("user_id", userId)
-      .eq("status", currentTab)
+      .in("status", currentTab === 'pending' ? ['pending', 'rescheduled'] : [currentTab])
       .order("appointment_date", { ascending: true })
       .range(from, to);
 
@@ -289,6 +290,7 @@ async function loadAppointments() {
 
     if (appointments.length > 0) {
       elements.noAppointmentsMessage.classList.add('hidden');
+      currentAppointments = appointments;
       renderAppointments(appointments);
     } else {
       elements.noAppointmentsMessage.classList.remove('hidden');
@@ -303,10 +305,8 @@ async function loadAppointments() {
   }
 }
 
-
 function renderAppointments(appointments) {
   let html = '';
-
   const today = new Date();
 
   appointments.forEach(app => {
@@ -322,11 +322,11 @@ function renderAppointments(appointments) {
         <div class="mb-2 md:mb-0">
           <h3 class="font-semibold">${serviceName}</h3>
           <p class="text-sm text-gray-600">${petName} • ${formattedDate} at ${formattedTime}</p>
-          ${app.status === 'pending' ? `
-            <p class="text-xs text-yellow-700 mt-1">
-              Wait for staff to accept your booking. 
-            </p>` : ''
-          }
+            ${app.status === 'pending' || app.status === 'rescheduled' ? `
+              <p class="text-xs mt-1 italic ${app.status === 'pending' ? 'text-yellow-700' : 'text-blue-600'}">
+                ${app.status === 'pending' ? 'Wait for staff to accept your booking.' : 'Reschedule request sent. Waiting for approval.'}
+              </p>` : ''
+            }
           ${app.status === 'accepted' ? `
             <p class="text-xs text-yellow-700 mt-1">
               We are excited to see you on your appointed date!
@@ -338,12 +338,12 @@ function renderAppointments(appointments) {
 
     if (app.status === 'pending') {
       html += `
-      <button class="px-3 py-1 bg-blue-100 text-blue-800 rounded text-sm hover:bg-blue-200" data-details='${JSON.stringify(app)}'>
-        Details
-      </button>
-      <button class="px-3 py-1 bg-red-100 text-red-800 rounded text-sm hover:bg-red-200" data-id="${app.appointment_id}">
-        Cancel
-      </button>`;
+        <button class="px-3 py-1 bg-blue-100 text-blue-800 rounded text-sm hover:bg-blue-200" data-details='${JSON.stringify(app)}'>
+          Details
+        </button>
+        <button class="px-3 py-1 bg-red-100 text-red-800 rounded text-sm hover:bg-red-200" data-id="${app.appointment_id}">
+          Cancel
+        </button>`;
     }
 
     if (app.status === 'accepted') {
@@ -370,14 +370,11 @@ function renderAppointments(appointments) {
         </button>`;
     }
 
-    html += `
-        </div>
-      </div>`;
+    html += `</div></div>`;
   });
 
   elements.appointmentsContainer.innerHTML = html;
 
-  // Add listeners
   document.querySelectorAll('[data-id]').forEach(button => {
     button.addEventListener('click', function () {
       const appointmentId = this.getAttribute('data-id');
@@ -387,11 +384,80 @@ function renderAppointments(appointments) {
 
   document.querySelectorAll('[data-resched]').forEach(button => {
     button.addEventListener('click', function () {
-      alert("Reschedule clicked. Implement logic here later.");
-      // Future: Open reschedule modal here
+      const appointmentId = this.getAttribute('data-resched');
+      const appData = currentAppointments.find(app => app.appointment_id == appointmentId);
+      if (!appData) return;
+
+      document.getElementById('resched-service-name').textContent = appData.services?.name || 'N/A';
+      document.getElementById('resched-current').textContent = `${formatDate(appData.appointment_date)} at ${convertToAMPM(appData.appointment_time)}`;
+      document.getElementById('resched-date').dataset.originalDate = appData.appointment_date;
+      document.getElementById('resched-date').value = '';
+      document.getElementById('resched-time').innerHTML = `<option value="" disabled selected>Select date first</option>`;
+      document.getElementById('reschedule-modal').classList.remove('hidden');
+      document.getElementById('confirm-reschedule').dataset.id = appointmentId;
     });
   });
+
+  document.getElementById('cancel-reschedule').addEventListener('click', () => {
+    document.getElementById('reschedule-modal').classList.add('hidden');
+  });
+
+  document.getElementById('resched-date').addEventListener('focus', function () {
+    const input = this;
+    const originalDate = new Date(input.dataset.originalDate);
+    const today = new Date();
+
+    const minDate = originalDate > today ? originalDate : today;
+    const maxDate = new Date();
+    maxDate.setDate(today.getDate() + 60);
+
+    input.min = minDate.toISOString().split('T')[0];
+    input.max = maxDate.toISOString().split('T')[0];
+  });
+
+  document.getElementById('resched-date').addEventListener('change', async (e) => {
+    const selectedDate = e.target.value;
+    const serviceName = document.getElementById('resched-service-name').textContent;
+
+    const timeOptions = await getAvailableTimes(selectedDate, serviceName);
+    const timeSelect = document.getElementById('resched-time');
+    timeSelect.innerHTML = '';
+    timeOptions.forEach(time => {
+      timeSelect.innerHTML += `<option value="${time}">${convertToAMPM(time)}</option>`;
+    });
+  });
+
+  document.getElementById('confirm-reschedule').addEventListener('click', async () => {
+    const button = document.getElementById('confirm-reschedule');
+    const id = button.dataset.id;
+    const newDate = document.getElementById('resched-date').value;
+    const newTime = document.getElementById('resched-time').value;
+
+    if (!newDate || !newTime) return alert("Please select a new date and time.");
+    button.disabled = true;
+
+    const { error } = await supabase
+      .from('appointments')
+      .update({
+        appointment_date: newDate,
+        appointment_time: newTime,
+        status: 'rescheduled'
+      })
+      .eq('appointment_id', Number(id));
+
+    if (error) {
+      alert("Failed to reschedule.");
+      console.error("Reschedule error:", error.message);
+      button.disabled = false;
+      return;
+    }
+
+    alert("Reschedule request sent.");
+    document.getElementById('reschedule-modal').classList.add('hidden');
+    loadAppointments(); 
+  });
 }
+
 
 function renderPagination(totalCount) {
   const paginationContainer = document.getElementById("pagination");
@@ -578,7 +644,6 @@ async function loadPets() {
   });
 }
 
-// UTILITY FUNCTIONS
 function convertToAMPM(time24) {
   if (!time24) return "";
   const [hours, minutes] = time24.slice(0, 5).split(':');
@@ -601,6 +666,39 @@ function convertTo24Hour(timeAMPM) {
   return `${hours.padStart(2, '0')}:${minutes}:00`;
 }
 
+async function getAvailableTimes(date, serviceName) {
+  const { data: serviceData, error: serviceError } = await supabase
+    .from("services")
+    .select("id")
+    .eq("name", serviceName)
+    .single();
+
+  if (serviceError || !serviceData) {
+    console.error("Service lookup failed:", serviceError?.message);
+    return [];
+  }
+
+  const serviceId = serviceData.id;
+  const { data: appointments, error: appointmentsError } = await supabase
+    .from("appointments")
+    .select("appointment_time, status")
+    .eq("service_id", serviceId)
+    .eq("appointment_date", date)
+    .not("status", "in", '("cancelled","no show")');
+
+  if (appointmentsError || !appointments) {
+    console.error("Appointment fetch error:", appointmentsError?.message);
+    return [];
+  }
+
+  const validAppointments = appointments.filter(app =>
+    app.status !== "cancelled" && app.status !== "no show"
+  );
+
+  const bookedTimes = validAppointments.map(app => convertToAMPM(app.appointment_time));
+  return BUSINESS_HOURS.filter(time => !bookedTimes.includes(time));
+}
+
 async function getPetName(petId) {
   const { data } = await supabase
     .from("pets")
@@ -618,6 +716,36 @@ async function getServiceName(serviceId) {
     .single();
   return data?.name || "Unknown";
 }
+
+// async function rescheduleAppointment(appointmentId, newDate, newTime) {
+//   console.log("Rescheduling with values:", {
+//     appointmentId,
+//     newDate,
+//     newTime,
+//   });
+
+//   if (!appointmentId || !newDate || !newTime) {
+//     alert("Missing appointment data. Please try again.");
+//     return;
+//   }
+
+//   const { error } = await supabase
+//     .from("appointments")
+//     .update({
+//       appointment_date: newDate,
+//       appointment_time: newTime,
+//       status: "rescheduled"
+//     })
+//     .eq("appointment_id", Number(appointmentId));
+
+//   if (error) {
+//     console.error("Failed to reschedule:", error.message);
+//     alert("Failed to reschedule appointment.");
+//   } else {
+//     alert("Appointment successfully rescheduled!");
+//     loadAppointments("accepted"); 
+//   }
+// }
 
 async function cancelAppointment(appointmentId) {
   if (!appointmentId || !confirm("Are you sure you want to cancel this appointment?")) return;
