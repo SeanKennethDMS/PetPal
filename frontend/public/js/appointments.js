@@ -260,7 +260,7 @@ document.addEventListener("DOMContentLoaded", () => {
       const tab = button.dataset.tab;
       if (tab !== activeTab) {
         setActiveTab(tab);
-        loadAppointments(tab);
+        loadAppointments(tab || 'pending');
       }
     });
   });
