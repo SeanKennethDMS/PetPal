@@ -427,36 +427,54 @@ function renderAppointments(appointments) {
     });
   });
 
-  document.getElementById('confirm-reschedule').addEventListener('click', async () => {
-    const button = document.getElementById('confirm-reschedule');
-    const id = button.dataset.id;
-    const newDate = document.getElementById('resched-date').value;
-    const newTime = document.getElementById('resched-time').value;
-
-    if (!newDate || !newTime) return alert("Please select a new date and time.");
-    button.disabled = true;
-
-    const { error } = await supabase
-      .from('appointments')
-      .update({
-        appointment_date: newDate,
-        appointment_time: newTime,
-        status: 'rescheduled'
-      })
-      .eq('appointment_id', Number(id));
-
-    if (error) {
-      alert("Failed to reschedule.");
-      console.error("Reschedule error:", error.message);
-      button.disabled = false;
-      return;
-    }
-
-    alert("Reschedule request sent.");
-    document.getElementById('reschedule-modal').classList.add('hidden');
-    loadAppointments(); 
-  });
+  
 }
+
+document.getElementById('confirm-reschedule').addEventListener('click', async () => {
+  const button = document.getElementById('confirm-reschedule');
+  const id = button.dataset.id;
+  const newDate = document.getElementById('resched-date').value;
+  const newTime = document.getElementById('resched-time').value;
+
+  if (!newDate || !newTime) return alert("Please select a new date and time.");
+
+  button.disabled = true;
+
+  const { data: appt, error: fetchErr } = await supabase
+    .from('appointments')
+    .select('appointment_date, appointment_time')
+    .eq('appointment_id', id)
+    .single();
+
+  if (fetchErr) {
+    alert("Failed to fetch original appointment.");
+    console.error(fetchErr.message);
+    button.disabled = false;
+    return;
+  }
+
+  const { error: updateErr } = await supabase
+    .from('appointments')
+    .update({
+      original_appointment_date: appt.appointment_date,
+      original_appointment_time: appt.appointment_time,
+      appointment_date: newDate,
+      appointment_time: newTime,
+      status: 'rescheduled'
+    })
+    .eq('appointment_id', id);
+
+  if (updateErr) {
+    alert("Failed to reschedule.");
+    console.error("Reschedule error:", updateErr.message);
+    button.disabled = false;
+    return;
+  }
+
+  alert("Reschedule request sent.");
+  document.getElementById('reschedule-modal').classList.add('hidden');
+  loadAppointments(); 
+});
 
 
 function renderPagination(totalCount) {
