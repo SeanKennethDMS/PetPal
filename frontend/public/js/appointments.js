@@ -40,6 +40,8 @@ document.addEventListener("DOMContentLoaded", () => {
           created_at,
           completed_at,
           status,
+          original_appointment_date,
+          original_appointment_time,
           users_table (
             first_name,
             last_name
