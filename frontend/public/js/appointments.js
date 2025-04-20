@@ -184,6 +184,12 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   async function revertReschedule(appt) {
+    if (!appt.original_appointment_date || !appt.original_appointment_time) {
+      console.warn("Missing original appointment data:", appt);
+      alert("Cannot revert reschedule — original date/time not found.");
+      return;
+    }
+  
     const { error } = await supabase
       .from('appointments')
       .update({
@@ -200,9 +206,10 @@ document.addEventListener("DOMContentLoaded", () => {
       console.error(error.message);
     } else {
       alert("Reschedule cancelled, reverted to original date.");
-      loadAppointments(); 
+      loadAppointments();
     }
   }
+  
 
   async function handleStatusUpdate(appointmentId, newStatus) {
     const updates = { status: newStatus };

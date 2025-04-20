@@ -34,12 +34,10 @@ const elements = {
 let currentAppointments = [];
 
 const BUSINESS_HOURS = Array.from({ length: 21 }, (_, i) => {
-  const hour = 8 + Math.floor(i / 2);
+  const hour = 8 + Math.floor(i / 2); 
   const minute = i % 2 === 0 ? '00' : '30';
-  const period = hour >= 12 ? 'PM' : 'AM';
-  const displayHour = hour > 12 ? hour - 12 : hour;
-  return `${displayHour}:${minute} ${period}`;
-}).slice(0, -1);
+  return `${hour.toString().padStart(2, '0')}:${minute}`; 
+});
 
 document.addEventListener("DOMContentLoaded", async () => {
   userId = await getUserId();
@@ -346,7 +344,7 @@ function renderAppointments(appointments) {
         </button>`;
     }
 
-    if (app.status === 'accepted') {
+    if (app.status === 'accepted' && !app.original_appointment_date) {
       if (daysUntilAppointment > 7) {
         html += `
           <button class="px-3 py-1 bg-blue-100 text-blue-800 rounded text-sm hover:bg-blue-200" data-details='${JSON.stringify(app)}'>
@@ -442,7 +440,7 @@ document.getElementById('confirm-reschedule').addEventListener('click', async ()
 
   const { data: appt, error: fetchErr } = await supabase
     .from('appointments')
-    .select('appointment_date, appointment_time')
+    .select('appointment_date, appointment_time, original_appointment_date, original_appointment_time')
     .eq('appointment_id', id)
     .single();
 
@@ -453,15 +451,20 @@ document.getElementById('confirm-reschedule').addEventListener('click', async ()
     return;
   }
 
+  const updates = {
+    appointment_date: newDate,
+    appointment_time: newTime,
+    status: 'rescheduled',
+  };
+
+  if (!appt.original_appointment_date && !appt.original_appointment_time) {
+    updates.original_appointment_date = appt.appointment_date;
+    updates.original_appointment_time = appt.appointment_time;
+  }
+
   const { error: updateErr } = await supabase
     .from('appointments')
-    .update({
-      original_appointment_date: appt.appointment_date,
-      original_appointment_time: appt.appointment_time,
-      appointment_date: newDate,
-      appointment_time: newTime,
-      status: 'rescheduled'
-    })
+    .update(updates)
     .eq('appointment_id', id);
 
   if (updateErr) {
@@ -473,9 +476,8 @@ document.getElementById('confirm-reschedule').addEventListener('click', async ()
 
   alert("Reschedule request sent.");
   document.getElementById('reschedule-modal').classList.add('hidden');
-  loadAppointments(); 
+  loadAppointments();
 });
-
 
 function renderPagination(totalCount) {
   const paginationContainer = document.getElementById("pagination");
@@ -586,7 +588,7 @@ async function autoCancelOldPendingAppointments() {
 
 function populateTimeDropdown(times, emptyMessage) {
   elements.appointmentTime.innerHTML = "";
-  
+
   if (!times.length) {
     const option = document.createElement("option");
     option.disabled = true;
@@ -599,7 +601,7 @@ function populateTimeDropdown(times, emptyMessage) {
   times.forEach(time => {
     const option = document.createElement("option");
     option.value = time;
-    option.textContent = time;
+    option.textContent = convertToAMPM(time);
     elements.appointmentTime.appendChild(option);
   });
 }
@@ -662,12 +664,18 @@ async function loadPets() {
   });
 }
 
-function convertToAMPM(time24) {
-  if (!time24) return "";
-  const [hours, minutes] = time24.slice(0, 5).split(':');
-  const period = +hours >= 12 ? 'PM' : 'AM';
-  const hours12 = +hours % 12 || 12;
-  return `${hours12}:${minutes} ${period}`;
+function convertToAMPM(timeStr) {
+  if (!timeStr) return "";
+
+  const [hourStr, minuteStr] = timeStr.split(":");
+  let hour = parseInt(hourStr, 10);
+  const minute = minuteStr.padStart(2, '0');
+  const ampm = hour >= 12 ? "PM" : "AM";
+
+  hour = hour % 12;
+  if (hour === 0) hour = 12;
+
+  return `${hour}:${minute} ${ampm}`;
 }
 
 function convertTo24Hour(timeAMPM) {
@@ -734,36 +742,6 @@ async function getServiceName(serviceId) {
     .single();
   return data?.name || "Unknown";
 }
-
-// async function rescheduleAppointment(appointmentId, newDate, newTime) {
-//   console.log("Rescheduling with values:", {
-//     appointmentId,
-//     newDate,
-//     newTime,
-//   });
-
-//   if (!appointmentId || !newDate || !newTime) {
-//     alert("Missing appointment data. Please try again.");
-//     return;
-//   }
-
-//   const { error } = await supabase
-//     .from("appointments")
-//     .update({
-//       appointment_date: newDate,
-//       appointment_time: newTime,
-//       status: "rescheduled"
-//     })
-//     .eq("appointment_id", Number(appointmentId));
-
-//   if (error) {
-//     console.error("Failed to reschedule:", error.message);
-//     alert("Failed to reschedule appointment.");
-//   } else {
-//     alert("Appointment successfully rescheduled!");
-//     loadAppointments("accepted"); 
-//   }
-// }
 
 async function cancelAppointment(appointmentId) {
   if (!appointmentId || !confirm("Are you sure you want to cancel this appointment?")) return;
