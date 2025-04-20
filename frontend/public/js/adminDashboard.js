@@ -115,7 +115,7 @@ async function loadPendingRequests(page = 1, limit = 3){
         const {data, error, count } = await supabase
             .from('appointments')
             .select('appointment_id, appointment_date, appointment_time, pets(pet_name, image_url, species), services(name)', { count: 'exact'})
-            .eq('status', 'pending')
+            .in('status', ['pending', 'rescheduled'])
             .range(offset, offset + limit - 1)
             .order('appointment_date', { ascending: true});
 
