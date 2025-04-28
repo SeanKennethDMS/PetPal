@@ -4,17 +4,14 @@ let currentUserId = null;
 
 async function fetchCurrentUser() {
   const { data: { user }, error } = await supabase.auth.getUser();
-
   if (error) {
     console.error('Error fetching user:', error.message);
     return null;
   }
-
   if (!user) {
     console.error('No user logged in.');
     return null;
   }
-
   return user.id;
 }
 
@@ -107,12 +104,7 @@ const notifBtn = document.getElementById('notificationBtn');
 const notifModal = document.getElementById('notificationModal');
 
 notifBtn.addEventListener('click', () => {
-  const rect = notifBtn.getBoundingClientRect();
-
-  notifModal.style.top = `${rect.bottom + 10}px`; 
-  notifModal.style.left = `${rect.left}px`;        
   notifModal.classList.remove('hidden');
-
   loadNotifications();
 });
 

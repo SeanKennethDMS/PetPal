@@ -43,23 +43,23 @@
             </button>
         </div>
     </nav>
-    <!-- Notification Popover -->
-    <div id="notificationModal" class="absolute hidden bg-white rounded-lg shadow-lg w-80 mt-2 z-50">
-        <!-- Header -->
-        <div class="flex justify-between items-center px-4 py-2 border-b">
-            <h2 class="text-lg font-semibold">Notifications</h2>
-            <button id="closeNotification" class="text-gray-500 hover:text-red-500">&times;</button>
+    <!-- Fullscreen Modal Wrapper with Blur -->
+    <div id="notificationModal" class="fixed inset-0 hidden bg-black/20 backdrop-blur-sm flex justify-center items-center z-50">
+    
+        <!-- Actual Modal Box -->
+        <div class="relative bg-white rounded-lg shadow-lg w-80 p-4" style="top: -30px;">
+            <div class="flex justify-between items-center mb-4">
+                <h2 class="text-lg font-semibold">Notifications</h2>
+                <button id="closeNotification" class="text-gray-500 hover:text-red-500 text-xl">&times;</button>
+            </div>
+        
+            <div id="notificationList" class="max-h-64 overflow-y-auto space-y-2"></div>
+        
+            <div class="flex justify-end mt-4">
+                <button id="closeNotificationFooter" class="text-blue-600 hover:underline">Close</button>
+            </div>
         </div>
     
-        <!-- Notification Content -->
-        <div id="notificationList" class="p-4 max-h-64 overflow-y-auto space-y-2">
-        <!-- Notifications will be dynamically added here -->
-        </div>
-    
-        <!-- Footer -->
-        <div class="flex justify-end px-4 py-2 border-t">
-            <button id="closeNotificationFooter" class="text-blue-600 hover:underline">Close</button>
-        </div>
     </div>
     <!-- Sidebar + Content Container -->
     <div class="flex flex-col md:flex-row h-screen">
