@@ -1,8 +1,44 @@
 import supabase from "../supabaseClient.js";
 
-const currentUserId = localStorage.getItem('user_id');
+let currentUserId = null;
+
+async function fetchNotifications() {
+  const { data: { user }, error } = await supabase.auth.getUser();
+
+  if (error) {
+    console.error('Error fetching user:', error.message);
+    return;
+  }
+
+  if (!user) {
+    console.error('No user logged in.');
+    return;
+  }
+
+  currentUserId = user.id;
+
+  const { data, error: notificationError } = await supabase
+    .from('notifications')
+    .select('*')
+    .eq('recipient_id', currentUserId)
+    .eq('status', 'unread');
+
+  if (notificationError) {
+    console.error('Error fetching notifications:', notificationError.message);
+    return;
+  }
+
+  console.log('Unread Notifications:', data);
+
+  updateNotificationCount();
+}
 
 async function loadNotifications() {
+  if (!currentUserId) {
+    console.error('User not loaded yet.');
+    return;
+  }
+
   const { data: notifications, error } = await supabase
     .from('notifications')
     .select('*')
@@ -42,9 +78,14 @@ async function loadNotifications() {
 }
 
 async function updateNotificationCount() {
+  if (!currentUserId) {
+    console.error('currentUserId is null. Skipping notification count update.');
+    return;
+  }
+
   const { count, error } = await supabase 
     .from('notifications')
-    .select('*', { count: 'exact', head: true})
+    .select('*', { count: 'exact', head: true })
     .eq('recipient_id', currentUserId)
     .eq('status', 'unread');
 
@@ -64,23 +105,22 @@ async function updateNotificationCount() {
   }
 }
 
-
-async function markAsRead( notificationId, notifItem) {
+async function markAsRead(notificationId, notifItem) {
   const { error } = await supabase
     .from('notifications')
-    .update({ status: 'read '})
-    .eq('id', notiicationId);
-  
-    if (error) {
-      console.error('Error updating notification status:', error);
-      return;
-    }
+    .update({ status: 'read' })
+    .eq('id', notificationId); 
 
-    notifItem.classList.remove('bg-blue-100');
-    notifItem.classList.add('bg-white');
-    notifItem.dataset.status = 'read';
+  if (error) {
+    console.error('Error updating notification status:', error);
+    return;
+  }
 
-    updateNotificationCount();
+  notifItem.classList.remove('bg-blue-100');
+  notifItem.classList.add('bg-white');
+  notifItem.dataset.status = 'read';
+
+  updateNotificationCount();
 }
 
 document.getElementById('notificationBtn').addEventListener('click', () => {
@@ -96,4 +136,4 @@ document.getElementById('closeNotificationFooter').addEventListener('click', () 
   document.getElementById('notificationModal').classList.add('hidden');
 });
 
-updateNotificationCount();
+fetchNotifications();
