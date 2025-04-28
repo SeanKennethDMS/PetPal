@@ -433,4 +433,3 @@ document.getElementById('save-changes').addEventListener('click', async () => {
     const section = activeTab.getAttribute('data-tab');
     await saveProfileData(section);
 });
-
