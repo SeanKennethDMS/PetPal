@@ -242,19 +242,27 @@ async function createAppointment(serviceId, petId, date, time) {
 }
 
 async function sendBookingNotification(petId, serviceId, date, time) {
+  const { data: { user }, error: userError } = await supabase.auth.getUser();
+  if (userError || !user) {
+    console.error("Error fetching user ID:", userError);
+    return;
+  }
+  const userId = user.id; 
+
   const [petName, serviceName] = await Promise.all([
     getPetName(petId),
     getServiceName(serviceId)
   ]);
 
   const { error } = await supabase.from("notifications").insert([{
-    user_id: null,
+    recipient_id: userId,  
     message: `New appointment booked for ${petName} (${serviceName}) on ${date} at ${time}`,
-    is_read: false
+    status: 'unread',  
   }]);
 
   if (error) console.error("Notification error:", error);
 }
+
 
 async function loadAppointments() {
   try {

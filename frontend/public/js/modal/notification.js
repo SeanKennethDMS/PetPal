@@ -57,6 +57,20 @@ async function loadNotifications() {
   });
 }
 
+async function sendNotification(userId, message){
+  const { data, error } = await supabase
+    .from('notifications')
+    .insert([
+      { recipient_id: userId, message: message, status: 'unread' }
+    ]);
+
+    if (error) {
+      console.error('Error inserting notification:', error);
+    } else {
+      console.log('Notification sent:', data);
+    }
+}
+
 async function updateNotificationCount() {
   if (!currentUserId) return;
 
