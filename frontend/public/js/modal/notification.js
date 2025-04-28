@@ -1,6 +1,25 @@
 import supabase from "../supabaseClient.js";
 
 let currentUserId = null;
+let notificationChannel = null;
+
+function setupRealtimeNotifications() {
+  if (!notificationChannel) {
+    notificationChannel = supabase
+      .channel('public:notifications')  
+      .on('postgres_changes', {
+        event: 'INSERT', 
+        schema: 'public',
+        table: 'notifications',
+        filter: `recipient_id=eq.${currentUserId}`,  
+      }, (payload) => {
+        console.log('New notification:', payload);
+        updateNotificationCount(); 
+        loadNotifications();
+      })
+      .subscribe();
+  }
+}
 
 async function fetchCurrentUser() {
   const { data: { user }, error } = await supabase.auth.getUser();
@@ -78,7 +97,7 @@ async function updateNotificationCount() {
     .from('notifications')
     .select('*', { count: 'exact', head: true })
     .eq('recipient_id', currentUserId)
-    .eq('status', 'unread');
+    .eq('status', 'unread'); 
 
   const badge = document.getElementById('notificationCount');
 
@@ -90,11 +109,12 @@ async function updateNotificationCount() {
 
   if (count > 0) {
     badge.textContent = count;
-    badge.classList.remove('hidden');
+    badge.classList.remove('hidden');  
   } else {
-    badge.classList.add('hidden');
+    badge.classList.add('hidden'); 
   }
 }
+
 
 async function markAsRead(notificationId, notifItem) {
   const { error } = await supabase
@@ -133,6 +153,8 @@ document.getElementById('closeNotificationFooter').addEventListener('click', () 
 (async function initNotifications() {
   currentUserId = await fetchCurrentUser();
   if (currentUserId) {
-    updateNotificationCount();
+    setupRealtimeNotifications();  
+    updateNotificationCount();    
   }
 })();
+
