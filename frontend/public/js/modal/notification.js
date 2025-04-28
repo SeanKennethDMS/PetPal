@@ -2,42 +2,24 @@ import supabase from "../supabaseClient.js";
 
 let currentUserId = null;
 
-async function fetchNotifications() {
+async function fetchCurrentUser() {
   const { data: { user }, error } = await supabase.auth.getUser();
 
   if (error) {
     console.error('Error fetching user:', error.message);
-    return;
+    return null;
   }
 
   if (!user) {
     console.error('No user logged in.');
-    return;
+    return null;
   }
 
-  currentUserId = user.id;
-
-  const { data, error: notificationError } = await supabase
-    .from('notifications')
-    .select('*')
-    .eq('recipient_id', currentUserId)
-    .eq('status', 'unread');
-
-  if (notificationError) {
-    console.error('Error fetching notifications:', notificationError.message);
-    return;
-  }
-
-  console.log('Unread Notifications:', data);
-
-  updateNotificationCount();
+  return user.id;
 }
 
 async function loadNotifications() {
-  if (!currentUserId) {
-    console.error('User not loaded yet.');
-    return;
-  }
+  if (!currentUserId) return;
 
   const { data: notifications, error } = await supabase
     .from('notifications')
@@ -45,15 +27,16 @@ async function loadNotifications() {
     .eq('recipient_id', currentUserId)
     .order('created_at', { ascending: false });
 
-  if (error) {
-    console.error('Error fetching notifications:', error);
-    return;
-  }
-
   const notifList = document.getElementById('notificationList');
   notifList.innerHTML = '';
 
-  if (notifications.length === 0) {
+  if (error) {
+    console.error('Error fetching notifications:', error.message);
+    notifList.innerHTML = `<div class="text-center text-gray-500">Error loading notifications</div>`;
+    return;
+  }
+
+  if (!notifications.length) {
     notifList.innerHTML = `<div class="text-center text-gray-500">No notifications yet</div>`;
     return;
   }
@@ -78,12 +61,9 @@ async function loadNotifications() {
 }
 
 async function updateNotificationCount() {
-  if (!currentUserId) {
-    console.error('currentUserId is null. Skipping notification count update.');
-    return;
-  }
+  if (!currentUserId) return;
 
-  const { count, error } = await supabase 
+  const { count, error } = await supabase
     .from('notifications')
     .select('*', { count: 'exact', head: true })
     .eq('recipient_id', currentUserId)
@@ -109,7 +89,7 @@ async function markAsRead(notificationId, notifItem) {
   const { error } = await supabase
     .from('notifications')
     .update({ status: 'read' })
-    .eq('id', notificationId); 
+    .eq('id', notificationId);
 
   if (error) {
     console.error('Error updating notification status:', error);
@@ -123,17 +103,30 @@ async function markAsRead(notificationId, notifItem) {
   updateNotificationCount();
 }
 
-document.getElementById('notificationBtn').addEventListener('click', () => {
-  document.getElementById('notificationModal').classList.remove('hidden');
+const notifBtn = document.getElementById('notificationBtn');
+const notifModal = document.getElementById('notificationModal');
+
+notifBtn.addEventListener('click', () => {
+  const rect = notifBtn.getBoundingClientRect();
+
+  notifModal.style.top = `${rect.bottom + 10}px`; 
+  notifModal.style.left = `${rect.left}px`;        
+  notifModal.classList.remove('hidden');
+
   loadNotifications();
 });
 
 document.getElementById('closeNotification').addEventListener('click', () => {
-  document.getElementById('notificationModal').classList.add('hidden');
+  notifModal.classList.add('hidden');
 });
 
 document.getElementById('closeNotificationFooter').addEventListener('click', () => {
-  document.getElementById('notificationModal').classList.add('hidden');
+  notifModal.classList.add('hidden');
 });
 
-fetchNotifications();
+(async function initNotifications() {
+  currentUserId = await fetchCurrentUser();
+  if (currentUserId) {
+    updateNotificationCount();
+  }
+})();
