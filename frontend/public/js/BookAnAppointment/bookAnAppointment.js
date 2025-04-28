@@ -242,27 +242,47 @@ async function createAppointment(serviceId, petId, date, time) {
 }
 
 async function sendBookingNotification(petId, serviceId, date, time) {
-  const { data: { user }, error: userError } = await supabase.auth.getUser();
-  if (userError || !user) {
-    console.error("Error fetching user ID:", userError);
-    return;
-  }
-  const userId = user.id; 
-
-  const [petName, serviceName] = await Promise.all([
+  const [petName, serviceName] = await Promise.all([ 
     getPetName(petId),
     getServiceName(serviceId)
   ]);
 
-  const { error } = await supabase.from("notifications").insert([{
-    recipient_id: userId,  
-    message: `New appointment booked for ${petName} (${serviceName}) on ${date} at ${time}`,
-    status: 'unread',  
-  }]);
+  const adminIds = await getAllAdminIds(); // Fetch all admin IDs
 
-  if (error) console.error("Notification error:", error);
+  if (!adminIds || adminIds.length === 0) {
+    console.error("No admin found to send notifications.");
+    return;
+  }
+
+  // Loop through all admin IDs and send notifications
+  for (const adminId of adminIds) {
+    const { error } = await supabase.from("notifications").insert([{
+      recipient_id: adminId,  // Send to each admin
+      message: `New appointment booked for ${petName} (${serviceName}) on ${date} at ${time}`,
+      status: 'unread'
+    }]);
+
+    if (error) {
+      console.error(`Notification error for admin ${adminId}:`, error);
+    } else {
+      console.log(`Notification sent to admin ${adminId}`);
+    }
+  }
 }
 
+async function getAllAdminIds() {
+  const { data, error } = await supabase
+    .from('users')
+    .select('id')  
+    .eq('role', 'admin');  
+
+  if (error) {
+    console.error('Error fetching admin IDs:', error);
+    return [];
+  }
+
+  return data.map(admin => admin.id);  
+}
 
 async function loadAppointments() {
   try {
