@@ -174,10 +174,11 @@ async function handleBookingConfirmation() {
 
     const time24 = convertTo24Hour(time);
     await createAppointment(serviceId, petId, date, time24);
+
+    await sendBookingNotification(petId, serviceId, date, time);
     
     alert("Appointment booked successfully!");
     resetAndCloseModal();
-    await sendBookingNotification(petId, serviceId, date, time);
     
   } catch (error) {
     console.error("Booking error:", error);
@@ -272,7 +273,7 @@ async function sendBookingNotification(petId, serviceId, date, time) {
 
 async function getAllAdminIds() {
   const { data, error } = await supabase
-    .from('users')
+    .from('users_table')
     .select('id')  
     .eq('role', 'admin');  
 

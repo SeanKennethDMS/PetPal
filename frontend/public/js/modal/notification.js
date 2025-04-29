@@ -76,19 +76,39 @@ async function loadNotifications() {
   });
 }
 
-async function sendNotification(userId, message){
-  const { data, error } = await supabase
-    .from('notifications')
-    .insert([
-      { recipient_id: userId, message: message, status: 'unread' }
-    ]);
+async function sendNotificationToAdmins(message) {
+  const { data: admins, error: fetchError } = await supabase
+    .from('users_table')
+    .select('id')
+    .eq('role', 'admin');
 
-    if (error) {
-      console.error('Error inserting notification:', error);
-    } else {
-      console.log('Notification sent:', data);
-    }
+  if (fetchError) {
+    console.error('Error fetching admins:', fetchError);
+    return;
+  }
+
+  if (!admins || admins.length === 0) {
+    console.warn('No admins found.');
+    return;
+  }
+
+  const notifications = admins.map(admin => ({
+    recipient_id: admin.id,
+    message: message,
+    status: 'unread'
+  }));
+
+  const { error: insertError } = await supabase
+    .from('notifications')
+    .insert(notifications);
+
+  if (insertError) {
+    console.error('Error sending notifications to admins:', insertError);
+  } else {
+    console.log('Notifications sent to all admins.');
+  }
 }
+
 
 async function updateNotificationCount() {
   if (!currentUserId) return;
