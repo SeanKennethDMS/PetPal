@@ -1,859 +1,1493 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>PetPal | Admin Dashboard</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <link rel="icon" type="image/png" href="../assets/1.png">
-    <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@400;700&display=swap" rel="stylesheet">
+    <link rel="icon" type="image/png" href="../assets/1.png" />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@400;700&display=swap"
+      rel="stylesheet"
+    />
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-</head>
-<body class="scroll-smooth font-sans" style="font-family: 'Bricolage Grotesque', Arial, sans-serif;">
-
+    <link
+      href="https://cdn.jsdelivr.net/npm/@fullcalendar/core/main.min.css"
+      rel="stylesheet"
+    />
+  </head>
+  <body
+    class="scroll-smooth font-sans"
+    style="font-family: 'Bricolage Grotesque', Arial, sans-serif"
+  >
     <!-- Navbar -->
-    <nav class="text-white p-4 flex flex-col sm:flex-row justify-between items-center bg-gradient-to-r from-blue-500 to-blue-800 relative z-50">
-        <div class="flex items-center space-x-3 text-2xl font-bold">
-          <img src="../assets/1-removebg-preview.png" alt="PetPal Logo" class="h-10 w-10 object-contain">
-          <span>PetPal Scheduler</span>
+    <nav
+      class="text-white p-4 flex flex-col sm:flex-row justify-between items-center bg-gradient-to-r from-blue-500 to-blue-800 relative z-50"
+    >
+      <div class="flex items-center space-x-3 text-2xl font-bold">
+        <img
+          src="../assets/1-removebg-preview.png"
+          alt="PetPal Logo"
+          class="h-10 w-10 object-contain"
+        />
+        <span>PetPal Scheduler</span>
+      </div>
+
+      <div class="flex items-center space-x-4 pr-2">
+        <div class="hidden md:block text-white">
+          Welcome, <strong>Admin</strong>
         </div>
-      
-        
-      
-        <div class="flex items-center space-x-4 pr-2">
-            <!-- Optional: Admin Name (Desktop Only) -->
-                <div class="hidden md:block text-white">
-                    Welcome, <strong>Admin</strong>
-                </div>
-    
-            <!-- Notification Bell (Always Visible) -->
-            <div class="relative">
-              <button id="notificationBtn" class="relative focus:outline-none">
-                <!-- Bell Icon -->
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-white hover:text-yellow-300 transition" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                    d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V4a2 2 0 10-4 0v1.341C8.67 7.165 8 9.388 8 12v2.159c0 .538-.214 1.055-.595 1.436L6 17h5m4 0v1a3 3 0 11-6 0v-1m6 0H9" />
-                </svg>
-                <!-- Notification Badge -->
-                <span id="notificationCount" class="hidden absolute -top-2 -right-2 bg-red-500 text-white text-xs font-bold rounded-full h-5 w-5 flex items-center justify-center">0</span>
-              </button>
-            </div>
-        
-            <!-- Hamburger Icon (Mobile Only) -->
-            <button id="hamburgerBtn" class="md:hidden focus:outline-none">
-              <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                  d="M4 6h16M4 12h16M4 18h16" />
-              </svg>
-            </button>
-        
-            
+
+        <!-- Notification Bell (Always Visible) -->
+        <div class="relative">
+          <button id="notificationBtn" class="relative focus:outline-none">
+            <!-- Bell Icon -->
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              class="h-6 w-6 text-white hover:text-yellow-300 transition"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V4a2 2 0 10-4 0v1.341C8.67 7.165 8 9.388 8 12v2.159c0 .538-.214 1.055-.595 1.436L6 17h5m4 0v1a3 3 0 11-6 0v-1m6 0H9"
+              />
+            </svg>
+            <!-- Notification Badge -->
+            <span
+              id="notificationCount"
+              class="hidden absolute -top-2 -right-2 bg-red-500 text-white text-xs font-bold rounded-full h-5 w-5 flex items-center justify-center"
+              >0</span
+            >
+          </button>
         </div>
+
+        <!-- Hamburger Icon (Mobile Only) -->
+        <button id="hamburgerBtn" class="md:hidden focus:outline-none">
+          <svg
+            class="w-8 h-8 text-white"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              d="M4 6h16M4 12h16M4 18h16"
+            />
+          </svg>
+        </button>
+      </div>
     </nav>
 
     <!-- Notification Modal -->
-    <div id="notificationModal" class="fixed inset-0 bg-black bg-opacity-50 hidden justify-center items-start pt-24 z-50">
-        <div class="bg-white rounded-lg shadow-lg w-80">
-          
-          <!-- Header -->
-          <div class="flex justify-between items-center px-4 py-2 border-b">
-            <h2 class="text-lg font-semibold">Notifications</h2>
-            <button id="closeNotification" class="text-gray-500 hover:text-red-500">&times;</button>
-          </div>
-      
-          <!-- Notification Content (Dynamic List) -->
-          <div id="notificationList" class="p-4 max-h-64 overflow-y-auto space-y-2">
-            <!-- Notifications will be dynamically added here -->
-          </div>
-      
-          <!-- Footer -->
-          <div class="flex justify-end px-4 py-2 border-t">
-            <button id="closeNotificationFooter" class="text-blue-600 hover:underline">Close</button>
-          </div>
-          
+    <div
+      id="notificationModal"
+      class="fixed inset-0 bg-black bg-opacity-50 hidden justify-center items-start pt-24 z-50"
+    >
+      <div class="bg-white rounded-lg shadow-lg w-80">
+        <!-- Header -->
+        <div class="flex justify-between items-center px-4 py-2 border-b">
+          <h2 class="text-lg font-semibold">Notifications</h2>
+          <button
+            id="closeNotification"
+            class="text-gray-500 hover:text-red-500"
+          >
+            &times;
+          </button>
+        </div>
+
+        <!-- Notification Content (Dynamic List) -->
+        <div
+          id="notificationList"
+          class="p-4 max-h-64 overflow-y-auto space-y-2"
+        >
+          <!-- Notifications will be dynamically added here -->
+        </div>
+
+        <!-- Footer -->
+        <div class="flex justify-end px-4 py-2 border-t">
+          <button
+            id="closeNotificationFooter"
+            class="text-blue-600 hover:underline"
+          >
+            Close
+          </button>
         </div>
       </div>
+    </div>
 
-
-      <div class="flex flex-col md:flex-row h-screen">
-    <!-- Sidebar + Content Container -->
-    <aside id="sidebarMenu"
-        class="fixed md:relative top-0 md:top-0 left-0 w-64 bg-gray-800 h-full p-5 text-white transform -translate-x-full md:translate-x-0 transition-transform duration-300 ease-in-out z-50">
-        
+    <div class="flex flex-col md:flex-row h-screen">
+      <!-- Sidebar + Content Container -->
+      <aside
+        id="sidebarMenu"
+        class="fixed md:relative top-0 md:top-0 left-0 w-64 bg-gray-800 h-full p-5 text-white transform -translate-x-full md:translate-x-0 transition-transform duration-300 ease-in-out z-50"
+      >
         <!-- Close button for mobile -->
-        <button id="closeSidebar" class="md:hidden absolute top-5 right-4 text-white focus:outline-none">
-            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                d="M6 18L18 6M6 6l12 12" />
-            </svg>
+        <button
+          id="closeSidebar"
+          class="md:hidden absolute top-5 right-4 text-white focus:outline-none"
+        >
+          <svg
+            class="w-6 h-6"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              d="M6 18L18 6M6 6l12 12"
+            />
+          </svg>
         </button>
 
         <!-- Sidebar content (no changes here) -->
         <h2 class="text-xl font-bold mb-4 mt-10 md:mt-0">Admin Dashboard</h2>
         <!-- The rest of your sidebar menu stays the same -->
         <div class="mb-4">
-                        <h3 class="text-gray-400 uppercase text-sm mb-2">Main</h3>
-                        <ul>
-                            <li><a href="#" class="sidebar-link block py-2 px-3 rounded font-bold bg-gray-700" data-target="dashboard">Dashboard</a></li>
-                        </ul>
-                    </div>
-                
-                    <div class="mb-4">
-                        <h3 class="text-gray-400 uppercase text-sm mb-2">Content</h3>
-                        <ul>
-                            <li><a href="#" class="sidebar-link block py-2 px-3 hover:bg-gray-700 rounded" data-target="booking">Booking Management</a></li>
-                            <li><a href="#" class="sidebar-link block py-2 px-3 hover:bg-gray-700 rounded" data-target="customers">Customers</a></li>
-                        </ul>
-                    </div>
-                
-                    <div class="mb-4">
-                        <h3 class="text-gray-400 uppercase text-sm mb-2">Management</h3>
-                        <ul>
-                            <li><a href="#" class="sidebar-link block py-2 px-3 hover:bg-gray-700 rounded" data-target="inventory">Inventory</a></li>
-                            <li><a href="#" class="sidebar-link block py-2 px-3 hover:bg-gray-700 rounded" data-target="pos">Point of Sale</a></li>
-                        </ul>
-                    </div>
-                
-                    <div class="mb-4">
-                        <h3 class="text-gray-400 uppercase text-sm mb-2">Others</h3>
-                        <ul>
-                            <li><a href="#" id="openSettingsModalSidebar" class="block py-2 px-3 rounded hover:bg-blue-600">Settings</a></li>
-                            <li><a href="#" id="openLogoutModalSidebar" class="block py-2 px-3 rounded text-red-400 hover:bg-red-600">Logout</a></li>
-                        </ul>
-                    </div>
-        </aside>
+          <h3 class="text-gray-400 uppercase text-sm mb-2">Main</h3>
+          <ul>
+            <li>
+              <a
+                href="#"
+                class="sidebar-link block py-2 px-3 rounded font-bold bg-gray-700"
+                data-target="dashboard"
+                >Dashboard</a
+              >
+            </li>
+          </ul>
+        </div>
 
-        <script>
-            //Script para sana hamburger menu
-            document.addEventListener("DOMContentLoaded", function () {
-              const hamburgerBtn = document.getElementById('hamburgerBtn');
-              const closeSidebar = document.getElementById('closeSidebar');
-              const sidebarMenu = document.getElementById('sidebarMenu');
-          
-              // Open sidebar
-              hamburgerBtn.addEventListener('click', () => {
-                sidebarMenu.classList.remove('-translate-x-full');
-              });
-          
-              // Close sidebar
-              closeSidebar.addEventListener('click', () => {
-                sidebarMenu.classList.add('-translate-x-full');
-              });
-          
-              // OPTIONAL: Close sidebar when clicking outside
-              document.addEventListener('click', (e) => {
-                if (!sidebarMenu.contains(e.target) && !hamburgerBtn.contains(e.target)) {
-                  sidebarMenu.classList.add('-translate-x-full');
-                }
-              });
-            });
-          </script>
+        <div class="mb-4">
+          <h3 class="text-gray-400 uppercase text-sm mb-2">Content</h3>
+          <ul>
+            <li>
+              <a
+                href="#"
+                class="sidebar-link block py-2 px-3 hover:bg-gray-700 rounded"
+                data-target="booking"
+                >Booking Management</a
+              >
+            </li>
+            <li>
+              <a
+                href="#"
+                class="sidebar-link block py-2 px-3 hover:bg-gray-700 rounded"
+                data-target="customers"
+                >Customers</a
+              >
+            </li>
+          </ul>
+        </div>
 
-        <!-- Main Content -->
-        <main class="flex-1 p-4 md:p-6 overflow-y-auto">
-            <!-- Dashboard -->
-            <section id="dashboard" class="content-section space-y-6">
+        <div class="mb-4">
+          <h3 class="text-gray-400 uppercase text-sm mb-2">Management</h3>
+          <ul>
+            <li>
+              <a
+                href="#"
+                class="sidebar-link block py-2 px-3 hover:bg-gray-700 rounded"
+                data-target="inventory"
+                >Inventory</a
+              >
+            </li>
+            <li>
+              <a
+                href="#"
+                class="sidebar-link block py-2 px-3 hover:bg-gray-700 rounded"
+                data-target="pos"
+                >Point of Sale</a
+              >
+            </li>
+          </ul>
+        </div>
 
-                <!-- Welcome Header -->
-                <h1 class="text-3xl font-bold">Welcome, Admin!</h1>
-                <p class="text-gray-600">Here's what's happening today.</p>
-            
-                <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mt-6">
-            
-                <!-- Left Column (2/3 width) -->
-                <div class="lg:col-span-2 space-y-6">
-            
-                    <!-- Special Offer / Empowering Message -->
-                    <div class="bg-gradient-to-r from-blue-500 to-indigo-500 text-white rounded-xl p-5 shadow flex items-center justify-between">
-                    <div>
-                        <h2 class="text-lg font-bold">Have a Good Day Ahead!</h2>
-                        <p class="text-sm">Every paw we care for today brings more love into the world — let's make it a tail-wagging kind of day!</p>
-                    </div>
-                    </div>
-            
-                    <!-- Services To-Do -->
-                    <div class="bg-white rounded-xl shadow p-5">
-                        <div class="flex justify-between items-center mb-3">
-                        <h2 class="text-xl font-semibold">Services To-Do</h2>
-                        </div>
-                        <div id="todaysSchedule" class="space-y-3 max-h-[400px] overflow-y-auto">
-                        <!-- Appointment list with pagination, each item expandable -->
-                        </div>
-                        <div id="schedulePagination" class="flex justify-end mt-4 space-x-2">
-                        <!-- Pagination buttons -->
-                        </div>
-                    </div>
-                    
-                    <!-- Low Stock + Critical Alerts -->
-                    <div class="bg-white rounded-xl shadow p-5">
-                        <h2 class="text-lg font-semibold mb-3">⚠️ Low Stock Items & Critical Alerts</h2>
-                        <div id="lowStockAndAlerts" class="space-y-2 max-h-[350px] overflow-y-auto">
-                        <!-- Render low stock and critical alerts -->
-                        </div>
-                    </div>
-                                
-                    <!-- Quick Stats Section -->
-                    <div class="bg-white rounded-xl shadow p-5">
-                    <h2 class="text-xl font-semibold mb-4">📊 Quick Stats</h2>
-                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
-                        <!-- Summary Metrics -->
-                        <div>
-                            <canvas id="inventoryPieChart" class="w-full max-w-md mx-auto"></canvas>
-                        </div>
-                        <div>
-                            <canvas id="paymentMethodPieChart" class="w-full max-w-sm mx-auto"></canvas>
-                        </div>
-                        <div>
-                            <canvas id="posSummaryPieChart" class="w-full max-w-sm mx-auto h-[300px]"></canvas>
-                        </div>
-                    </div>
-            
-                    <!-- Service Bar Chart -->
-                    <div>
-                        <h3 class="text-gray-700 font-semibold mb-2">Most Availed Services</h3>
-                        <canvas id="servicesPieChart" class="w-full max-w-sm mx-auto h-[300px]"></canvas>
-                        <div id="servicesLegend" class="text-sm mt-4 text-gray-600 flex flex-wrap gap-3 justify-center">
-                            <!-- Chart.js Legend -->
-                        </div>
-                    </div>
-                    </div>
+        <div class="mb-4">
+          <h3 class="text-gray-400 uppercase text-sm mb-2">Others</h3>
+          <ul>
+            <li>
+              <a
+                href="#"
+                id="openSettingsModalSidebar"
+                class="block py-2 px-3 rounded hover:bg-blue-600"
+                >Settings</a
+              >
+            </li>
+            <li>
+              <a
+                href="#"
+                id="openLogoutModalSidebar"
+                class="block py-2 px-3 rounded text-red-400 hover:bg-red-600"
+                >Logout</a
+              >
+            </li>
+          </ul>
+        </div>
+      </aside>
+
+      <script>
+        //Script para sana hamburger menu
+        document.addEventListener("DOMContentLoaded", function () {
+          const hamburgerBtn = document.getElementById("hamburgerBtn");
+          const closeSidebar = document.getElementById("closeSidebar");
+          const sidebarMenu = document.getElementById("sidebarMenu");
+
+          // Open sidebar
+          hamburgerBtn.addEventListener("click", () => {
+            sidebarMenu.classList.remove("-translate-x-full");
+          });
+
+          // Close sidebar
+          closeSidebar.addEventListener("click", () => {
+            sidebarMenu.classList.add("-translate-x-full");
+          });
+
+          // OPTIONAL: Close sidebar when clicking outside
+          document.addEventListener("click", (e) => {
+            if (
+              !sidebarMenu.contains(e.target) &&
+              !hamburgerBtn.contains(e.target)
+            ) {
+              sidebarMenu.classList.add("-translate-x-full");
+            }
+          });
+        });
+      </script>
+
+      <!-- Main Content -->
+      <main class="flex-1 p-4 md:p-6 overflow-y-auto">
+        <!-- Dashboard -->
+        <section id="dashboard" class="content-section space-y-2">
+          <!-- Welcome Header -->
+          <h1 class="text-3xl font-bold">Welcome, Admin!</h1>
+          <p class="text-gray-600">Here's what's happening today.</p>
+
+          <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mt-6">
+            <!-- Left Column (2/3 width) -->
+            <div class="lg:col-span-2 space-y-6">
+              <!-- Special Offer / Empowering Message -->
+              <div
+                class="bg-gradient-to-r from-blue-500 to-indigo-500 text-white rounded-xl p-5 shadow flex items-center justify-between"
+              >
+                <div>
+                  <h2 class="text-lg font-bold">Have a Good Day Ahead!</h2>
+                  <p class="text-sm">
+                    Every paw we care for today brings more love into the world
+                    — let's make it a tail-wagging kind of day!
+                  </p>
                 </div>
-            
-                <!-- Right Column (1/3 width) -->
-                <div class="space-y-6">
-            
-                    <!-- Today's Appointments -->
-                    <div class="bg-white p-4 rounded-lg shadow border-l-4 border-blue-500">
-                        <h3 class="font-semibold text-gray-600 mb-2">Today's Appointments</h3>
-                        <div id="todaysAppointmentsAdmin" class="max-h-[350px] overflow-y-auto text-sm text-gray-700 space-y-2">
-                        <!-- Appointment items will be loaded here -->
-                        </div>
-                        <div id="todaysAppointmentsPagination" class="flex justify-end mt-4 space-x-2">
-                        <!-- Pagination controls -->
-                        </div>
-                    </div>
-                    
-                    <!-- Pending Requests -->
-                    <div class="bg-white p-4 rounded-lg shadow border-l-4 border-yellow-500">
-                        <h3 class="font-semibold text-gray-600 mb-2">Pending Requests</h3>
-                        <div id="pendingRequestsAdmin" class="max-h-[350px] overflow-y-auto text-sm text-gray-700 space-y-2">
-                        <!-- Pending requests will be loaded here -->
-                        </div>
-                        <div id="pendingRequestsPagination" class="flex justify-end mt-4 space-x-2">
-                        <!-- Pagination controls -->
-                        </div>
-                    </div>
-                    
-                    <!-- Upcoming Appointments -->
-                    <div class="bg-white p-4 rounded-lg shadow border-l-4 border-green-500">
-                        <h3 class="font-semibold text-gray-600 mb-2">Upcoming Appointments</h3>
-                        <div id="upcomingAppointmentsAdmin" class="max-h-[350px] overflow-y-auto text-sm text-gray-700 space-y-2">
-                        <!-- Upcoming appointments will be loaded here -->
-                        </div>
-                        <div id="upcomingAppointmentsPagination" class="flex justify-end mt-4 space-x-2">
-                        <!-- Pagination controls -->
-                        </div>
-                    </div>
-            
-                </div>
-                </div>
-            
-            </section>
+              </div>
 
-            <!-- Proceed Modal for Services To-Do -->
-            <div id="proceedModal" class="fixed inset-0 z-50 hidden bg-black bg-opacity-50 flex items-center justify-center">
-                <div class="bg-white p-6 rounded-lg shadow-lg max-w-lg w-full space-y-4">
-              
-                  <!-- Appointment Details -->
-                  <div id="appointmentDetails" class="text-sm text-gray-700 space-y-2">
-                    <!-- Filled dynamically -->
-                  </div>
-              
-                  <!--  PLACE THE DROPDOWNS HERE -->
+              <!-- Services To-Do -->
+              <div class="bg-white rounded-xl shadow p-5">
+                <div class="flex justify-between items-center mb-3">
+                  <h2 class="text-xl font-semibold">Services To-Do</h2>
+                </div>
+                <div
+                  id="todaysSchedule"
+                  class="space-y-3 max-h-[400px] overflow-y-auto"
+                >
+                  <!-- Appointment list with pagination, each item expandable -->
+                </div>
+                <div
+                  id="schedulePagination"
+                  class="flex justify-end mt-4 space-x-2"
+                >
+                  <!-- Pagination buttons -->
+                </div>
+              </div>
+
+              <!-- Low Stock + Critical Alerts -->
+              <div class="bg-white rounded-xl shadow p-5">
+                <h2 class="text-lg font-semibold mb-3">
+                  ⚠️ Low Stock Items & Critical Alerts
+                </h2>
+                <div
+                  id="lowStockAndAlerts"
+                  class="space-y-2 max-h-[350px] overflow-y-auto"
+                >
+                  <!-- Render low stock and critical alerts -->
+                </div>
+              </div>
+
+              <!-- Quick Stats Section -->
+              <div class="bg-white rounded-xl shadow p-5">
+                <h2 class="text-xl font-semibold mb-4">📊 Quick Stats</h2>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+                  <!-- Summary Metrics -->
                   <div>
-                    <label class="block text-sm font-medium text-gray-700">Add Service:</label>
-                    <select id="serviceSelect" class="w-full border px-2 py-1 rounded">
-                      <option value="">-- Select a Service --</option>
-                    </select>
+                    <canvas
+                      id="inventoryPieChart"
+                      class="w-full max-w-md mx-auto"
+                    ></canvas>
                   </div>
-              
                   <div>
-                    <label class="block text-sm font-medium text-gray-700">Add Product:</label>
-                    <select id="productSelect" class="w-full border px-2 py-1 rounded">
-                      <option value="">-- Select a Product --</option>
-                    </select>
+                    <canvas
+                      id="paymentMethodPieChart"
+                      class="w-full max-w-sm mx-auto"
+                    ></canvas>
                   </div>
-                  <select id="paymentMethodSelect" class="border rounded px-2 py-1">
-                    <option value="Cash">Cash</option>
-                    <option value="Gcash">Gcash</option>
-                    <option value="Credit Card">Credit Card</option>
-                    <option value="Other">Other</option>
-                  </select>
-              
-                  <!-- Billing List -->
-                  <div class="bg-gray-100 p-4 rounded space-y-2">
-                    <h3 class="text-sm font-semibold">Billing Summary</h3>
-                    <ul id="billingList" class="text-sm text-gray-700 space-y-1"></ul>
-                    <p class="text-right font-bold">Total: ₱<span id="billingTotal">0.00</span></p>
+                  <div>
+                    <canvas
+                      id="posSummaryPieChart"
+                      class="w-full max-w-sm mx-auto h-[300px]"
+                    ></canvas>
                   </div>
-              
-                  <!-- Modal Action Buttons -->
-                  <div class="flex justify-end gap-2 mt-4">
-                    <button id="addServiceBtn" class="bg-indigo-500 text-white px-3 py-1 rounded hover:bg-indigo-600">Add Service</button>
-                    <button id="addProductBtn" class="bg-green-500 text-white px-3 py-1 rounded hover:bg-green-600">Add Product</button>
-                    <button id="cancelBillingBtn" class="bg-gray-300 text-gray-800 px-3 py-1 rounded hover:bg-gray-400">Cancel</button>
-                    <button id="completeBillingBtn" class="bg-blue-600 text-white px-3 py-1 rounded hover:bg-blue-700">Complete</button>
+                </div>
+
+                <!-- Service Bar Chart -->
+                <div>
+                  <h3 class="text-gray-700 font-semibold mb-2">
+                    Most Availed Services
+                  </h3>
+                  <canvas
+                    id="servicesPieChart"
+                    class="w-full max-w-sm mx-auto h-[300px]"
+                  ></canvas>
+                  <div
+                    id="servicesLegend"
+                    class="text-sm mt-4 text-gray-600 flex flex-wrap gap-3 justify-center"
+                  >
+                    <!-- Chart.js Legend -->
                   </div>
                 </div>
               </div>
-            <!-- Other Sections (Hidden by Default) -->
+            </div>
 
-            <!-- Booking Management -->
-            <section id="booking" class="content-section hidden grid grid-cols-1 md:grid-cols-3 gap-6">
-                <!-- Left side: Appointment Management Tabs -->
-                <div class="md:col-span-2">
-                    <h1 class="text-3xl font-bold text-left mb-2">Booking Management</h1>
-                    <p class="text-gray-600 text-left mb-6">Manage your customer's booking here.</p>
+            <!-- Right Column (1/3 width) -->
+            <div class="space-y-6">
+              <!-- Today's Appointments -->
+              <div
+                class="bg-white p-4 rounded-lg shadow border-l-4 border-blue-500"
+              >
+                <h3 class="font-semibold text-gray-600 mb-2">
+                  Today's Appointments
+                </h3>
+                <div
+                  id="todaysAppointmentsAdmin"
+                  class="max-h-[350px] overflow-y-auto text-sm text-gray-700 space-y-2"
+                >
+                  <!-- Appointment items will be loaded here -->
+                </div>
+                <div
+                  id="todaysAppointmentsPagination"
+                  class="flex justify-end mt-4 space-x-2"
+                >
+                  <!-- Pagination controls -->
+                </div>
+              </div>
 
-                    <div class="bg-white rounded-2xl shadow-md p-6 w-full">
-                        <!-- Tabs -->
-                        <div class="flex justify-start gap-6 border-b border-gray-200 pb-2 mb-4">
-                            <button class="tab-button text-blue-600 font-semibold flex items-center gap-2 border-b-2 border-blue-600 pb-1" data-tab="pending">
-                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path d="M8 16h8M8 12h8m-6 8h6m2-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2h6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                                </svg>
-                                Pending
-                            </button>
-                            <button class="tab-button text-gray-600 hover:text-blue-600 flex items-center gap-2" data-tab="accepted">
-                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path d="M5 13l4 4L19 7" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                                </svg>
-                                Accepted
-                            </button>
-                            <button class="tab-button text-gray-600 hover:text-blue-600 flex items-center gap-2" data-tab="rescheduled">
-                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path d="M12 8v4l3 3M12 4a8 8 0 100 16 8 8 0 000-16z" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                                </svg>
-                                Rescheduled
-                            </button>
-                            <button class="tab-button text-gray-600 hover:text-blue-600 flex items-center gap-2" data-tab="cancelled">
-                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path d="M6 18L18 6M6 6l12 12" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                                </svg>
-                                Cancelled
-                            </button>
-                            <button class="tab-button text-gray-600 hover:text-blue-600 flex items-center gap-2" data-tab="completed">
-                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path d="M5 13l4 4L19 7" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                                </svg>
-                                Completed
-                            </button>
-                        </div>
+              <!-- Pending Requests -->
+              <div
+                class="bg-white p-4 rounded-lg shadow border-l-4 border-yellow-500"
+              >
+                <h3 class="font-semibold text-gray-600 mb-2">
+                  Pending Requests
+                </h3>
+                <div
+                  id="pendingRequestsAdmin"
+                  class="max-h-[350px] overflow-y-auto text-sm text-gray-700 space-y-2"
+                >
+                  <!-- Pending requests will be loaded here -->
+                </div>
+                <div
+                  id="pendingRequestsPagination"
+                  class="flex justify-end mt-4 space-x-2"
+                >
+                  <!-- Pagination controls -->
+                </div>
+              </div>
 
-                        <!-- Appointment Content Panels -->
-                        <div class="h-[320px] overflow-y-auto space-y-4" id="appointmentsContainer"></div>
-                        <div class="text-center text-gray-500 mt-16 hidden" id="noAppointmentsMessage">
-                          No appointments found.
-                        </div>
+              <!-- Upcoming Appointments -->
+              <div
+                class="bg-white p-4 rounded-lg shadow border-l-4 border-green-500"
+              >
+                <h3 class="font-semibold text-gray-600 mb-2">
+                  Upcoming Appointments
+                </h3>
+                <div
+                  id="upcomingAppointmentsAdmin"
+                  class="max-h-[350px] overflow-y-auto text-sm text-gray-700 space-y-2"
+                >
+                  <!-- Upcoming appointments will be loaded here -->
+                h</div>
+                <div
+                  id="upcomingAppointmentsPagination"
+                  class="flex justify-end mt-4 space-x-2"
+                >
+                  <!-- Pagination controls -->
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
 
-                        <!-- Pagination -->
-                        <div class="mt-6 flex justify-center gap-2" id="pagination">
-                            <!-- Dynamic buttons via JS -->
-                        </div>
-                    </div>
+        <!-- Proceed Modal for Services To-Do -->
+        <div
+          id="proceedModal"
+          class="fixed inset-0 z-50 hidden bg-black bg-opacity-50 flex items-center justify-center"
+        >
+          <div
+            class="bg-white p-6 rounded-lg shadow-lg max-w-lg w-full space-y-4"
+          >
+            <!-- Appointment Details -->
+            <div
+              id="appointmentDetails"
+              class="text-sm text-gray-700 space-y-2"
+            >
+              <!-- Filled dynamically -->
+            </div>
+
+            <!--  PLACE THE DROPDOWNS HERE -->
+            <div>
+              <label class="block text-sm font-medium text-gray-700"
+                >Add Service:</label
+              >
+              <select
+                id="serviceSelect"
+                class="w-full border px-2 py-1 rounded"
+              >
+                <option value="">-- Select a Service --</option>
+              </select>
+            </div>
+
+            <div>
+              <label class="block text-sm font-medium text-gray-700"
+                >Add Product:</label
+              >
+              <select
+                id="productSelect"
+                class="w-full border px-2 py-1 rounded"
+              >
+                <option value="">-- Select a Product --</option>
+              </select>
+            </div>
+            <select id="paymentMethodSelect" class="border rounded px-2 py-1">
+              <option value="Cash">Cash</option>
+              <option value="Gcash">Gcash</option>
+              <option value="Credit Card">Credit Card</option>
+              <option value="Other">Other</option>
+            </select>
+
+            <!-- Billing List -->
+            <div class="bg-gray-100 p-4 rounded space-y-2">
+              <h3 class="text-sm font-semibold">Billing Summary</h3>
+              <ul id="billingList" class="text-sm text-gray-700 space-y-1"></ul>
+              <p class="text-right font-bold">
+                Total: ₱<span id="billingTotal">0.00</span>
+              </p>
+            </div>
+
+            <!-- Modal Action Buttons -->
+            <div class="flex justify-end gap-2 mt-4">
+              <button
+                id="addServiceBtn"
+                class="bg-indigo-500 text-white px-3 py-1 rounded hover:bg-indigo-600"
+              >
+                Add Service
+              </button>
+              <button
+                id="addProductBtn"
+                class="bg-green-500 text-white px-3 py-1 rounded hover:bg-green-600"
+              >
+                Add Product
+              </button>
+              <button
+                id="cancelBillingBtn"
+                class="bg-gray-300 text-gray-800 px-3 py-1 rounded hover:bg-gray-400"
+              >
+                Cancel
+              </button>
+              <button
+                id="completeBillingBtn"
+                class="bg-blue-600 text-white px-3 py-1 rounded hover:bg-blue-700"
+              >
+                Complete
+              </button>
+            </div>
+          </div>
+        </div>
+        <!-- Other Sections (Hidden by Default) -->
+
+        <!-- Booking Management -->
+        <section
+          id="booking"
+          class="content-section hidden grid grid-cols-1 md:grid-cols-3 gap-6"
+        >
+          <!-- Left side: Appointment Management Tabs -->
+          <div class="md:col-span-2">
+            <h1 class="text-3xl font-bold text-left mb-2">
+              Booking Management
+            </h1>
+            <p class="text-gray-600 text-left mb-6">
+              Manage your customer's booking here.
+            </p>
+
+            <div class="bg-white rounded-2xl shadow-md p-6 w-full">
+              <!-- Tabs -->
+              <div
+                class="flex justify-start gap-6 border-b border-gray-200 pb-2 mb-4"
+              >
+                <button
+                  class="tab-button text-blue-600 font-semibold flex items-center gap-2 border-b-2 border-blue-600 pb-1"
+                  data-tab="pending"
+                >
+                  <svg
+                    class="w-5 h-5"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      d="M8 16h8M8 12h8m-6 8h6m2-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2h6"
+                      stroke-width="2"
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                    />
+                  </svg>
+                  Pending
+                </button>
+                <button
+                  class="tab-button text-gray-600 hover:text-blue-600 flex items-center gap-2"
+                  data-tab="accepted"
+                >
+                  <svg
+                    class="w-5 h-5"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      d="M5 13l4 4L19 7"
+                      stroke-width="2"
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                    />
+                  </svg>
+                  Accepted
+                </button>
+                <button
+                  class="tab-button text-gray-600 hover:text-blue-600 flex items-center gap-2"
+                  data-tab="rescheduled"
+                >
+                  <svg
+                    class="w-5 h-5"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      d="M12 8v4l3 3M12 4a8 8 0 100 16 8 8 0 000-16z"
+                      stroke-width="2"
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                    />
+                  </svg>
+                  Rescheduled
+                </button>
+                <button
+                  class="tab-button text-gray-600 hover:text-blue-600 flex items-center gap-2"
+                  data-tab="cancelled"
+                >
+                  <svg
+                    class="w-5 h-5"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      d="M6 18L18 6M6 6l12 12"
+                      stroke-width="2"
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                    />
+                  </svg>
+                  Cancelled
+                </button>
+                <button
+                  class="tab-button text-gray-600 hover:text-blue-600 flex items-center gap-2"
+                  data-tab="completed"
+                >
+                  <svg
+                    class="w-5 h-5"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      d="M5 13l4 4L19 7"
+                      stroke-width="2"
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                    />
+                  </svg>
+                  Completed
+                </button>
+              </div>
+
+              <!-- Appointment Content Panels -->
+              <div
+                class="h-[320px] overflow-y-auto space-y-4"
+                id="appointmentsContainer"
+              ></div>
+              <div
+                class="text-center text-gray-500 mt-16 hidden"
+                id="noAppointmentsMessage"
+              >
+                No appointments found.
+              </div>
+
+              <!-- Pagination -->
+              <div class="mt-6 flex justify-center gap-2" id="pagination">
+                <!-- Dynamic buttons via JS -->
+              </div>
+            </div>
+          </div>
+
+          <!-- Right side: Calendar Only -->
+          <div class="flex flex-col gap-6 sticky top-0 h-fit">
+            <!-- Calendar Box -->
+            <div class="bg-white p-6 rounded-2xl shadow-md">
+              <h2 class="font-bold text-xl flex items-center">
+                📅 Calendar View
+              </h2>
+              <p class="text-gray-600 mt-2">
+                Check your upcoming appointments at a glance on the calendar.
+              </p>
+              <!-- Calendar Container (Added an ID here for FullCalendar to target) -->
+              <div id="calendar" class="rounded-lg bg-gray-50 h-96 mt-4"></div>
+              <!-- This is where the calendar will render -->
+            </div>
+          </div>
+        </section>
+
+        <section id="customers" class="content-section hidden">
+          <h1 class="text-3xl font-bold flex items-center">Customer List</h1>
+          <p class="text-gray-600 mt-2">View and manage customers.</p>
+
+          <!-- Search & Filter -->
+          <div
+            class="mt-4 bg-white p-4 rounded-lg shadow-md border-l-4 border-blue-500"
+          >
+            <h2 class="text-lg font-semibold">🔍 Search Customers</h2>
+            <input
+              type="text"
+              id="searchCustomer"
+              placeholder="Search by name, email, or contact"
+              class="mt-2x p-2 w-full border border-gray-300 rounded"
+            />
+          </div>
+
+          <!-- Customer Table -->
+          <div
+            class="mt-4 bg-white p-4 rounded-lg shadow-md border-l-4 border-green-500"
+          >
+            <h2 class="text-lg font-semibold">📋 Customer List</h2>
+
+            <!-- Scrollable Container -->
+            <div
+              class="mt-2 max-h-80 overflow-y-auto border border-gray-300 rounded"
+            >
+              <table class="w-full border-collapse">
+                <thead class="sticky top-0 bg-gray-200 z-10">
+                  <tr>
+                    <th class="border border-gray-300 p-2">Last Name</th>
+                    <th class="border border-gray-300 p-2">First Name</th>
+                    <th class="border border-gray-300 p-2">Email</th>
+                    <th class="border border-gray-300 p-2">Contact</th>
+                    <th class="border border-gray-300 p-2">Profile Type</th>
+                    <th class="border border-gray-300 p-2">Actions</th>
+                  </tr>
+                </thead>
+                <tbody id="customerTable">
+                  <!-- Example Customer Data -->
+                  <tr>
+                    <td class="border border-gray-300 p-2">John</td>
+                    <td class="border border-gray-300 p-2">Doe</td>
+                    <td class="border border-gray-300 p-2">
+                      johndoe@gmail.com
+                    </td>
+                    <td class="border border-gray-300 p-2">+639123456789</td>
+                    <td class="border border-gray-300 p-2">3 Appointments</td>
+                    <td class="border border-gray-300 p-2">
+                      <button
+                        class="bg-yellow-500 text-white px-2 py-1 rounded hover:bg-yellow-700"
+                        onclick="openEditModal()"
+                      >
+                        Edit
+                      </button>
+                      <button
+                        id=""
+                        class="bg-red-500 text-white px-2 py-1 rounded hover:bg-red-700"
+                      >
+                        Delete
+                      </button>
+                    </td>
+                  </tr>
+                  <!-- Add more rows here -->
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <!-- Add New Customer -->
+          <div
+            class="mt-4 bg-white p-4 rounded-lg shadow-md border-l-4 border-purple-500"
+          >
+            <h2 class="text-lg font-semibold">➕ Add New Customer</h2>
+            <form id="addCustomerForm" class="mt-2">
+              <input
+                type="text"
+                id="customerLastName"
+                placeholder="Last Name"
+                class="p-2 w-full border border-gray-300 rounded mt-2"
+              />
+              <input
+                type="text"
+                id="customerFirstName"
+                placeholder="First Name"
+                class="p-2 w-full border border-gray-300 rounded mt-2"
+              />
+              <input
+                type="email"
+                id="customerEmail"
+                placeholder="Email"
+                class="p-2 w-full border border-gray-300 rounded mt-2"
+              />
+              <input
+                type="text"
+                id="customerContact"
+                placeholder="Contact Number"
+                class="p-2 w-full border border-gray-300 rounded mt-2"
+              />
+              <button
+                type="submit"
+                class="mt-2 bg-green-500 text-white px-4 py-2 rounded hover:bg-green-700"
+              >
+                Add Customer
+              </button>
+            </form>
+          </div>
+
+          <!-- Edit Customer Modal -->
+          <div
+            id="editCustomerModal"
+            class="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center hidden z-50"
+          >
+            <div class="bg-white rounded-lg shadow-lg w-96 p-6 relative">
+              <h2 class="text-xl font-bold mb-4">✏️ Edit Customer</h2>
+              <form id="editCustomerForm">
+                <input type="hidden" id="editCustomerId" />
+
+                <label class="block text-gray-700">First Name</label>
+                <input
+                  type="text"
+                  id="editCustomerFirstName"
+                  placeholder="First Name"
+                  class="p-2 w-full border border-gray-300 rounded mt-1 mb-3"
+                />
+
+                <label class="block text-gray-700">Last Name</label>
+                <input
+                  type="text"
+                  id="editCustomerLastName"
+                  placeholder="Last Name"
+                  class="p-2 w-full border border-gray-300 rounded mt-1 mb-3"
+                />
+
+                <label class="block text-gray-700">Email</label>
+                <input
+                  type="email"
+                  id="editCustomerEmail"
+                  placeholder="Email"
+                  class="p-2 w-full border border-gray-300 rounded mt-1 mb-3"
+                />
+
+                <label class="block text-gray-700">Contact</label>
+                <input
+                  type="text"
+                  id="editCustomerContact"
+                  placeholder="Contact"
+                  class="p-2 w-full border border-gray-300 rounded mt-1 mb-4"
+                />
+
+                <div class="flex justify-end">
+                  <button
+                    type="button"
+                    onclick="closeEditModal()"
+                    class="bg-gray-300 text-gray-800 px-4 py-2 rounded mr-2 hover:bg-gray-400"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="submit"
+                    class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-700"
+                  >
+                    Save
+                  </button>
+                </div>
+              </form>
+            </div>
+          </div>
+
+          <!-- EDIT PHONE MODAL -->
+          <div
+            id="editModal"
+            class="fixed inset-0 bg-gray-800 bg-opacity-50 flex items-center justify-center z-50 hidden transition-opacity duration-300 ease-in-out"
+          >
+            <div
+              class="bg-white rounded-xl shadow-2xl w-full max-w-md p-6 relative animate-fadeIn"
+            >
+              <!-- Modal Header -->
+              <div class="flex justify-between items-center mb-4">
+                <h2 class="text-xl font-semibold text-gray-800">
+                  Edit Phone Number
+                </h2>
+                <button
+                  id="closeEditModalBtn"
+                  class="text-gray-500 hover:text-gray-700 transition"
+                >
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    class="h-6 w-6"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                  >
+                    <path
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      stroke-width="2"
+                      d="M6 18L18 6M6 6l12 12"
+                    />
+                  </svg>
+                </button>
+              </div>
+
+              <!-- Modal Body -->
+              <div class="mb-4">
+                <label
+                  for="editPhoneInput"
+                  class="block text-sm font-medium text-gray-700 mb-1"
+                  >New Phone Number</label
+                >
+                <input
+                  type="text"
+                  id="editPhoneInput"
+                  placeholder="Enter new phone number"
+                  class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition"
+                />
+              </div>
+
+              <!-- Modal Footer -->
+              <div class="flex justify-end space-x-3">
+                <button
+                  id="cancelEditBtn"
+                  class="bg-gray-300 text-gray-800 px-4 py-2 rounded-lg hover:bg-gray-400 transition"
+                >
+                  Cancel
+                </button>
+                <button
+                  id="confirmEditBtn"
+                  class="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600 transition"
+                >
+                  Save
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <!-- DELETE MODAL -->
+          <div
+            id="delmodal"
+            class="fixed deleteModal inset-0 bg-gray-800 bg-opacity-50 flex items-center justify-center z-50 hidden transition-opacity duration-300 ease-in-out"
+          >
+            <div
+              class="bg-white rounded-xl shadow-2xl w-full max-w-md p-6 relative animate-fadeIn"
+            >
+              <!-- Modal Header -->
+              <div class="flex justify-between items-center mb-4">
+                <button
+                  id=""
+                  class="closeDeleteModalBtn text-gray-500 hover:text-gray-700 transition"
+                >
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    class="h-6 w-6"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                  >
+                    <path
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      stroke-width="2"
+                      d="M6 18L18 6M6 6l12 12"
+                    />
+                  </svg>
+                </button>
+              </div>
+
+              <!-- Modal Body -->
+              <div class="mb-4">
+                <h1>Are You sure you want to delete this customer?</h1>
+              </div>
+
+              <!-- Modal Footer -->
+              <div class="flex justify-end space-x-3">
+                <button
+                  id="cancelDeleteBtn"
+                  class="bg-gray-300 text-gray-800 px-4 py-2 rounded-lg hover:bg-gray-400 transition"
+                >
+                  No
+                </button>
+                <button
+                  id="confirmDeleteBtn"
+                  class="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600 transition"
+                >
+                  Yes
+                </button>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section id="inventory" class="content-section hidden">
+          <h1 class="text-3xl font-bold flex items-center">
+            📦 Inventory Management
+          </h1>
+          <p class="text-gray-600 mt-2">Manage products and inventory.</p>
+
+          <!-- Search Product -->
+          <div
+            class="mt-4 bg-white p-4 rounded-lg shadow-md border-l-4 border-blue-500"
+          >
+            <h2 class="text-lg font-semibold">🔍 Search Product</h2>
+            <input
+              type="text"
+              id="searchProduct"
+              placeholder="Search by product name"
+              class="mt-2 p-2 w-full border border-gray-300 rounded"
+            />
+          </div>
+
+          <!-- Stock Overview & Low Stock Alert -->
+          <div
+            class="mt-4 bg-white p-4 rounded-lg shadow-md border-l-4 border-red-500"
+          >
+            <h2 class="text-lg font-semibold">⚠ Low Stock Alert</h2>
+            <ul id="lowStockList" class="mt-2 text-red-600 font-semibold">
+              <!-- Data will be populated here dynamically -->
+            </ul>
+          </div>
+
+          <!-- Inventory Table Container -->
+          <div
+            class="mt-4 bg-white p-4 rounded-lg shadow-md border-l-4 border-green-500"
+          >
+            <h2 class="text-lg font-semibold mb-2">📋 Product Inventory</h2>
+
+            <!-- SCROLL WRAPPER -->
+            <div class="overflow-x-auto max-h-[400px]">
+              <table
+                class="w-full min-w-[700px] border-collapse border border-gray-300"
+              >
+                <thead class="bg-gray-200 sticky top-0 z-10">
+                  <tr>
+                    <th class="border border-gray-300 p-2 text-left">
+                      Product Name
+                    </th>
+                    <th class="border border-gray-300 p-2 text-left">Stock</th>
+                    <th class="border border-gray-300 p-2 text-left">Price</th>
+                    <th class="border border-gray-300 p-2 text-left">
+                      Last Restocked
+                    </th>
+                    <th class="border border-gray-300 p-2 text-left">
+                      Actions
+                    </th>
+                  </tr>
+                </thead>
+                <tbody id="inventoryTable">
+                  <!-- Products rendered here -->
+                </tbody>
+              </table>
+            </div>
+            <!-- END scroll wrapper -->
+          </div>
+          <!-- END inventory container -->
+
+          <!-- Restock Modal -->
+          <div
+            id="restockModal"
+            class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 hidden"
+          >
+            <div class="bg-white rounded-lg shadow-xl w-full max-w-md p-6">
+              <div class="flex justify-between items-center mb-4">
+                <h3 class="text-xl font-bold">Restock Product</h3>
+                <button
+                  id="closeRestockModal"
+                  class="text-gray-500 hover:text-gray-700 text-2xl"
+                >
+                  &times;
+                </button>
+              </div>
+
+              <form id="restockForm">
+                <input type="hidden" id="restockProductId" />
+
+                <div class="mb-4">
+                  <label
+                    for="restockQuantity"
+                    class="block text-sm font-medium text-gray-700 mb-1"
+                    >New Quantity</label
+                  >
+                  <input
+                    type="number"
+                    id="restockQuantity"
+                    class="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  />
                 </div>
 
-                <!-- Right side: Calendar Only -->
-                <div class="flex flex-col gap-6 sticky top-0 h-fit">
-                    <!-- Calendar Box -->
-                    <div class="bg-white p-6 rounded-2xl shadow-md">
-                        <h2 class="font-bold text-xl flex items-center">📅 Calendar View</h2>
-                        <p class="text-gray-600 mt-2">Check your upcoming appointments at a glance on the calendar.</p>
-                        <div class="rounded-lg bg-gray-50 h-40 mt-4 flex items-center justify-center text-gray-400">
-                            Calendar Widget Here
-                        </div>
-                    </div>
-                </div>
-            </section>
-
-            
-
-            <section id="customers" class="content-section hidden">
-                <h1 class="text-3xl font-bold flex items-center">
-                    Customer List
-                </h1>
-                <p class="text-gray-600 mt-2">View and manage customers.</p>
-            
-                <!-- Search & Filter -->
-                <div class="mt-4 bg-white p-4 rounded-lg shadow-md border-l-4 border-blue-500">
-                    <h2 class="text-lg font-semibold">🔍 Search Customers</h2>
-                    <input type="text" id="searchCustomer" placeholder="Search by name, email, or contact" class="mt-2 p-2 w-full border border-gray-300 rounded">
-                </div>
-            
-                <!-- Customer Table -->
-                <div class="mt-4 bg-white p-4 rounded-lg shadow-md border-l-4 border-green-500">
-                    <h2 class="text-lg font-semibold">📋 Customer List</h2>
-            
-                    <!-- Scrollable Container -->
-                    <div class="mt-2 max-h-80 overflow-y-auto border border-gray-300 rounded">
-                        <table class="w-full border-collapse">
-                            <thead class="sticky top-0 bg-gray-200 z-10">
-                                <tr>
-                                    <th class="border border-gray-300 p-2">Last Name</th>
-                                    <th class="border border-gray-300 p-2">First Name</th>
-                                    <th class="border border-gray-300 p-2">Email</th>
-                                    <th class="border border-gray-300 p-2">Contact</th>
-                                    <th class="border border-gray-300 p-2">Profile Type</th>
-                                    <th class="border border-gray-300 p-2">Actions</th>
-                                </tr>
-                            </thead>
-                            <tbody id="customerTable">
-                                <!-- Example Customer Data -->
-                                <tr>
-                                    <td class="border border-gray-300 p-2">John</td>
-                                    <td class="border border-gray-300 p-2">Doe</td>
-                                    <td class="border border-gray-300 p-2">johndoe@gmail.com</td>
-                                    <td class="border border-gray-300 p-2">+639123456789</td>
-                                    <td class="border border-gray-300 p-2">3 Appointments</td>
-                                    <td class="border border-gray-300 p-2">
-                                        <button class="bg-yellow-500 text-white px-2 py-1 rounded hover:bg-yellow-700" onclick="openEditModal()">Edit</button>
-                                        <button id="" class=" bg-red-500 text-white px-2 py-1 rounded hover:bg-red-700">Delete</button>
-                                    </td>
-                                </tr>
-                                <!-- Add more rows here -->
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-            
-                <!-- Add New Customer -->
-                <div class="mt-4 bg-white p-4 rounded-lg shadow-md border-l-4 border-purple-500">
-                    <h2 class="text-lg font-semibold">➕ Add New Customer</h2>
-                    <form id="addCustomerForm" class="mt-2">
-                        <input type="text" id="customerLastName" placeholder="Last Name" class="p-2 w-full border border-gray-300 rounded mt-2">
-                        <input type="text" id="customerFirstName" placeholder="First Name" class="p-2 w-full border border-gray-300 rounded mt-2">
-                        <input type="email" id="customerEmail" placeholder="Email" class="p-2 w-full border border-gray-300 rounded mt-2">
-                        <input type="text" id="customerContact" placeholder="Contact Number" class="p-2 w-full border border-gray-300 rounded mt-2">
-                        <button type="submit" class="mt-2 bg-green-500 text-white px-4 py-2 rounded hover:bg-green-700">Add Customer</button>
-                    </form>
-                </div>
-            
-                <!-- Edit Customer Modal -->
-                <div id="editCustomerModal" class="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center hidden z-50">
-                    <div class="bg-white rounded-lg shadow-lg w-96 p-6 relative">
-                        <h2 class="text-xl font-bold mb-4">✏️ Edit Customer</h2>
-                        <form id="editCustomerForm">
-                            <input type="hidden" id="editCustomerId">
-            
-                            <label class="block text-gray-700">First Name</label>
-                            <input type="text" id="editCustomerFirstName" placeholder="First Name" class="p-2 w-full border border-gray-300 rounded mt-1 mb-3">
-            
-                            <label class="block text-gray-700">Last Name</label>
-                            <input type="text" id="editCustomerLastName" placeholder="Last Name" class="p-2 w-full border border-gray-300 rounded mt-1 mb-3">
-            
-                            <label class="block text-gray-700">Email</label>
-                            <input type="email" id="editCustomerEmail" placeholder="Email" class="p-2 w-full border border-gray-300 rounded mt-1 mb-3">
-            
-                            <label class="block text-gray-700">Contact</label>
-                            <input type="text" id="editCustomerContact" placeholder="Contact" class="p-2 w-full border border-gray-300 rounded mt-1 mb-4">
-            
-                            <div class="flex justify-end">
-                                <button type="button" onclick="closeEditModal()" class="bg-gray-300 text-gray-800 px-4 py-2 rounded mr-2 hover:bg-gray-400">Cancel</button>
-                                <button type="submit" class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-700">Save</button>
-                            </div>
-                        </form>
-                    </div>
+                <div class="mb-4">
+                  <label
+                    for="restockPrice"
+                    class="block text-sm font-medium text-gray-700 mb-1"
+                    >New Price (₱)</label
+                  >
+                  <input
+                    type="number"
+                    step="0.01"
+                    id="restockPrice"
+                    class="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  />
                 </div>
 
-                <!-- EDIT PHONE MODAL -->
-                <div id="editModal" class="fixed inset-0 bg-gray-800 bg-opacity-50 flex items-center justify-center z-50 hidden transition-opacity duration-300 ease-in-out">
-                    <div class="bg-white rounded-xl shadow-2xl w-full max-w-md p-6 relative animate-fadeIn">
-                    
-                    <!-- Modal Header -->
-                    <div class="flex justify-between items-center mb-4">
-                        <h2 class="text-xl font-semibold text-gray-800">Edit Phone Number</h2>
-                        <button id="closeEditModalBtn" class="text-gray-500 hover:text-gray-700 transition">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none"
-                            viewBox="0 0 24 24" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                            d="M6 18L18 6M6 6l12 12" />
-                        </svg>
-                        </button>
-                    </div>
-                
-                    <!-- Modal Body -->
-                    <div class="mb-4">
-                        <label for="editPhoneInput" class="block text-sm font-medium text-gray-700 mb-1">New Phone Number</label>
-                        <input type="text" id="editPhoneInput" placeholder="Enter new phone number"
-                        class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition" />
-                    </div>
-                
-                    <!-- Modal Footer -->
-                    <div class="flex justify-end space-x-3">
-                        <button id="cancelEditBtn" class="bg-gray-300 text-gray-800 px-4 py-2 rounded-lg hover:bg-gray-400 transition">
-                        Cancel
-                        </button>
-                        <button id="confirmEditBtn" class="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600 transition">
-                        Save
-                        </button>
-                    </div>
-                
-                    </div>
+                <div class="flex justify-end space-x-3">
+                  <button
+                    type="button"
+                    id="cancelRestock"
+                    class="px-4 py-2 bg-gray-300 text-gray-800 rounded-md hover:bg-gray-400"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="submit"
+                    class="px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600"
+                  >
+                    Update
+                  </button>
                 </div>
+              </form>
+            </div>
+          </div>
 
+          <!-- Add New Product -->
+          <div
+            class="mt-4 bg-white p-4 rounded-lg shadow-md border-l-4 border-purple-500"
+          >
+            <h2 class="text-lg font-semibold">➕ Add New Product</h2>
+            <form id="addProductForm" class="mt-2">
+              <input
+                type="text"
+                id="productName"
+                placeholder="Product Name"
+                class="p-2 w-full border border-gray-300 rounded mt-2"
+              />
+              <input
+                type="text"
+                id="productCategory"
+                placeholder="Product Category"
+                class="p-2 w-full border border-gray-300 rounded mt-2"
+              />
+              <input
+                type="number"
+                id="productStock"
+                placeholder="Stock Quantity"
+                class="p-2 w-full border border-gray-300 rounded mt-2"
+              />
+              <input
+                type="number"
+                id="productPrice"
+                placeholder="Price (₱)"
+                class="p-2 w-full border border-gray-300 rounded mt-2"
+              />
+              <button
+                type="submit"
+                class="mt-2 bg-green-500 text-white px-4 py-2 rounded hover:bg-green-700"
+              >
+                Add Product
+              </button>
+            </form>
+          </div>
 
-                <!-- DELETE MODAL -->
-                <div id="delmodal" class="fixed deleteModal inset-0 bg-gray-800 bg-opacity-50 flex items-center justify-center z-50 hidden  transition-opacity duration-300 ease-in-out">
-                    <div class="bg-white rounded-xl shadow-2xl w-full max-w-md p-6 relative animate-fadeIn">
-                    
-                    <!-- Modal Header -->
-                    <div class="flex justify-between items-center mb-4">
-                        <button id="" class="closeDeleteModalBtn text-gray-500 hover:text-gray-700 transition">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none"
-                            viewBox="0 0 24 24" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                            d="M6 18L18 6M6 6l12 12" />
-                        </svg>
-                        </button>
-                    </div>
-                
-                    <!-- Modal Body -->
-                    <div class="mb-4">
-                        <h1>Are You sure you want to delete this customer?</h1>
-                    </div>
-                
-                    <!-- Modal Footer -->
-                    <div class="flex justify-end space-x-3">
-                        <button id="cancelDeleteBtn" class="bg-gray-300 text-gray-800 px-4 py-2 rounded-lg hover:bg-gray-400 transition">
-                            No
-                        </button>
-                        <button id="confirmDeleteBtn" class="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600 transition">
-                        Yes
-                        </button>
-                    </div>
-                
-                    </div>
-                </div>
-            
-            </section>
+          <!-- Export Reports -->
+          <div
+            class="mt-4 bg-white p-4 rounded-lg shadow-md border-l-4 border-indigo-500"
+          >
+            <h2 class="text-lg font-semibold">📄 Export Inventory Report</h2>
+            <button
+              class="mt-2 bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-700"
+            >
+              Export CSV
+            </button>
+            <button
+              class="mt-2 bg-gray-500 text-white px-4 py-2 rounded hover:bg-gray-700"
+            >
+              Export PDF
+            </button>
+          </div>
+        </section>
 
-            <section id="inventory" class="content-section hidden">
-                <h1 class="text-3xl font-bold flex items-center">
-                    📦 Inventory Management
-                </h1>
-                <p class="text-gray-600 mt-2">Manage products and inventory.</p>
-            
-                <!-- Search Product -->
-                <div class="mt-4 bg-white p-4 rounded-lg shadow-md border-l-4 border-blue-500">
-                    <h2 class="text-lg font-semibold">🔍 Search Product</h2>
-                    <input type="text" id="searchProduct" placeholder="Search by product name" class="mt-2 p-2 w-full border border-gray-300 rounded">
-                </div>
-            
-                <!-- Stock Overview & Low Stock Alert -->
-                <div class="mt-4 bg-white p-4 rounded-lg shadow-md border-l-4 border-red-500">
-                    <h2 class="text-lg font-semibold">⚠ Low Stock Alert</h2>
-                    <ul id="lowStockList" class="mt-2 text-red-600 font-semibold">
-                      <!-- Data will be populated here dynamically -->
-                    </ul>
-                </div>
-            
-                <!-- Inventory Table Container -->
-                <div class="mt-4 bg-white p-4 rounded-lg shadow-md border-l-4 border-green-500">
+        <section id="pos" class="content-section hidden">
+          <h1 class="text-3xl font-bold flex items-center">🛒 Point of Sale</h1>
+          <p class="text-gray-600 mt-2">Process transactions and sales.</p>
 
-                    <h2 class="text-lg font-semibold mb-2">📋 Product Inventory</h2>
-                
-                    <!-- SCROLL WRAPPER -->
-                    <div class="overflow-x-auto max-h-[400px]">
-                    
-                    <table class="w-full min-w-[700px] border-collapse border border-gray-300">
-                        <thead class="bg-gray-200 sticky top-0 z-10">
-                            <tr>
-                                <th class="border border-gray-300 p-2 text-left">Product Name</th>
-                                <th class="border border-gray-300 p-2 text-left">Stock</th>
-                                <th class="border border-gray-300 p-2 text-left">Price</th>
-                                <th class="border border-gray-300 p-2 text-left">Last Restocked</th>
-                                <th class="border border-gray-300 p-2 text-left">Actions</th>
-                            </tr>
-                        </thead>
-                        <tbody id="inventoryTable">
-                        <!-- Products rendered here -->
-                        </tbody>
-                    </table>
-                
-                    </div> <!-- END scroll wrapper -->
-                
-                </div> <!-- END inventory container -->
+          <!-- Add to Cart -->
+          <div
+            class="mt-4 bg-white p-4 rounded-lg shadow-md border-l-4 border-blue-500"
+          >
+            <h2 class="text-lg font-semibold">Quick Add to Cart</h2>
+            <input
+              type="text"
+              id="searchItem"
+              placeholder="Search product or service"
+              class="mt-2 p-2 w-full border border-gray-300 rounded"
+            />
+            <button
+              id="addToCartBtn"
+              class="mt-2 bg-green-500 text-white px-4 py-2 rounded hover:bg-green-700"
+            >
+              Add to Cart
+            </button>
+            <button
+              id="browseMoreBtn"
+              class="mt-2 bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-700"
+            >
+              Browse for More
+            </button>
+          </div>
 
-                <!-- Restock Modal -->
-                <div id="restockModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 hidden">
-                    <div class="bg-white rounded-lg shadow-xl w-full max-w-md p-6">
-                        <div class="flex justify-between items-center mb-4">
-                            <h3 class="text-xl font-bold">Restock Product</h3>
-                            <button id="closeRestockModal" class="text-gray-500 hover:text-gray-700 text-2xl">&times;</button>
-                        </div>
-                        
-                        <form id="restockForm">
-                            <input type="hidden" id="restockProductId">
-                            
-                            <div class="mb-4">
-                                <label for="restockQuantity" class="block text-sm font-medium text-gray-700 mb-1">New Quantity</label>
-                                <input type="number" id="restockQuantity" class="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500">
-                            </div>
-                            
-                            <div class="mb-4">
-                                <label for="restockPrice" class="block text-sm font-medium text-gray-700 mb-1">New Price (₱)</label>
-                                <input type="number" step="0.01" id="restockPrice" class="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500">
-                            </div>
-                            
-                            <div class="flex justify-end space-x-3">
-                                <button type="button" id="cancelRestock" class="px-4 py-2 bg-gray-300 text-gray-800 rounded-md hover:bg-gray-400">Cancel</button>
-                                <button type="submit" class="px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600">Update</button>
-                            </div>
-                        </form>
-                    </div>
-                </div>
-  
-            
-                <!-- Add New Product -->
-                <div class="mt-4 bg-white p-4 rounded-lg shadow-md border-l-4 border-purple-500">
-                    <h2 class="text-lg font-semibold">➕ Add New Product</h2>
-                    <form id="addProductForm" class="mt-2">
-                        <input type="text" id="productName" placeholder="Product Name" class="p-2 w-full border border-gray-300 rounded mt-2">
-                        <input type="text" id="productCategory" placeholder="Product Category" class="p-2 w-full border border-gray-300 rounded mt-2">
-                        <input type="number" id="productStock" placeholder="Stock Quantity" class="p-2 w-full border border-gray-300 rounded mt-2">
-                        <input type="number" id="productPrice" placeholder="Price (₱)" class="p-2 w-full border border-gray-300 rounded mt-2">
-                        <button type="submit" class="mt-2 bg-green-500 text-white px-4 py-2 rounded hover:bg-green-700">Add Product</button>
-                    </form>
-                </div>
-            
-                <!-- Export Reports -->
-                <div class="mt-4 bg-white p-4 rounded-lg shadow-md border-l-4 border-indigo-500">
-                    <h2 class="text-lg font-semibold">📄 Export Inventory Report</h2>
-                    <button class="mt-2 bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-700">Export CSV</button>
-                    <button class="mt-2 bg-gray-500 text-white px-4 py-2 rounded hover:bg-gray-700">Export PDF</button>
-                </div>
-            </section>
+          <!-- Shopping Cart -->
+          <div
+            class="mt-4 bg-white p-4 rounded-lg shadow-md border-l-4 border-orange-500"
+          >
+            <h2 class="text-lg font-semibold">Shopping Cart</h2>
+            <table class="w-full mt-2 border-collapse border border-gray-300">
+              <thead>
+                <tr class="bg-gray-200">
+                  <th class="border border-gray-300 p-2">Item</th>
+                  <th class="border border-gray-300 p-2">Quantity</th>
+                  <th class="border border-gray-300 p-2">Price</th>
+                  <th class="border border-gray-300 p-2">Actions</th>
+                </tr>
+              </thead>
+              <tbody id="cartTable">
+                <!-- Cart items will be dynamically inserted here by JavaScript -->
+              </tbody>
+            </table>
+          </div>
 
-            <section id="pos" class="content-section hidden">
-                <h1 class="text-3xl font-bold flex items-center">
-                    🛒 Point of Sale
-                </h1>
-                <p class="text-gray-600 mt-2">Process transactions and sales.</p>
-            
-                <!-- Add to Cart -->
-                <div class="mt-4 bg-white p-4 rounded-lg shadow-md border-l-4 border-blue-500">
-                    <h2 class="text-lg font-semibold">Quick Add to Cart</h2>
-                    <input type="text" id="searchItem" placeholder="Search product or service" class="mt-2 p-2 w-full border border-gray-300 rounded">
-                    <button id="addToCartBtn" class="mt-2 bg-green-500 text-white px-4 py-2 rounded hover:bg-green-700">Add to Cart</button>
-                    <button id="browseMoreBtn" class="mt-2 bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-700">Browse for More</button>
-                </div>
-            
-                <!-- Shopping Cart -->
-                <div class="mt-4 bg-white p-4 rounded-lg shadow-md border-l-4 border-orange-500">
-                    <h2 class="text-lg font-semibold">Shopping Cart</h2>
-                    <table class="w-full mt-2 border-collapse border border-gray-300">
-                        <thead>
-                            <tr class="bg-gray-200">
-                                <th class="border border-gray-300 p-2">Item</th>
-                                <th class="border border-gray-300 p-2">Quantity</th>
-                                <th class="border border-gray-300 p-2">Price</th>
-                                <th class="border border-gray-300 p-2">Actions</th>
-                            </tr>
-                        </thead>
-                        <tbody id="cartTable">
-                            <!-- Cart items will be dynamically inserted here by JavaScript -->
-                        </tbody>
-                    </table>
-                </div>
-            
-                <!-- Billing Section -->
-                <div class="mt-4 bg-white p-4 rounded-lg shadow-md border-l-4 border-purple-500">
-                    <h2 class="text-lg font-semibold">Billing Summary</h2>
-                    <p class="mt-2 text-gray-700">Subtotal: <span class="subtotal-amount font-bold">₱0.00</span></p>
-                    <p class="text-gray-700">Discount: <span class="discount-amount font-bold">₱0.00</span></p>
-                    <p class="text-gray-700">Tax (12%): <span class="tax-amount font-bold">₱0.00</span></p>
-                    <p class="text-lg font-bold mt-2">Total: <span class="total-amount text-green-600">₱0.00</span></p>
-                </div>
-            
-                <!-- Payment Options -->
-                <div class="mt-4 bg-white p-4 rounded-lg shadow-md border-l-4 border-teal-500">
-                    <h2 class="text-lg font-semibold">Select Payment Method</h2>
-                    <select id="paymentMethod" class="mt-2 p-2 w-full border border-gray-300 rounded">
-                        <option value="Cash">Cash</option>
-                        <option value="GCash">GCash</option>
-                        <option value="Credit Card">Credit Card</option>
-                        <option value="Other">Other</option>
-                    </select>
-                </div>
-            
-                <!-- Checkout -->
-                <div class="mt-4 flex gap-2">
-                    <button id="printReceiptBtn" class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-700">Print Receipt</button>
-                    <button id="emailReceiptBtn" class="bg-gray-500 text-white px-4 py-2 rounded hover:bg-gray-700">Email Receipt</button>
-                    <button id="completeTransactionBtn" class="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-700">Complete Transaction</button>
-                </div>
-            
-                <!-- Transaction History -->
-                <div class="mt-4 bg-white p-4 rounded-lg shadow-md border-l-4 border-indigo-500">
-                    <h2 class="text-lg font-semibold">Transaction History</h2>
-                    <table class="w-full mt-2 border-collapse border border-gray-300">
-                        <thead>
-                            <tr class="bg-gray-200">
-                                <th class="border border-gray-300 p-2">Order ID</th>
-                                <th class="border border-gray-300 p-2">Date</th>
-                                <th class="border border-gray-300 p-2">Total</th>
-                                <th class="border border-gray-300 p-2">Status</th>
-                            </tr>
-                        </thead>
-                        <tbody id="transactionTable">
-                           
-                        </tbody>
-                    </table>
-                </div>
-            
-                <!-- Export Reports -->
-                <div class="mt-4 bg-white p-4 rounded-lg shadow-md border-l-4 border-gray-500">
-                    <h2 class="text-lg font-semibold">Sales Reports</h2>
-                    <button class="mt-2 bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-700">Daily Report (CSV)</button>
-                    <button class="mt-2 bg-gray-500 text-white px-4 py-2 rounded hover:bg-gray-700">Monthly Report (PDF)</button>
-                </div>
-            </section>
-        </main>
+          <!-- Billing Section -->
+          <div
+            class="mt-4 bg-white p-4 rounded-lg shadow-md border-l-4 border-purple-500"
+          >
+            <h2 class="text-lg font-semibold">Billing Summary</h2>
+            <p class="mt-2 text-gray-700">
+              Subtotal: <span class="subtotal-amount font-bold">₱0.00</span>
+            </p>
+            <p class="text-gray-700">
+              Discount: <span class="discount-amount font-bold">₱0.00</span>
+            </p>
+            <p class="text-gray-700">
+              Tax (12%): <span class="tax-amount font-bold">₱0.00</span>
+            </p>
+            <p class="text-lg font-bold mt-2">
+              Total: <span class="total-amount text-green-600">₱0.00</span>
+            </p>
+          </div>
+
+          <!-- Payment Options -->
+          <div
+            class="mt-4 bg-white p-4 rounded-lg shadow-md border-l-4 border-teal-500"
+          >
+            <h2 class="text-lg font-semibold">Select Payment Method</h2>
+            <select
+              id="paymentMethod"
+              class="mt-2 p-2 w-full border border-gray-300 rounded"
+            >
+              <option value="Cash">Cash</option>
+              <option value="GCash">GCash</option>
+              <option value="Credit Card">Credit Card</option>
+              <option value="Other">Other</option>
+            </select>
+          </div>
+
+          <!-- Checkout -->
+          <div class="mt-4 flex gap-2">
+            <button
+              id="printReceiptBtn"
+              class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-700"
+            >
+              Print Receipt
+            </button>
+            <button
+              id="emailReceiptBtn"
+              class="bg-gray-500 text-white px-4 py-2 rounded hover:bg-gray-700"
+            >
+              Email Receipt
+            </button>
+            <button
+              id="completeTransactionBtn"
+              class="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-700"
+            >
+              Complete Transaction
+            </button>
+          </div>
+
+          <!-- Transaction History -->
+          <div
+            class="mt-4 bg-white p-4 rounded-lg shadow-md border-l-4 border-indigo-500"
+          >
+            <h2 class="text-lg font-semibold">Transaction History</h2>
+            <table class="w-full mt-2 border-collapse border border-gray-300">
+              <thead>
+                <tr class="bg-gray-200">
+                  <th class="border border-gray-300 p-2">Order ID</th>
+                  <th class="border border-gray-300 p-2">Date</th>
+                  <th class="border border-gray-300 p-2">Total</th>
+                  <th class="border border-gray-300 p-2">Status</th>
+                </tr>
+              </thead>
+              <tbody id="transactionTable"></tbody>
+            </table>
+          </div>
+
+          <!-- Export Reports -->
+          <div
+            class="mt-4 bg-white p-4 rounded-lg shadow-md border-l-4 border-gray-500"
+          >
+            <h2 class="text-lg font-semibold">Sales Reports</h2>
+            <button
+              class="mt-2 bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-700"
+            >
+              Daily Report (CSV)
+            </button>
+            <button
+              class="mt-2 bg-gray-500 text-white px-4 py-2 rounded hover:bg-gray-700"
+            >
+              Monthly Report (PDF)
+            </button>
+          </div>
+        </section>
+      </main>
     </div>
 
     <!-- Logout Modal-->
-    <div id="logoutModal" class="fixed inset-0 flex items-center justify-center bg-gray-900 bg-opacity-50 hidden">
-        <div class="bg-white p-6 rounded-lg shadow-lg w-96">
-            <h2 class="text-lg font-bold mb-4">Confirm Logout</h2>
-            <p class="text-gray-600 mb-4">Are you sure you want to log out?</p>
-            <div class="flex justify-end space-x-3">
-                <button id="cancelLogout" class="px-4 py-2 bg-gray-400 text-white rounded hover:bg-gray-600">Cancel</button>
-                <button id="confirmLogout" class="px-4 py-2 bg-red-500 text-white rounded hover:bg-red-700">Logout</button>
-            </div>
+    <div
+      id="logoutModal"
+      class="fixed inset-0 flex items-center justify-center bg-gray-900 bg-opacity-50 hidden"
+    >
+      <div class="bg-white p-6 rounded-lg shadow-lg w-96">
+        <h2 class="text-lg font-bold mb-4">Confirm Logout</h2>
+        <p class="text-gray-600 mb-4">Are you sure you want to log out?</p>
+        <div class="flex justify-end space-x-3">
+          <button
+            id="cancelLogout"
+            class="px-4 py-2 bg-gray-400 text-white rounded hover:bg-gray-600"
+          >
+            Cancel
+          </button>
+          <button
+            id="confirmLogout"
+            class="px-4 py-2 bg-red-500 text-white rounded hover:bg-red-700"
+          >
+            Logout
+          </button>
         </div>
+      </div>
     </div>
 
-    <div id="settingsModal" class="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 hidden z-50">
-        <div class="bg-white p-6 rounded-lg shadow-lg w-[400px] relative">
-        
-        <button id="closeSettingsBtn" class="absolute top-2 right-2 text-gray-600 hover:text-gray-900 text-2xl">&times;</button>
-        
+    <div
+      id="settingsModal"
+      class="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 hidden z-50"
+    >
+      <div class="bg-white p-6 rounded-lg shadow-lg w-[400px] relative">
+        <button
+          id="closeSettingsBtn"
+          class="absolute top-2 right-2 text-gray-600 hover:text-gray-900 text-2xl"
+        >
+          &times;
+        </button>
+
         <h2 class="text-xl font-bold mb-4">Settings</h2>
-    
+
         <div class="mb-6">
-            <h3 class="font-semibold text-gray-700 mb-2">App Information</h3>
-            <div class="text-sm text-gray-600 space-y-2">
+          <h3 class="font-semibold text-gray-700 mb-2">App Information</h3>
+          <div class="text-sm text-gray-600 space-y-2">
             <p><strong>Version:</strong> 1.0.0</p>
-            <a href="#" class="text-blue-500 hover:underline">Terms of Service</a><br>
-            <a href="#" class="text-blue-500 hover:underline">Privacy Policy</a><br>
-            <a href="#" class="text-blue-500 hover:underline">Contact Support</a>
-            </div>
+            <a href="#" class="text-blue-500 hover:underline"
+              >Terms of Service</a
+            ><br />
+            <a href="#" class="text-blue-500 hover:underline">Privacy Policy</a
+            ><br />
+            <a href="#" class="text-blue-500 hover:underline"
+              >Contact Support</a
+            >
+          </div>
         </div>
-    
+
         <!-- Divider -->
-        <hr class="my-4">
-    
+        <hr class="my-4" />
+
         <div class="mb-4">
-            <h3 class="font-semibold text-gray-700 mb-2">Profile</h3>
-            <div class="flex flex-col space-y-2">
-            <input type="text" placeholder="Display Name" class="border rounded px-3 py-2">
-            <input type="email" placeholder="Email" class="border rounded px-3 py-2">
-            <button class="bg-blue-500 text-white rounded px-4 py-2 hover:bg-blue-600">Update Profile</button>
-            </div>
+          <h3 class="font-semibold text-gray-700 mb-2">Profile</h3>
+          <div class="flex flex-col space-y-2">
+            <input
+              type="text"
+              placeholder="Display Name"
+              class="border rounded px-3 py-2"
+            />
+            <input
+              type="email"
+              placeholder="Email"
+              class="border rounded px-3 py-2"
+            />
+            <button
+              class="bg-blue-500 text-white rounded px-4 py-2 hover:bg-blue-600"
+            >
+              Update Profile
+            </button>
+          </div>
         </div>
-    
+
         <div class="mb-4">
-            <h3 class="font-semibold text-gray-700 mb-2">Notifications</h3>
-            <div class="flex items-center space-x-2">
-            <input type="checkbox" id="emailNotif" class="form-checkbox">
+          <h3 class="font-semibold text-gray-700 mb-2">Notifications</h3>
+          <div class="flex items-center space-x-2">
+            <input type="checkbox" id="emailNotif" class="form-checkbox" />
             <label for="emailNotif">Email Reminders</label>
-            </div>
-            <div class="flex items-center space-x-2">
-            <input type="checkbox" id="smsNotif" class="form-checkbox">
+          </div>
+          <div class="flex items-center space-x-2">
+            <input type="checkbox" id="smsNotif" class="form-checkbox" />
             <label for="smsNotif">SMS Reminders</label>
-            </div>
+          </div>
         </div>
-    
+
         <div class="mb-4">
-            <h3 class="font-semibold text-gray-700 mb-2">Theme</h3>
-            <div class="flex items-center space-x-4">
-            <button id="lightModeBtn" class="bg-gray-200 px-4 py-2 rounded hover:bg-gray-300">Light</button>
-            <button id="darkModeBtn" class="bg-gray-800 text-white px-4 py-2 rounded hover:bg-gray-900">Dark</button>
-            </div>
+          <h3 class="font-semibold text-gray-700 mb-2">Theme</h3>
+          <div class="flex items-center space-x-4">
+            <button
+              id="lightModeBtn"
+              class="bg-gray-200 px-4 py-2 rounded hover:bg-gray-300"
+            >
+              Light
+            </button>
+            <button
+              id="darkModeBtn"
+              class="bg-gray-800 text-white px-4 py-2 rounded hover:bg-gray-900"
+            >
+              Dark
+            </button>
+          </div>
         </div>
-    
+
         <div class="flex justify-end space-x-3 mt-6">
-            <button id="closeSettingsBtn2" class="px-4 py-2 bg-gray-400 text-white rounded hover:bg-gray-600">Close</button>
-            <button id="saveSettingsBtn" class="px-4 py-2 bg-green-500 text-white rounded hover:bg-green-600">Save Changes</button>
+          <button
+            id="closeSettingsBtn2"
+            class="px-4 py-2 bg-gray-400 text-white rounded hover:bg-gray-600"
+          >
+            Close
+          </button>
+          <button
+            id="saveSettingsBtn"
+            class="px-4 py-2 bg-green-500 text-white rounded hover:bg-green-600"
+          >
+            Save Changes
+          </button>
         </div>
-    
-        </div>
+      </div>
     </div>
 
     <script>
-        document.addEventListener("DOMContentLoaded", function () {
-            const sidebarLinks = document.querySelectorAll(".sidebar-link");
-            const contentSections = document.querySelectorAll(".content-section");
+      document.addEventListener("DOMContentLoaded", function () {
+        const sidebarLinks = document.querySelectorAll(".sidebar-link");
+        const contentSections = document.querySelectorAll(".content-section");
 
-            function setActive(link) {
-                sidebarLinks.forEach(item => item.classList.remove("font-bold", "bg-gray-700"));
-                link.classList.add("font-bold", "bg-gray-700");
-            }
+        function setActive(link) {
+          sidebarLinks.forEach((item) =>
+            item.classList.remove("font-bold", "bg-gray-700")
+          );
+          link.classList.add("font-bold", "bg-gray-700");
+        }
 
-            sidebarLinks.forEach(link => {
-                link.addEventListener("click", function (event) {
-                    event.preventDefault();
+        sidebarLinks.forEach((link) => {
+          link.addEventListener("click", function (event) {
+            event.preventDefault();
 
-                    contentSections.forEach(section => section.classList.add("hidden"));
+            contentSections.forEach((section) =>
+              section.classList.add("hidden")
+            );
 
-                    const targetSection = document.getElementById(this.dataset.target);
-                    targetSection.classList.remove("hidden");
+            const targetSection = document.getElementById(this.dataset.target);
+            targetSection.classList.remove("hidden");
 
-                    setActive(this);
-                });
-            });
-
-            // Set Dashboard as active on load
-            setActive(document.querySelector(".sidebar-link[data-target='dashboard']"));
+            setActive(this);
+          });
         });
 
+        // Set Dashboard as active on load
+        setActive(
+          document.querySelector(".sidebar-link[data-target='dashboard']")
+        );
+      });
 
-        function openModal(id) {
-            document.getElementById(id).classList.remove('hidden');
-        }
+      function openModal(id) {
+        document.getElementById(id).classList.remove("hidden");
+      }
 
-        function closeModal(id) {
-            document.getElementById(id).classList.add('hidden');
-        }
+      function closeModal(id) {
+        document.getElementById(id).classList.add("hidden");
+      }
     </script>
 
     <script>
-        document.addEventListener("DOMContentLoaded", function () {
-            const userSession = localStorage.getItem("userSession");
-            const userRole = localStorage.getItem("userRole");
-            const currentPage = window.location.pathname;
+      document.addEventListener("DOMContentLoaded", function () {
+        const userSession = localStorage.getItem("userSession");
+        const userRole = localStorage.getItem("userRole");
+        const currentPage = window.location.pathname;
 
-            if (!userSession) {
-                alert("Access denied. Please log in.");
-                window.location.href = "/frontend/public/index.html";
-                return;
-            }
+        if (!userSession) {
+          alert("Access denied. Please log in.");
+          window.location.href = "/frontend/public/index.html";
+          return;
+        }
 
-            // Ensure correct role-based access
-            if (currentPage.includes("admin-dashboard.html") && userRole !== "admin") {
-                alert("Unauthorized access!");
-                window.location.href = "/frontend/public/index.html";
-                return;
-            }
+        // Ensure correct role-based access
+        if (
+          currentPage.includes("admin-dashboard.html") &&
+          userRole !== "admin"
+        ) {
+          alert("Unauthorized access!");
+          window.location.href = "/frontend/public/index.html";
+          return;
+        }
 
-            if (currentPage.includes("customer-dashboard-orig.html") && userRole !== "customer") {
-                alert("Unauthorized access!");
-                window.location.href = "/frontend/public/index.html";
-                return;
-            }
+        if (
+          currentPage.includes("customer-dashboard-orig.html") &&
+          userRole !== "customer"
+        ) {
+          alert("Unauthorized access!");
+          window.location.href = "/frontend/public/index.html";
+          return;
+        }
 
-            document.body.classList.remove("hidden");
-        });
+        document.body.classList.remove("hidden");
+      });
     </script>
 
     <script src="../js/auth.js"></script>
@@ -868,6 +1502,7 @@
     <script type="module" src="../js/posManagement.js"></script>
     <script type="module" src="../js/adminDashboard.js"></script>
     <script type="module" src="../js/adminQuickStats.js"></script>
-
-</body>
+    <script type="module" src="../js/calendar.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/fullcalendar@3.10.2/main.min.js"></script>
+  </body>
 </html>
