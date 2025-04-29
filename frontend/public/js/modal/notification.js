@@ -6,15 +6,15 @@ let notificationChannel = null;
 function setupRealtimeNotifications() {
   if (!notificationChannel) {
     notificationChannel = supabase
-      .channel('public:notifications')  
+      .channel('public:notifications')
       .on('postgres_changes', {
-        event: 'INSERT', 
+        event: 'INSERT',
         schema: 'public',
         table: 'notifications',
-        filter: `recipient_id=eq.${currentUserId}`,  
+        filter: `recipient_id=eq.${currentUserId}`,
       }, (payload) => {
         console.log('New notification:', payload);
-        updateNotificationCount(); 
+        updateNotificationCount();
         loadNotifications();
       })
       .subscribe();
@@ -62,16 +62,71 @@ async function loadNotifications() {
     notifItem.className = `notification-item p-2 rounded cursor-pointer ${
       notif.status === 'unread' ? 'bg-blue-100' : 'bg-white'
     } hover:bg-gray-100`;
-    notifItem.textContent = notif.message;
     notifItem.dataset.id = notif.id;
     notifItem.dataset.status = notif.status;
 
-    notifItem.addEventListener('click', async () => {
+    let formattedMessage = notif.message
+      .replace(/for\s([^()]+)\s\(/, 'for <strong>$1</strong> (')
+      .replace(/on\s([\d-]+)/, 'on <strong>$1</strong>');
+
+    if (notif.message.toLowerCase().includes("new appointment booked")) {
+      formattedMessage += ` <a href="#" data-target="booking" class="text-blue-500 underline ml-1 view-link">View</a>`;
+    }
+
+    const createdAt = new Date(notif.created_at).toLocaleString([], {
+      month: 'short',
+      day: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit',
+      hour12: true
+    });
+
+    notifItem.innerHTML = `
+      <div class="flex justify-between items-start">
+        <div class="text-sm">${formattedMessage}</div>
+        <div class="text-xs text-gray-400 pl-2 whitespace-nowrap">${createdAt}</div>
+      </div>
+    `;
+
+    notifItem.addEventListener('click', async (e) => {
+      const viewLink = e.target.closest('.view-link');
+      
+      if (viewLink) {
+        e.preventDefault();
+        const targetId = viewLink.dataset.target;
+    
+        const targetSection = document.getElementById(targetId);
+        if (!targetSection) {
+          console.warn(`No section found with id: ${targetId}`);
+          return;
+        }
+    
+        const currentSections = document.querySelectorAll('.current-page');
+
+        if (currentSections.length === 0) {
+          const fallback = document.querySelector('#dashboard'); 
+          if (fallback) {
+            fallback.classList.add('hidden');
+            fallback.classList.remove('current-page');
+          }
+        } else {
+          currentSections.forEach(section => {
+            section.classList.add('hidden');
+            section.classList.remove('current-page');
+          });
+        }
+    
+        targetSection.classList.remove('hidden');
+        targetSection.classList.add('current-page');
+    
+        notifModal.classList.add('hidden');
+      }
+    
       if (notifItem.dataset.status === 'unread') {
         await markAsRead(notif.id, notifItem);
       }
     });
-
+    
     notifList.appendChild(notifItem);
   });
 }
@@ -109,7 +164,6 @@ async function sendNotificationToAdmins(message) {
   }
 }
 
-
 async function updateNotificationCount() {
   if (!currentUserId) return;
 
@@ -117,7 +171,7 @@ async function updateNotificationCount() {
     .from('notifications')
     .select('*', { count: 'exact', head: true })
     .eq('recipient_id', currentUserId)
-    .eq('status', 'unread'); 
+    .eq('status', 'unread');
 
   const badge = document.getElementById('notificationCount');
 
@@ -129,12 +183,11 @@ async function updateNotificationCount() {
 
   if (count > 0) {
     badge.textContent = count;
-    badge.classList.remove('hidden');  
+    badge.classList.remove('hidden');
   } else {
-    badge.classList.add('hidden'); 
+    badge.classList.add('hidden');
   }
 }
-
 
 async function markAsRead(notificationId, notifItem) {
   const { error } = await supabase
@@ -173,8 +226,7 @@ document.getElementById('closeNotificationFooter').addEventListener('click', () 
 (async function initNotifications() {
   currentUserId = await fetchCurrentUser();
   if (currentUserId) {
-    setupRealtimeNotifications();  
-    updateNotificationCount();    
+    setupRealtimeNotifications();
+    updateNotificationCount();
   }
 })();
-
