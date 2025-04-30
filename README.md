@@ -32,3 +32,10 @@ Supports both **customer and admin dashboards**, with updates and integrated cha
 > ✅ Tailwind CDN Included in HTML:  
 ```html
 <script src="https://cdn.tailwindcss.com"></script>
+
+
+## Entity-Relationship Diagram (ERD)
+
+Here is the Entity-Relationship Diagram (ERD) for the database:
+
+![ERD](/frontend/public/assets/ERD%20PetPal.png)
