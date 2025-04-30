@@ -270,6 +270,81 @@ async function sendBookingNotification(petId, serviceId, date, time) {
   }
 }
 
+async function notifyAdminsCancelPending(petId, serviceId, date, time) {
+  const [petName, serviceName, adminIds] = await Promise.all([
+    getPetName(petId),
+    getServiceName(serviceId),
+    getAllAdminIds()
+  ]);
+
+  if (!adminIds || adminIds.length === 0) {
+    console.error("No admin found to send cancel-pending notification.");
+    return;
+  }
+
+  const message = `Pending appointment for ${petName} (${serviceName}) on ${date} at ${time} was canceled by the customer.`;
+
+  for (const adminId of adminIds) {
+    const { error } = await supabase.from("notifications").insert([{
+      recipient_id: adminId,
+      message,
+      status: 'unread'
+    }]);
+
+    if (error) console.error(`Notification error for admin ${adminId}:`, error);
+  }
+}
+
+async function notifyAdminsCancelAccepted(petId, serviceId, date, time) {
+  const [petName, serviceName, adminIds] = await Promise.all([
+    getPetName(petId),
+    getServiceName(serviceId),
+    getAllAdminIds()
+  ]);
+
+  if (!adminIds || adminIds.length === 0) {
+    console.error("No admin found to send cancel-accepted notification.");
+    return;
+  }
+
+  const message = `Accepted appointment for ${petName} (${serviceName}) on ${date} at ${time} was canceled by the customer.`;
+
+  for (const adminId of adminIds) {
+    const { error } = await supabase.from("notifications").insert([{
+      recipient_id: adminId,
+      message,
+      status: 'unread'
+    }]);
+
+    if (error) console.error(`Notification error for admin ${adminId}:`, error);
+  }
+}
+
+async function notifyAdminsRescheduleRequest(petId, serviceId, oldDate, oldTime, newDate, newTime) {
+  const [petName, serviceName, adminIds] = await Promise.all([
+    getPetName(petId),
+    getServiceName(serviceId),
+    getAllAdminIds()
+  ]);
+
+  if (!adminIds || adminIds.length === 0) {
+    console.error("No admin found to send reschedule notification.");
+    return;
+  }
+
+  const message = `${petName} (${serviceName}) requested to reschedule from ${oldDate} ${oldTime} to ${newDate} ${newTime}.`;
+
+  for (const adminId of adminIds) {
+    const { error } = await supabase.from("notifications").insert([{
+      recipient_id: adminId,
+      message,
+      status: 'unread'
+    }]);
+
+    if (error) console.error(`Notification error for admin ${adminId}:`, error);
+  }
+}
+
 async function getAllAdminIds() {
   const { data, error } = await supabase
     .from('users_table')
@@ -471,7 +546,8 @@ document.getElementById('confirm-reschedule').addEventListener('click', async ()
     .select('appointment_date, appointment_time, original_appointment_date, original_appointment_time')
     .eq('appointment_id', Number(id))
     .single();
-    console.log("Fetched appointment:", appt);
+
+  console.log("Fetched appointment:", appt);
 
   if (fetchErr) {
     alert("Failed to fetch original appointment.");
@@ -503,10 +579,29 @@ document.getElementById('confirm-reschedule').addEventListener('click', async ()
     return;
   }
 
+  const { data: apptDetails, error: detailsError } = await supabase
+    .from('appointments')
+    .select('pet_id, service_id')
+    .eq('appointment_id', id)
+    .single();
+
+  if (detailsError || !apptDetails) {
+    console.error("Failed to fetch pet/service for notification:", detailsError);
+  } else {
+    // Call the notification function
+    await notifyAdminsRescheduleRequest(
+      apptDetails.pet_id,
+      apptDetails.service_id,
+      newDate,
+      newTime
+    );
+  }
+
   alert("Reschedule request sent.");
   document.getElementById('reschedule-modal').classList.add('hidden');
   loadAppointments();
 });
+
 
 function renderPagination(totalCount) {
   const paginationContainer = document.getElementById("pagination");
@@ -775,6 +870,18 @@ async function getServiceName(serviceId) {
 async function cancelAppointment(appointmentId) {
   if (!appointmentId || !confirm("Are you sure you want to cancel this appointment?")) return;
 
+  const { data: appointment, error: fetchError } = await supabase
+    .from("appointments")
+    .select("pet_id, service_id, appointment_date, appointment_time, status")
+    .eq("appointment_id", appointmentId)
+    .single();
+
+  if (fetchError || !appointment) {
+    console.error("Fetch appointment error:", fetchError);
+    alert("Error fetching appointment details.");
+    return;
+  }
+
   const { error } = await supabase
     .from("appointments")
     .update({ status: "cancelled" })
@@ -784,6 +891,14 @@ async function cancelAppointment(appointmentId) {
     console.error("Cancel error:", error);
     alert("Error cancelling appointment.");
     return;
+  }
+
+  const { pet_id, service_id, appointment_date, appointment_time, status } = appointment;
+
+  if (status === "pending") {
+    await notifyAdminsCancelPending(pet_id, service_id, appointment_date, appointment_time);
+  } else if (status === "accepted") {
+    await notifyAdminsCancelAccepted(pet_id, service_id, appointment_date, appointment_time);
   }
 
   alert("Appointment cancelled successfully.");
