@@ -73,8 +73,13 @@ async function loadNotifications() {
       formattedMessage += ` <a href="#" data-target="booking" class="text-blue-500 underline ml-1 view-link">View</a>`;
     }
 
-    if (notif.message.toLowerCase().includes("reschedule requested")) {
-      formattedMessage += ` <a href="#" data-target="reschedule" class="text-blue-500 underline ml-1 view-link">View</a>`;
+    if (notif.message.toLowerCase().includes("requested to reschedule")) {
+      formattedMessage = notif.message
+        .replace(/^([^()]+)\s\(([^)]+)\)/, '<strong>$1</strong> (<strong>$2</strong>)') 
+        .replace(/from\s([\d-]+\s[\d:]+)/, 'from <strong>$1</strong>')                  
+        .replace(/to\s([\d-]+\s[\d:]+)/, 'to <strong>$1</strong>');                      
+    
+      formattedMessage += ` <a href="#" data-target="booking" class="text-blue-500 underline ml-1 view-link">View</a>`;
     }
 
     const createdAt = new Date(notif.created_at).toLocaleString([], {

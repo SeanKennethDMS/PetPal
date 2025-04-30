@@ -258,7 +258,7 @@ async function sendBookingNotification(petId, serviceId, date, time) {
   for (const adminId of adminIds) {
     const { error } = await supabase.from("notifications").insert([{
       recipient_id: adminId, 
-      message: `New appointment booked for ${petName} (${serviceName}) on ${date} at ${time}`,
+      message: `<strong>${petName}</strong> (<strong>${serviceName}</strong>) requested to reschedule from <strong>${oldDate} ${oldTime}</strong> to <strong>${newDate} ${newTime}</strong>`,
       status: 'unread'
     }]);
 
