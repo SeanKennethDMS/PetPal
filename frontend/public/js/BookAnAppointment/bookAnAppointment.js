@@ -593,6 +593,8 @@ document.getElementById('confirm-reschedule').addEventListener('click', async ()
   alert("Reschedule request sent.");
   document.getElementById('reschedule-modal').classList.add('hidden');
   loadAppointments();
+
+  button.disabled = false;
 });
 
 
