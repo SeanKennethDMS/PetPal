@@ -38,4 +38,4 @@ Supports both **customer and admin dashboards**, with updates and integrated cha
 
 Here is the Entity-Relationship Diagram (ERD) for the database:
 
-![ERD](/frontend/public/assets/ERD%20PetPal.png)
+![ERD](./frontend/public/assets/ERD%20PetPal.png)
