@@ -1,6 +1,6 @@
 # 🐾 PetPal Scheduler – Veterinary Clinic & Pet Services Management System
 
-## 📌 Overview
+## 📌 About
 **PetPal** is a web-based system designed for veterinary clinics and pet service centers.  
 It provides management for customer bookings, appointments, POS transactions, and inventory all in one platform.  
 Supports both **customer and admin dashboards**, with updates and integrated charts for insights.
