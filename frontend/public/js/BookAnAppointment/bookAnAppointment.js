@@ -543,19 +543,18 @@ document.getElementById('confirm-reschedule').addEventListener('click', async ()
 
   const { data: appt, error: fetchErr } = await supabase
     .from('appointments')
-    .select('appointment_date, appointment_time, original_appointment_date, original_appointment_time, pet_id, service_id, user_id')
+    .select('appointment_date, appointment_time, original_appointment_date, original_appointment_time')
     .eq('appointment_id', Number(id))
     .single();
 
-  if (fetchErr || !appt) {
+  console.log("Fetched appointment:", appt);
+
+  if (fetchErr) {
     alert("Failed to fetch original appointment.");
-    console.error(fetchErr?.message);
+    console.error(fetchErr.message);
     button.disabled = false;
     return;
   }
-
-  const originalDate = appt.original_appointment_date || appt.appointment_date;
-  const originalTime = appt.original_appointment_time || appt.appointment_time;
 
   const updates = {
     appointment_date: newDate,
@@ -580,23 +579,28 @@ document.getElementById('confirm-reschedule').addEventListener('click', async ()
     return;
   }
 
-  await notifyAdminsAppointmentReschedule(
-    appt.pet_id,
-    appt.service_id,
-    originalDate,
-    originalTime,
-    newDate,
-    newTime,
-    appt.user_id
-  );
+  const { data: apptDetails, error: detailsError } = await supabase
+    .from('appointments')
+    .select('pet_id, service_id')
+    .eq('appointment_id', id)
+    .single();
+
+  if (detailsError || !apptDetails) {
+    console.error("Failed to fetch pet/service for notification:", detailsError);
+  } else {
+    // Call the notification function
+    await notifyAdminsRescheduleRequest(
+      apptDetails.pet_id,
+      apptDetails.service_id,
+      newDate,
+      newTime
+    );
+  }
 
   alert("Reschedule request sent.");
   document.getElementById('reschedule-modal').classList.add('hidden');
   loadAppointments();
-
-  button.disabled = false;
 });
-
 
 
 function renderPagination(totalCount) {
