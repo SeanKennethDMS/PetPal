@@ -73,6 +73,10 @@ async function loadNotifications() {
       formattedMessage += ` <a href="#" data-target="booking" class="text-blue-500 underline ml-1 view-link">View</a>`;
     }
 
+    if (notif.message.toLowerCase().includes("reschedule requested")) {
+      formattedMessage += ` <a href="#" data-target="reschedule" class="text-blue-500 underline ml-1 view-link">View</a>`;
+    }
+
     const createdAt = new Date(notif.created_at).toLocaleString([], {
       month: 'short',
       day: 'numeric',

@@ -336,7 +336,7 @@ async function notifyAdminsRescheduleRequest(petId, serviceId, oldDate, oldTime,
   for (const adminId of adminIds) {
     const { error } = await supabase.from("notifications").insert([{
       recipient_id: adminId,
-      message: `<strong>${petName}</strong> (<strong>${serviceName}</strong>) requested to reschedule from <strong>${oldDate} ${oldTime}</strong> to <strong>${newDate} ${newTime}</strong>. <a href="/appointments/${petId}" target="_blank" style="color: blue; text-decoration: underline;">View</a>`,
+      message: `${petName} (${serviceName}) requested to reschedule from ${oldDate} ${oldTime} to ${newDate} ${newTime}.`,
       status: 'unread'
     }]);
 
