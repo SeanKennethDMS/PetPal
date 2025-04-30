@@ -321,27 +321,30 @@ async function notifyAdminsCancelAccepted(petId, serviceId, date, time) {
 }
 
 async function notifyAdminsRescheduleRequest(petId, serviceId, oldDate, oldTime, newDate, newTime) {
-  const [petName, serviceName, adminIds] = await Promise.all([
+  const [petName, serviceName] = await Promise.all([
     getPetName(petId),
-    getServiceName(serviceId),
-    getAllAdminIds()
+    getServiceName(serviceId)
   ]);
 
+  const adminIds = await getAllAdminIds();
+
   if (!adminIds || adminIds.length === 0) {
-    console.error("No admin found to send reschedule notification.");
+    console.error("No admin found to send notifications.");
     return;
   }
-
-  const message = `${petName} (${serviceName}) requested to reschedule from ${oldDate} ${oldTime} to ${newDate} ${newTime}.`;
 
   for (const adminId of adminIds) {
     const { error } = await supabase.from("notifications").insert([{
       recipient_id: adminId,
-      message,
+      message: `${petName} (${serviceName}) requested to reschedule from ${oldDate} ${oldTime} to ${newDate} ${newTime}.`,
       status: 'unread'
     }]);
 
-    if (error) console.error(`Notification error for admin ${adminId}:`, error);
+    if (error) {
+      console.error(`Notification error for admin ${adminId}:`, error);
+    } else {
+      console.log(`Reschedule notification sent to admin ${adminId}`);
+    }
   }
 }
 
@@ -588,10 +591,11 @@ document.getElementById('confirm-reschedule').addEventListener('click', async ()
   if (detailsError || !apptDetails) {
     console.error("Failed to fetch pet/service for notification:", detailsError);
   } else {
-    // Call the notification function
     await notifyAdminsRescheduleRequest(
       apptDetails.pet_id,
       apptDetails.service_id,
+      appt.original_appointment_date || appt.appointment_date,
+      appt.original_appointment_time || appt.appointment_time,
       newDate,
       newTime
     );
