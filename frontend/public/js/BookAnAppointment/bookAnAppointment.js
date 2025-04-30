@@ -248,17 +248,16 @@ async function sendBookingNotification(petId, serviceId, date, time) {
     getServiceName(serviceId)
   ]);
 
-  const adminIds = await getAllAdminIds(); // Fetch all admin IDs
+  const adminIds = await getAllAdminIds(); 
 
   if (!adminIds || adminIds.length === 0) {
     console.error("No admin found to send notifications.");
     return;
   }
 
-  // Loop through all admin IDs and send notifications
   for (const adminId of adminIds) {
     const { error } = await supabase.from("notifications").insert([{
-      recipient_id: adminId,  // Send to each admin
+      recipient_id: adminId, 
       message: `New appointment booked for ${petName} (${serviceName}) on ${date} at ${time}`,
       status: 'unread'
     }]);
