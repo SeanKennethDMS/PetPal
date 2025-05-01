@@ -13,18 +13,15 @@ function debounce(func, delay = 300) {
 }
 
 document.addEventListener('DOMContentLoaded', async () => {
-    // Elements
     const inventoryTable = document.getElementById('inventoryTable');
     const lowStockList = document.getElementById('lowStockList');
     const searchProductInput = document.getElementById('searchProduct');
     const addProductForm = document.getElementById('addProductForm');
   
-    let products = []; // Global products list
+    let products = []; 
   
-    // Load Products
     await loadProducts();
   
-    // Add Product Form
     addProductForm.addEventListener('submit', async (e) => {
         e.preventDefault();
     
@@ -57,7 +54,6 @@ document.addEventListener('DOMContentLoaded', async () => {
         addProductForm.reset();
     });
   
-    // Debounced Search
     searchProductInput.addEventListener('input', debounce((e) => {
         const searchTerm = e.target.value.toLowerCase();
         const filtered = products.filter(product => 
@@ -67,13 +63,11 @@ document.addEventListener('DOMContentLoaded', async () => {
         displayProducts(filtered);
     }, 300));
   
-    // Functions
     async function loadProducts() {
         inventoryTable.innerHTML = '';
         lowStockList.innerHTML = '';
     
         try {
-            // Initial load
             const { data, error } = await supabase
                 .from('products')
                 .select('*')
@@ -88,11 +82,10 @@ document.addEventListener('DOMContentLoaded', async () => {
             products = data || [];
             displayProducts(products);
     
-            // Subscribe to real-time updates
             supabase
                 .channel('products_changes')
                 .on('postgres_changes', { event: '*', schema: 'public', table: 'products' }, async (payload) => {
-                    await loadProducts(); // Refresh the list on any change
+                    await loadProducts(); 
                 })
                 .subscribe();
     
@@ -104,7 +97,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   
     function displayProducts(productsToShow) {
         inventoryTable.innerHTML = '';
-        lowStockList.innerHTML = ''; // Clear previous low stock items
+        lowStockList.innerHTML = ''; 
         
         const LOW_STOCK_THRESHOLD = 5;
         
@@ -119,7 +112,6 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
         
         productsToShow.forEach(product => {
-            // Add to low stock list if applicable (but don't show modal)
             if (product.quantity <= LOW_STOCK_THRESHOLD) {
                 const li = document.createElement('li');
                 li.className = 'flex items-center py-1';
@@ -130,7 +122,6 @@ document.addEventListener('DOMContentLoaded', async () => {
                 lowStockList.appendChild(li);
             }
             
-            // Create table row (existing code remains)
             const row = document.createElement('tr');
             row.className = 'hover:bg-gray-50';
             row.innerHTML = `
@@ -163,7 +154,6 @@ document.addEventListener('DOMContentLoaded', async () => {
         const restockBtns = document.querySelectorAll('.restockBtn');
         const deleteBtns = document.querySelectorAll('.deleteBtn');
         
-        // Get modal elements
         const restockModal = document.getElementById('restockModal');
         const closeRestockModal = document.getElementById('closeRestockModal');
         const cancelRestock = document.getElementById('cancelRestock');
@@ -171,24 +161,20 @@ document.addEventListener('DOMContentLoaded', async () => {
         const restockProductId = document.getElementById('restockProductId');
         const restockQuantity = document.getElementById('restockQuantity');
 
-        // Close modal function
         const closeModal = () => {
             restockModal.classList.add('hidden');
             document.body.style.overflow = 'auto';
         };
 
-        // Modal event listeners
         closeRestockModal.addEventListener('click', closeModal);
         cancelRestock.addEventListener('click', closeModal);
 
-        // Handle clicks outside modal
         restockModal.addEventListener('click', (e) => {
             if (e.target === restockModal) {
                 closeModal();
             }
         });
 
-        // Restock button click handler
         restockBtns.forEach(btn => {
             btn.addEventListener('click', () => {
                 const productId = btn.getAttribute('data-id');
@@ -208,7 +194,6 @@ document.addEventListener('DOMContentLoaded', async () => {
             });
         });
 
-        // Quantity input validation
         restockQuantity.addEventListener('input', (e) => {
             const newValue = parseInt(e.target.value);
             if (isNaN(newValue)) {
@@ -222,7 +207,6 @@ document.addEventListener('DOMContentLoaded', async () => {
             }
         });
 
-        // Form submission
         restockForm.addEventListener('submit', async (e) => {
             e.preventDefault();
             
@@ -230,7 +214,6 @@ document.addEventListener('DOMContentLoaded', async () => {
             const quantityToAdd = parseInt(restockQuantity.value);
             const currentProduct = products.find(p => p.id === productId);
 
-            // Validation checks
             if (isNaN(quantityToAdd)) {
                 alert('Please enter a valid number of items to add');
                 restockQuantity.focus();
@@ -244,10 +227,8 @@ document.addEventListener('DOMContentLoaded', async () => {
                 return;
             }
 
-            // Calculate new total stock
             const newStock = currentProduct.quantity + quantityToAdd;
 
-            // Show loading state
             const submitBtn = restockForm.querySelector('button[type="submit"]');
             const originalBtnText = submitBtn.textContent;
             submitBtn.textContent = 'Adding Stock...';
@@ -277,7 +258,6 @@ document.addEventListener('DOMContentLoaded', async () => {
             }
         });
 
-        // Delete buttons
         deleteBtns.forEach(btn => {
             btn.addEventListener('click', async () => {
                 const productId = btn.getAttribute('data-id');
@@ -287,7 +267,6 @@ document.addEventListener('DOMContentLoaded', async () => {
                     return;
                 }
 
-                // Show loading state on the button
                 const originalBtnText = btn.textContent;
                 btn.textContent = 'Deleting...';
                 btn.disabled = true;

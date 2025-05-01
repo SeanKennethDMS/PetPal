@@ -243,29 +243,63 @@ async function createAppointment(serviceId, petId, date, time) {
 }
 
 async function sendBookingNotification(petId, serviceId, date, time) {
-  const [petName, serviceName] = await Promise.all([ 
+  const [petName, serviceName] = await Promise.all([
     getPetName(petId),
     getServiceName(serviceId)
   ]);
 
-  const adminIds = await getAllAdminIds(); 
-
-  if (!adminIds || adminIds.length === 0) {
+  const adminIds = await getAllAdminIds();
+  if (!adminIds?.length) {
     console.error("No admin found to send notifications.");
     return;
   }
 
+  const message = `<strong>${petName}</strong> booked an appointment for <strong>${serviceName}</strong> on <strong>${date} at ${time}</strong>.`;
+
   for (const adminId of adminIds) {
-    const { error } = await supabase.from("notifications").insert([{
-      recipient_id: adminId, 
-      message: `<strong>${petName}</strong> (<strong>${serviceName}</strong>) requested to reschedule from <strong>${oldDate} ${oldTime}</strong> to <strong>${newDate} ${newTime}</strong>`,
-      status: 'unread'
-    }]);
+    const { error } = await supabase.from("notifications").insert([
+      {
+        recipient_id: adminId,
+        message,
+        status: "unread"
+      }
+    ]);
 
     if (error) {
       console.error(`Notification error for admin ${adminId}:`, error);
     } else {
       console.log(`Notification sent to admin ${adminId}`);
+    }
+  }
+}
+
+async function sendRescheduleNotification(petId, serviceId, oldDate, oldTime, newDate, newTime) {
+  const [petName, serviceName] = await Promise.all([
+    getPetName(petId),
+    getServiceName(serviceId)
+  ]);
+
+  const adminIds = await getAllAdminIds();
+  if (!adminIds?.length) {
+    console.error("No admin found to send notifications.");
+    return;
+  }
+
+  const message = `<strong>${petName}</strong> (<strong>${serviceName}</strong>) requested to reschedule from <strong>${oldDate} ${oldTime}</strong> to <strong>${newDate} ${newTime}</strong>.`;
+
+  for (const adminId of adminIds) {
+    const { error } = await supabase.from("notifications").insert([
+      {
+        recipient_id: adminId,
+        message,
+        status: "unread"
+      }
+    ]);
+
+    if (error) {
+      console.error(`Notification error for admin ${adminId}:`, error);
+    } else {
+      console.log(`Reschedule notification sent to admin ${adminId}`);
     }
   }
 }
