@@ -231,7 +231,8 @@ document.addEventListener("DOMContentLoaded", () => {
       alert("Failed to update appointment status.");
     } else {
       console.log(`Appointment ${appointmentId} set to ${newStatus}`);
-
+  
+      // ✅ Notify the customer
       notifyCustomerOfAppointmentStatus(appointmentId, newStatus);
   
       if (newStatus === 'completed') {
