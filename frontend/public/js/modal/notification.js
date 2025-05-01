@@ -198,6 +198,21 @@ async function updateNotificationCount() {
   }
 }
 
+export async function notifyCustomerOfAppointmentStatus(userId, message) {
+  const { error } = await supabase.from("notifications").insert([
+    {
+      recipient_id: userId,
+      message,
+      status: "unread",
+    },
+  ]);
+
+  if (error) {
+    console.error("Customer notification error:", error.message);
+  } else {
+    console.log("Notification sent to customer", userId);
+  }
+}
 async function markAsRead(notificationId, notifItem) {
   const { error } = await supabase
     .from('notifications')
