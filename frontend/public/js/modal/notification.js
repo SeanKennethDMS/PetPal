@@ -140,14 +140,61 @@ async function loadNotifications() {
   });
 }
 
+async function sendAppointmentReminders() {
+  const currentDate = new Date();
+  
+  const reminderDays = [5, 3, 1, 0];
+
+  for (let days of reminderDays) {
+    const reminderDate = new Date(currentDate);
+    reminderDate.setDate(currentDate.getDate() + days);
+    const formattedReminderDate = reminderDate.toISOString().split('T')[0]; 
+    
+    const { data: appointments, error } = await supabase
+      .from('appointments')
+      .select('appointment_id, appointment_date, appointment_time, user_id, pets(pet_name), status')
+      .eq('appointment_date', formattedReminderDate)
+      .order('appointment_time', { ascending: true });
+
+    if (error) {
+      console.error('Error fetching appointments:', error.message);
+      continue;
+    }
+
+    appointments.forEach(appointment => {
+      const customerMessage = `Reminder: Your appointment with ${appointment.pets.pet_name} is in ${days} day(s) on ${appointment.appointment_date} at ${appointment.appointment_time}.`;
+      sendNotificationToCustomer(appointment.user_id, customerMessage);
+
+      const adminMessage = `Admin Reminder: Appointment for ${appointment.pets.pet_name} with customer ID ${appointment.user_id} is in ${days} day(s) on ${appointment.appointment_date} at ${appointment.appointment_time}.`;
+      sendNotificationToAdmins(adminMessage);
+    });
+  }
+}
+
+async function sendNotificationToCustomer(userId, message) {
+  const { error } = await supabase.from("notifications").insert([{
+    recipient_id: userId,
+    message,
+    status: "unread",
+  }]);
+
+  if (error) {
+    console.error("Error sending customer notification:", error.message);
+  } else {
+    console.log("Customer notification sent:", userId);
+  }
+}
+
+
+
 async function sendNotificationToAdmins(message) {
-  const { data: admins, error: fetchError } = await supabase
+  const { data: admins, error } = await supabase
     .from('users_table')
     .select('id')
     .eq('role', 'admin');
 
-  if (fetchError) {
-    console.error('Error fetching admins:', fetchError);
+  if (error) {
+    console.error('Error fetching admins:', error.message);
     return;
   }
 
@@ -169,9 +216,11 @@ async function sendNotificationToAdmins(message) {
   if (insertError) {
     console.error('Error sending notifications to admins:', insertError);
   } else {
-    console.log('Notifications sent to all admins.');
+    console.log('Notifications sent to admins.');
   }
 }
+
+setInterval(sendAppointmentReminders, 24 * 60 * 60 * 1000); // Runs once every day
 
 async function updateNotificationCount() {
   if (!currentUserId) return;
@@ -213,6 +262,7 @@ export async function notifyCustomerOfAppointmentStatus(userId, message) {
     console.log("Notification sent to customer", userId);
   }
 }
+
 async function markAsRead(notificationId, notifItem) {
   const { error } = await supabase
     .from('notifications')
