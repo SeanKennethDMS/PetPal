@@ -7,291 +7,138 @@ const profileModal = document.getElementById('profile-edit-modal');
 const modalFormContainer = document.getElementById('modal-form-container');
 const tabs = document.querySelectorAll('.tab-btn');
 const editButtons = document.querySelectorAll('.edit-btn');
-
 const saveButton = document.getElementById('save-changes');
 
 let phAddresses = null;
+const LOCK_DURATION = 60 * 24 * 60 * 60 * 1000; 
 
-let lastSavedTimestamp = localStorage.getItem('profileLastSaved') || 0;
-const LOCK_DURATION = 30 * 24 * 60 * 60 * 1000; // 30 days in ms
+if (profileModal) profileModal.style.transition = 'opacity 0.3s ease';
+if (modalFormContainer) modalFormContainer.style.transition = 'opacity 0.2s ease';
 
-profileModal.style.transition = 'opacity 0.3s ease';
-modalFormContainer.style.transition = 'opacity 0.2s ease';
+let formData = {
+    personal: {},
+    contact: {},
+    address: {}
+};
 
 document.addEventListener('DOMContentLoaded', async () => {
     await loadAddressData();
     await loadProfileData();
-    checkEditLock();
+    initTabs();
 
-    tabs.forEach(t => t.classList.remove('active'));
-    document.querySelector('.tab-btn[data-tab="personal"]').classList.add('active');
-});
-
-function checkEditLock() {
-    const currentTime = new Date().getTime();
-    if (currentTime - lastSavedTimestamp < LOCK_DURATION){
-        editButtons.forEach(btn => {
-            btn.disabled = true;
-            btn.innerHTML = `<svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2z"/>
-            </svg>`;
-            btn.title = 'Editing locked for 30 days after last save';
+    if (editButtons.length > 0) {
+        editButtons.forEach(button => {
+            button.addEventListener('click', (e) => {
+                if (!button.disabled) {
+                    const section = button.getAttribute('data-target');
+                    if (section) {
+                        openModal(section);
+                        
+                        // Safely set active tab
+                        const tabToActivate = document.querySelector(`.tab-btn[data-tab="${section}"]`);
+                        if (tabToActivate) {
+                            tabs.forEach(tab => {
+                                if (tab.classList) tab.classList.remove('active');
+                            });
+                            tabToActivate.classList.add('active');
+                        }
+                    }
+                }
+            });
         });
     }
-}
 
-  
-async function loadAddressData() {
-    try {
-      const basePath = getBasePath();
-      const response = await fetch(`${basePath}/js/data/philippines-addresses.json`);
-      
-      if (!response.ok) throw new Error('Failed to load address data');
-      phAddresses = await response.json();
-    } catch (error) {
-      console.error('Error loading address JSON:', error);
-      alert('Unable to load address data. Please try again later.');
+    if (profileModal) {
+        profileModal.addEventListener('click', closeModal);
     }
-}
 
-function showAlert(message, type = 'success'){
-    const alert = document.createElement('div');
-    alert.className = `fixed top-4 right-4 p-4 rounded-lg shadow-lg ${
-        type === 'error' ? 'bg-red-100 text-red-800' : 'bg-green-100 text-green-800'
-    }`;
-    alert.textContent = message;
-    document.body.appendChild(alert);
-
-    setTimeout(() => {
-        alert.style.opacity = '0';
-        setTimeout(() => alert.remove(), 300);
-    }, 3000);
-}
-
-async function getUserId() {
-    const { data: { user } } = await supabase.auth.getUser();
-    return user?.id;
-}
-
-function sanitizeInputs(data) {
-    const sanitized = {};
-    for (const key in data) {
-        sanitized[key] = data[key]?.replace(/[<>]/g, '') || '';
+    if (tabs.length > 0) {
+        tabs.forEach(tab => {
+            tab.classList?.remove('active');
+            
+            tab.addEventListener('click', (e) => {
+                e.preventDefault(); 
+                e.stopPropagation(); 
+                
+                if (tab.classList) {
+                    tabs.forEach(t => {
+                        if (t.classList) t.classList.remove('active');
+                    });
+                    tab.classList.add('active');
+                }
+                const tabSection = tab.getAttribute('data-tab');
+                if (tabSection) {
+                    loadFormContent(tabSection);
+                }
+            });
+        });
+    
+        const personalTab = document.querySelector('.tab-btn[data-tab="personal"]');
+        if (personalTab && personalTab.classList) {
+            personalTab.classList.add('active');
+        }
     }
-    return sanitized;
-}
 
-function validateFormData(data, section) {
-    let isValid = true;
-    
-    document.querySelectorAll('.border-red-500').forEach(el => {
-        el.classList.remove('border-red-500', 'bg-red-50');
-    });
-    
-    for (const key in data) {
-        if (!data[key]?.trim()) {
-            const fieldId = `edit-${key.replace('_', '-')}`;
-            const field = document.getElementById(fieldId);
-            if (field) {
-                field.classList.add('border-red-500', 'bg-red-50');
-                isValid = false;
+    if (saveButton) {
+        saveButton.addEventListener('click', async () => {
+            collectFormData();
+            
+            const isPersonalValid = validateFormData({
+                last_name: formData.personal.lastName,
+                first_name: formData.personal.firstName,
+                birthdate: formData.personal.birthdate
+            }, 'personal');
+            
+            const isContactValid = validateFormData({
+                phone: formData.contact.phone,
+                email: formData.contact.email
+            }, 'contact');
+            
+            const isAddressValid = validateFormData({
+                region: formData.address.region,
+                province: formData.address.province,
+                municipality: formData.address.municipality,
+                barangay: formData.address.barangay
+            }, 'address');
+            
+            if (!isPersonalValid || !isContactValid || !isAddressValid) {
+                showAlert('Please complete all required fields in all tabs', 'error');
+                return;
             }
-        }
+            
+            try {
+                const userId = await getUserId();
+                if (!userId) throw new Error('User not authenticated');
+                
+                const { error } = await supabase
+                    .from('user_profiles')
+                    .upsert({
+                        user_id: userId,
+                        last_name: formData.personal.lastName,
+                        first_name: formData.personal.firstName,
+                        middle_name: formData.personal.middleName,
+                        birthdate: formData.personal.birthdate,
+                        phone_number: formData.contact.phone,
+                        email: formData.contact.email,
+                        region: formData.address.region,
+                        province: formData.address.province,
+                        municipality: formData.address.municipality,
+                        barangay: formData.address.barangay,
+                        last_profile_edit: new Date().toISOString()
+                    });
+                
+                if (error) throw error;
+                
+                showAlert('Profile updated successfully!');
+                closeModal({ target: profileModal });
+                await loadProfileData();
+            } catch (error) {
+                console.error('Error saving profile:', error);
+                showAlert('Failed to save profile. Please try again.', 'error');
+            }
+        });
     }
-    
-    if (section === 'contact') {
-        const email = data.email;
-        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-        if (!emailRegex.test(email)) {
-            document.getElementById('edit-email').classList.add('border-red-500', 'bg-red-50');
-            isValid = false;
-        }
-    }
-    
-    return isValid;
-}
-
-
-function openModal(section) {
-    profileModal.style.opacity = '0';
-    profileModal.classList.remove('hidden');
-    setTimeout(() => profileModal.style.opacity = '1', 10);
-    
-    modalFormContainer.style.opacity = '0';
-    setTimeout(() => {
-        loadFormContent(section);
-        modalFormContainer.style.opacity = '1';
-    }, 200);
-}
-
-function closeModal(e) {
-    if (e.target === profileModal || e.target.id === 'close-modal' || e.target.closest('#close-modal')) {
-        profileModal.style.opacity = '0';
-        setTimeout(() => profileModal.classList.add('hidden'), 300);
-    }
-}
-
-function loadFormContent(section) {
-    let formHTML = '';
-    switch (section) {
-        case 'personal':
-            formHTML = `
-                <div class="space-y-4">
-                        <div>
-                            <label class="block text-gray-700 mb-1">Last Name</label>
-                            <input type="text" id="edit-last-name" class="w-full p-2 border rounded transition-colors focus:border-blue-500 focus:ring-1 focus:ring-blue-500" 
-                                   value="${document.getElementById('last-name').textContent}" />
-                        </div>
-                        <div>
-                            <label class="block text-gray-700">First Name</label>
-                            <input type="text" id="edit-first-name" class="w-full p-2 border rounded transition-colors focus:border-blue-500 focus:ring-1 focus:ring-blue-500" 
-                                value="${document.getElementById('first-name').textContent}" />
-                        </div>
-                        <div>
-                            <label class="block text-gray-700">Middle Name</label>
-                            <input type="text" id="edit-middle-name" class="w-full p-2 border rounded transition-colors focus:border-blue-500 focus:ring-1 focus:ring-blue-500" 
-                                value="${document.getElementById('middle-name').textContent}" />
-                        </div>
-                        <div>
-                            <label class="block text-gray-700">Birthdate</label>
-                            <input type="date" id="edit-birthdate" class="w-full p-2 border rounded transition-colors focus:border-blue-500 focus:ring-1 focus:ring-blue-500" 
-                                value="${document.getElementById('birthdate').textContent}" />
-                        </div>
-                    </div>
-            `;
-            break;
-        case 'contact':
-            formHTML = `
-                <div class="space-y-4">
-                        <div>
-                            <label class="block text-gray-700 mb-1">Phone</label>
-                            <input type="tel" id="edit-phone" class="w-full p-2 border rounded transition-colors focus:border-blue-500 focus:ring-1 focus:ring-blue-500" 
-                                value="${document.getElementById('phone').textContent}" />
-                        </div>
-                        <div>
-                            <label class="block text-gray-700">Email</label>
-                            <input type="email" id="edit-email" class="w-full p-2 border rounded transition-colors focus:border-blue-500 focus:ring-1 focus:ring-blue-500" 
-                                value="${document.getElementById('email').textContent}" />
-                        </div>
-                    </div>
-            `;
-            break;
-        case 'address':
-            formHTML = `
-                <div class="space-y-4">
-                        <div>
-                            <label class="block text-gray-700 mb-1">Region</label>
-                            <select id="edit-region" class="w-full p-2 border rounded transition-colors focus:border-blue-500 focus:ring-1 focus:ring-blue-500"></select>
-                        </div>
-                        <div>
-                            <label class="block text-gray-700">Province</label>
-                            <select id="edit-province" class="w-full p-2 border rounded transition-colors focus:border-blue-500 focus:ring-1 focus:ring-blue-500" disabled></select>
-                        </div>
-                        <div>
-                            <label class="block text-gray-700">City/Municipality</label>
-                            <select id="edit-municipality" class="w-full p-2 border rounded transition-colors focus:border-blue-500 focus:ring-1 focus:ring-blue-500" disabled></select>
-                        </div>
-                        <div>
-                            <label class="block text-gray-700">Barangay</label>
-                            <select id="edit-barangay" class="w-full p-2 border rounded transition-colors focus:border-blue-500 focus:ring-1 focus:ring-blue-500" disabled></select>
-                        </div>
-                    </div>
-            `;
-            break;
-    }
-    modalFormContainer.innerHTML = formHTML;
-
-    if (section === 'address') loadAddressDropdowns();
-}
-
-function switchTab(newTab) {
-    const currentTab = document.querySelector('.tab-btn.active');
-    if (currentTab === newTab) return;
-    
-    modalFormContainer.style.opacity = '0';
-    setTimeout(() => {
-        currentTab.classList.remove('active');
-        newTab.classList.add('active');
-        loadFormContent(newTab.getAttribute('data-tab'));
-        modalFormContainer.style.opacity = '1';
-    }, 200);
-}
-
-function loadAddressDropdowns() {
-    if (!phAddresses) {
-        console.error('Address data not loaded');
-        return;
-    }
-
-    const regionSelect = document.getElementById('edit-region');
-    const provinceSelect = document.getElementById('edit-province');
-    const municipalitySelect = document.getElementById('edit-municipality');
-    const barangaySelect = document.getElementById('edit-barangay');
-
-    // Clear existing options
-    regionSelect.innerHTML = '<option value="">Select Region</option>';
-    provinceSelect.innerHTML = '<option value="">Select Province</option>';
-    municipalitySelect.innerHTML = '<option value="">Select Municipality</option>';
-    barangaySelect.innerHTML = '<option value="">Select Barangay</option>';
-
-    // Populate regions
-    Object.keys(phAddresses).forEach(regionCode => {
-        const region = phAddresses[regionCode];
-        regionSelect.innerHTML += `<option value="${regionCode}">${region.region_name}</option>`;
-    });
-
-    // Region change handler
-    regionSelect.addEventListener('change', () => {
-        const regionCode = regionSelect.value;
-        provinceSelect.innerHTML = '<option value="">Select Province</option>';
-        municipalitySelect.innerHTML = '<option value="">Select Municipality</option>';
-        barangaySelect.innerHTML = '<option value="">Select Barangay</option>';
-        provinceSelect.disabled = !regionCode;
-
-        if (regionCode) {
-            const provinces = phAddresses[regionCode].province_list;
-            Object.keys(provinces).forEach(provinceName => {
-                provinceSelect.innerHTML += `<option value="${provinceName}">${provinceName}</option>`;
-            });
-        }
-    });
-
-    // Province change handler
-    provinceSelect.addEventListener('change', () => {
-        const regionCode = regionSelect.value;
-        const provinceName = provinceSelect.value;
-        municipalitySelect.innerHTML = '<option value="">Select Municipality</option>';
-        barangaySelect.innerHTML = '<option value="">Select Barangay</option>';
-        municipalitySelect.disabled = !provinceName;
-
-        if (regionCode && provinceName) {
-            const municipalities = phAddresses[regionCode].province_list[provinceName].municipality_list;
-            Object.keys(municipalities).forEach(municipalityName => {
-                municipalitySelect.innerHTML += `<option value="${municipalityName}">${municipalityName}</option>`;
-            });
-        }
-    });
-
-    // Municipality change handler
-    municipalitySelect.addEventListener('change', () => {
-        const regionCode = regionSelect.value;
-        const provinceName = provinceSelect.value;
-        const municipalityName = municipalitySelect.value;
-        barangaySelect.innerHTML = '<option value="">Select Barangay</option>';
-        barangaySelect.disabled = !municipalityName;
-
-        if (regionCode && provinceName && municipalityName) {
-            const barangays = phAddresses[regionCode]
-                .province_list[provinceName]
-                .municipality_list[municipalityName]
-                .barangay_list;
-
-            barangays.forEach(barangay => {
-                barangaySelect.innerHTML += `<option value="${barangay}">${barangay}</option>`;
-            });
-        }
-    });
-}
+});
 
 async function loadProfileData() {
     const userId = await getUserId();
@@ -318,118 +165,413 @@ async function loadProfileData() {
             document.getElementById('municipality').textContent = data.municipality || '—';
             document.getElementById('barangay').textContent = data.barangay || '—';
 
-            if (!lastSavedTimestamp) {
-                lastSavedTimestamp = new Date().getTime();
-                localStorage.setItem('profileLastSaved', lastSavedTimestamp);
+            if (data.last_profile_edit) {
+                const lastProfileEdit = new Date(data.last_profile_edit).getTime();
+                checkEditLock(lastProfileEdit);
             }
         } else {
             console.log('No profile data found');
-           
-            lastSavedTimestamp = new Date().getTime();
-            localStorage.setItem('profileLastSaved', lastSavedTimestamp);
+            enableEditButtons();
         }
     } catch (error) {
-        console.error('Error loading profile:', error.message);
-        showAlert('Failed to load profile.', 'error');
+        console.error('Error loading profile data:', error);
+        enableEditButtons();
     }
 }
 
-async function saveProfileData(section) {
-    const userId = await getUserId();
-    if (!userId) return;
+function checkEditLock(lastProfileEdit) {
+    const currentTime = new Date().getTime();
+    if (lastProfileEdit && (currentTime - lastProfileEdit < LOCK_DURATION)) {
+        lockEditButtons();
+    } else {
+        enableEditButtons();
+    }
+}
 
-    const updatedData = getFormData(section);
-    const isValid = validateFormData(updatedData, section);
+function lockEditButtons() {
+    editButtons.forEach(btn => {
+        btn.disabled = true;
+        btn.innerHTML = `<svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2z"/>
+        </svg>`;
+        btn.title = 'Editing locked for 60 days after last save';
+    });
+}
+
+function enableEditButtons() {
+    editButtons.forEach(btn => {
+        btn.disabled = false;
+        btn.innerHTML = `<svg class="w-5 h-5 text-gray-800" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"/>
+        </svg>`;
+        btn.title = 'Edit information';
+    });
+}
+
+async function getUserId() {
+    const { data: { user } } = await supabase.auth.getUser();
+    return user?.id;
+}
+
+function sanitizeInputs(data) {
+    const sanitized = {};
+    for (const key in data) {
+        sanitized[key] = data[key]?.replace(/[<>]/g, '') || '';
+    }
+    return sanitized;
+}
+
+function validateFormData(data, section) {
+    let isValid = true;
     
-    if (!isValid) {
-        showAlert('Please fix the highlighted fields', 'error');
+    document.querySelectorAll('.error-message').forEach(el => el.remove());
+    
+    for (const key in data) {
+        if (!data[key]?.trim()) {
+            const fieldId = `edit-${key.replace('_', '-')}`;
+            const field = document.getElementById(fieldId);
+            if (field) {
+                field.classList.add('border-red-500', 'bg-red-50');
+                const error = document.createElement('p');
+                error.className = 'error-message text-red-500 text-sm mt-1';
+                error.textContent = 'This field is required';
+                field.after(error);
+                isValid = false;
+            }
+        }
+    }
+    
+    if (section === 'contact') {
+        const email = data.email;
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        if (!emailRegex.test(email)) {
+            document.getElementById('edit-email').classList.add('border-red-500', 'bg-red-50');
+            isValid = false;
+        }
+    }
+    
+    return isValid;
+}
+
+const personalTab = document.getElementById('personal-tab');
+const contactTab = document.getElementById('contact-tab');
+const addressTab = document.getElementById('address-tab');
+
+function switchTab(activeTab, section) {
+    collectFormData();
+    
+    [personalTab, contactTab, addressTab].forEach(tab => {
+        tab.classList.remove('active', 'border-blue-500', 'text-blue-500');
+        tab.classList.add('text-gray-700');
+    });
+
+    activeTab.classList.add('active', 'border-blue-500', 'text-blue-500');
+    activeTab.classList.remove('text-gray-700');
+
+    loadFormContent(section);
+}
+
+function initTabs() {
+    if (personalTab && contactTab && addressTab) {
+        personalTab.addEventListener('click', (e) => {
+            e.preventDefault();
+            switchTab(personalTab, 'personal');
+        });
+
+        contactTab.addEventListener('click', (e) => {
+            e.preventDefault();
+            switchTab(contactTab, 'contact');
+        });
+
+        addressTab.addEventListener('click', (e) => {
+            e.preventDefault();
+            switchTab(addressTab, 'address');
+        });
+    }
+}
+
+function openModal(section) {
+    if (!profileModal || !modalFormContainer) return;
+    
+    profileModal.style.opacity = '0';
+    profileModal.classList.remove('hidden');
+    
+    setTimeout(() => {
+        profileModal.style.opacity = '1';
+        
+        let activeTab;
+        switch(section) {
+            case 'personal':
+                activeTab = personalTab;
+                break;
+            case 'contact':
+                activeTab = contactTab;
+                break;
+            case 'address':
+                activeTab = addressTab;
+                break;
+        }
+        
+        if (activeTab) {
+            switchTab(activeTab, section);
+        }
+    }, 10);
+}
+
+function closeModal(e) {
+    if (e.target === profileModal || e.target.id === 'close-modal' || e.target.closest('#close-modal')) {
+        profileModal.style.opacity = '0';
+        setTimeout(() => profileModal.classList.add('hidden'), 300);
+    }
+}
+
+function loadFormContent(section) {
+    let formHTML = '';
+    switch (section) {
+        case 'personal':
+            formHTML = `
+                <div class="space-y-4">
+                    <div>
+                        <label for="edit-last-name" class="block text-sm font-medium text-gray-700">Last Name</label>
+                        <input type="text" id="edit-last-name" value="${formData.personal.lastName || ''}" class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500">
+                    </div>
+                    <div>
+                        <label for="edit-first-name" class="block text-sm font-medium text-gray-700">First Name</label>
+                        <input type="text" id="edit-first-name" value="${formData.personal.firstName || ''}" class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500">
+                    </div>
+                    <div>
+                        <label for="edit-middle-name" class="block text-sm font-medium text-gray-700">Middle Name</label>
+                        <input type="text" id="edit-middle-name" value="${formData.personal.middleName || ''}" class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500">
+                    </div>
+                    <div>
+                        <label for="edit-birthdate" class="block text-sm font-medium text-gray-700">Birthdate</label>
+                        <input type="date" id="edit-birthdate" value="${formData.personal.birthdate || ''}" class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500">
+                    </div>
+                </div>
+            `;
+            break;
+        case 'contact':
+            formHTML = `
+                <div class="space-y-4">
+                    <div>
+                        <label for="edit-phone" class="block text-sm font-medium text-gray-700">Phone Number</label>
+                        <input type="tel" id="edit-phone" value="${formData.contact.phone || ''}" class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500">
+                    </div>
+                    <div>
+                        <label for="edit-email" class="block text-sm font-medium text-gray-700">Email</label>
+                        <input type="email" id="edit-email" value="${formData.contact.email || ''}" class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500">
+                    </div>
+                </div>
+            `;
+            break;
+        case 'address':
+            formHTML = `
+                <div class="space-y-4">
+                    <div>
+                        <label for="edit-region" class="block text-sm font-medium text-gray-700">Region</label>
+                        <select id="edit-region" class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500">
+                            <option value="">Select Region</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label for="edit-province" class="block text-sm font-medium text-gray-700">Province</label>
+                        <select id="edit-province" class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500" disabled>
+                            <option value="">Select Province</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label for="edit-municipality" class="block text-sm font-medium text-gray-700">City/Municipality</label>
+                        <select id="edit-municipality" class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500" disabled>
+                            <option value="">Select Municipality</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label for="edit-barangay" class="block text-sm font-medium text-gray-700">Barangay</label>
+                        <select id="edit-barangay" class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500" disabled>
+                            <option value="">Select Barangay</option>
+                        </select>
+                    </div>
+                </div>
+            `;
+            break;
+    }
+    modalFormContainer.innerHTML = formHTML;
+
+    if (section === 'address') {
+        loadAddressDropdowns();
+        if (formData.address.region) {
+            setTimeout(() => {
+                const regionSelect = document.getElementById('edit-region');
+                if (regionSelect) regionSelect.value = formData.address.region;
+                regionSelect.dispatchEvent(new Event('change'));
+                
+                setTimeout(() => {
+                    if (formData.address.province) {
+                        const provinceSelect = document.getElementById('edit-province');
+                        if (provinceSelect) provinceSelect.value = formData.address.province;
+                        provinceSelect.dispatchEvent(new Event('change'));
+                    }
+                    
+                    setTimeout(() => {
+                        if (formData.address.municipality) {
+                            const municipalitySelect = document.getElementById('edit-municipality');
+                            if (municipalitySelect) municipalitySelect.value = formData.address.municipality;
+                            municipalitySelect.dispatchEvent(new Event('change'));
+                        }
+                        
+                        setTimeout(() => {
+                            if (formData.address.barangay) {
+                                const barangaySelect = document.getElementById('edit-barangay');
+                                if (barangaySelect) barangaySelect.value = formData.address.barangay;
+                            }
+                        }, 100);
+                    }, 100);
+                }, 100);
+            }, 100);
+        }
+    }
+}
+
+function collectFormData() {
+    formData.personal = {
+        lastName: document.getElementById('edit-last-name')?.value || '',
+        firstName: document.getElementById('edit-first-name')?.value || '',
+        middleName: document.getElementById('edit-middle-name')?.value || '',
+        birthdate: document.getElementById('edit-birthdate')?.value || ''
+    };
+
+    formData.contact = {
+        phone: document.getElementById('edit-phone')?.value || '',
+        email: document.getElementById('edit-email')?.value || ''
+    };
+
+    formData.address = {
+        region: document.getElementById('edit-region')?.value || '',
+        province: document.getElementById('edit-province')?.value || '',
+        municipality: document.getElementById('edit-municipality')?.value || '',
+        barangay: document.getElementById('edit-barangay')?.value || ''
+    };
+}
+
+function loadAddressDropdowns() {
+    if (!phAddresses) {
+        console.error('Address data not loaded');
         return;
     }
 
-    saveButton.disabled = true;
-    saveButton.innerHTML = `
-        <span class="inline-flex items-center">
-            <svg class="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-            </svg>
-            Saving...
-        </span>
-    `;
+    const regionSelect = document.getElementById('edit-region');
+    const provinceSelect = document.getElementById('edit-province');
+    const municipalitySelect = document.getElementById('edit-municipality');
+    const barangaySelect = document.getElementById('edit-barangay');
 
-    try {
-        const { error } = await supabase
-            .from('user_profiles')
-            .update(sanitizeInputs(updatedData))
-            .eq('user_id', userId);
-
-        if (error) throw error;
-        
-        lastSavedTimestamp = new Date().getTime();
-        localStorage.setItem('profileLastSaved', lastSavedTimestamp);
-        
-        showAlert('Profile updated! Editing locked for 30 days.');
-        checkEditLock();
-        closeModal({ target: profileModal });
-        loadProfileData();
-    } catch (error) {
-        console.error('Save error:', error);
-        showAlert('Error saving changes', 'error');
-    } finally {
-        saveButton.disabled = false;
-        saveButton.textContent = 'Save Changes';
-    }
-}
-
-function getFormData(section) {
-    switch (section) {
-        case 'personal':
-            return {
-                last_name: document.getElementById('edit-last-name').value,
-                first_name: document.getElementById('edit-first-name').value,
-                middle_name: document.getElementById('edit-middle-name').value,
-                birthdate: document.getElementById('edit-birthdate').value
-            };
-        case 'contact':
-            return {
-                phone_number: document.getElementById('edit-phone').value,
-                email: document.getElementById('edit-email').value
-            };
-        case 'address':
-            return {
-                region: document.getElementById('edit-region').value,
-                province: document.getElementById('edit-province').value,
-                municipality: document.getElementById('edit-municipality').value,
-                barangay: document.getElementById('edit-barangay').value
-            };
-    }
-}
-
-editButtons.forEach(button => {
-    button.addEventListener('click', () => {
-        if (button.disabled) {
-            showAlert('Editing is locked for 30 days after saving', 'error');
-            return;
+    [regionSelect, provinceSelect, municipalitySelect, barangaySelect].forEach(select => {
+        while (select.options.length > 1) {
+            select.remove(1);
         }
         
-        const section = button.getAttribute('data-target');
-        const targetTab = document.querySelector(`.tab-btn[data-tab="${section}"]`);
-        switchTab(targetTab);
-        openModal(section);
+        select.className = 'mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 bg-white';
+        select.style.zIndex = 'auto';
+        select.disabled = select.id !== 'edit-region'; 
     });
-});
 
-tabs.forEach(tab => {
-    tab.addEventListener('click', () => switchTab(tab));
-});
+    Object.keys(phAddresses).forEach(regionCode => {
+        const region = phAddresses[regionCode];
+        const option = new Option(region.region_name, regionCode);
+        regionSelect.add(option);
+    });
 
-document.getElementById('close-modal').addEventListener('click', closeModal);
-profileModal.addEventListener('click', closeModal);
+    regionSelect.addEventListener('change', function() {
+        provinceSelect.disabled = !this.value;
+        municipalitySelect.disabled = true;
+        barangaySelect.disabled = true;
+        
+        provinceSelect.innerHTML = '<option value="">Select Province</option>';
+        municipalitySelect.innerHTML = '<option value="">Select Municipality</option>';
+        barangaySelect.innerHTML = '<option value="">Select Barangay</option>';
 
+        if (!this.value) return;
 
+        const region = phAddresses[this.value];
+        Object.keys(region.province_list).forEach(provinceCode => {
+            const province = region.province_list[provinceCode];
+            provinceSelect.add(new Option(province.province_name, provinceCode));
+        });
+    });
 
-document.getElementById('save-changes').addEventListener('click', async () => {
-    const activeTab = document.querySelector('.tab-btn.active');
-    const section = activeTab.getAttribute('data-tab');
-    await saveProfileData(section);
-});
+    provinceSelect.addEventListener('change', function() {
+        municipalitySelect.disabled = !this.value;
+        barangaySelect.disabled = true;
+        
+        municipalitySelect.innerHTML = '<option value="">Select Municipality</option>';
+        barangaySelect.innerHTML = '<option value="">Select Barangay</option>';
+
+        if (!this.value) return;
+
+        const province = phAddresses[regionSelect.value].province_list[this.value];
+        Object.keys(province.municipality_list).forEach(municipalityCode => {
+            const municipality = province.municipality_list[municipalityCode];
+            municipalitySelect.add(new Option(municipality.municipality_name, municipalityCode));
+        });
+    });
+
+    municipalitySelect.addEventListener('change', function() {
+        barangaySelect.disabled = !this.value;
+        barangaySelect.innerHTML = '<option value="">Select Barangay</option>';
+
+        if (!this.value) return;
+
+        const municipality = phAddresses[regionSelect.value]
+            .province_list[provinceSelect.value]
+            .municipality_list[this.value];
+            
+        municipality.barangay_list.forEach(barangay => {
+            barangaySelect.add(new Option(barangay, barangay));
+        });
+    });
+}
+
+async function loadAddressData() {
+    try {
+      const basePath = getBasePath();
+      const response = await fetch(`${basePath}/js/data/philippines-addresses.json`);
+      
+      if (!response.ok) throw new Error('Failed to load address data');
+      phAddresses = await response.json();
+    } catch (error) {
+      console.error('Error loading address JSON:', error);
+      alert('Unable to load address data. Please try again later.');
+    }
+}
+
+function showAlert(message, type = 'success') {
+    const alert = document.createElement('div');
+    alert.className = `fixed top-4 right-4 p-4 rounded-lg shadow-lg ${
+        type === 'error' ? 'bg-red-100 text-red-800' : 'bg-green-100 text-green-800'
+    }`;
+    alert.textContent = message;
+    document.body.appendChild(alert);
+
+    setTimeout(() => {
+        alert.style.opacity = '0';
+        setTimeout(() => alert.remove(), 300);
+    }, 3000);
+}
+
+const style = document.createElement('style');
+style.textContent = `
+    #profile-edit-modal select {
+        appearance: auto !important;
+        -webkit-appearance: menulist !important;
+        -moz-appearance: menulist !important;
+        background-color: white !important;
+        z-index: 50 !important;
+    }
+    #profile-edit-modal option {
+        background-color: white !important;
+        color: #374151 !important;
+        padding: 0.5rem !important;
+        position: relative !important;
+        z-index: 100 !important;
+    }
+`;
+document.head.appendChild(style);

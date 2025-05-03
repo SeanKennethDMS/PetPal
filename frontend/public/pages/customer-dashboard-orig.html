@@ -250,28 +250,35 @@
                     </div>
                 </div>
                 <!-- Profile Edit Modal -->
-                <div id="profile-edit-modal" class="modal hidden fixed inset-0 flex items-center justify-center bg-black bg-opacity-50">
+                <div id="profile-edit-modal" class="modal hidden fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
                     <div class="bg-white p-6 rounded-lg w-96 border-2 border-gray-400 relative">
-                        <button id="close-modal" class="absolute top-2 right-2 text-gray-500 hover:text-gray-700">
-                            <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/>
-                            </svg>
-                        </button>
-                        <div class="modal-tabs mb-4">
-                            <button class="tab-btn active" data-tab="personal">Personal</button>
-                            <button class="tab-btn" data-tab="contact">Contact</button>
-                            <button class="tab-btn" data-tab="address">Address</button>
-                        </div>
-                        <div class="tab-content" id="modal-form-container">
-                            <!-- Content will be loaded dynamically based on selected tab -->
-                        </div>
-                        <!-- Save Button -->
-                        <button id="save-changes" class="w-full bg-blue-500 text-white py-2 rounded-lg hover:bg-blue-600 mt-4">
-                            Save Changes
-                        </button>
+                    <!-- Close Button -->
+                    <button id="close-modal" class="absolute top-2 right-2 text-gray-500 hover:text-gray-700">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+                        </svg>
+                    </button>
+                
+                    <!-- Tabs -->
+                    <div class="modal-tabs mb-4 flex space-x-4">
+                        <button id="personal-tab" class="tab-btn active py-2 text-lg font-semibold text-gray-700 border-b-2 border-blue-500">Personal</button>
+                        <button id="contact-tab" class="tab-btn py-2 text-lg font-semibold text-gray-700 hover:text-blue-500">Contact</button>
+                        <button id="address-tab" class="tab-btn py-2 text-lg font-semibold text-gray-700 hover:text-blue-500">Address</button>
+                    </div>
+                
+                    <!-- Dynamic Content -->
+                    <div class="tab-content" id="modal-form-container">
+                        <!-- Loaded dynamically by JS -->
+                    </div>
+                
+                    <!-- Save Button -->
+                    <button id="save-changes" class="w-full bg-blue-500 text-white py-2 rounded-lg hover:bg-blue-600 mt-4">
+                        Save Changes
+                    </button>
                     </div>
                 </div>
             </section>
+        
             <!-- Pet Profile -->
             <section id="pet-profile" class="content-section hidden">
                 <h1 class="text-3xl font-bold">Pet Profile</h1>

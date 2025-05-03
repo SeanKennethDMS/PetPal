@@ -232,7 +232,6 @@ document.addEventListener("DOMContentLoaded", () => {
     } else {
       console.log(`Appointment ${appointmentId} set to ${newStatus}`);
   
-      // ✅ Notify the customer
       notifyCustomerOfAppointmentStatus(appointmentId, newStatus);
   
       if (newStatus === 'completed') {
