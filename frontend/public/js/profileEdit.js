@@ -1,436 +1,634 @@
-'use strict';
+"use strict";
 
-import supabase from '../js/supabaseClient.js';
-import { getBasePath } from './path-config.js';
+import supabase from "../js/supabaseClient.js";
+import { getBasePath } from "./path-config.js";
 
-const profileModal = document.getElementById('profile-edit-modal');
-const modalFormContainer = document.getElementById('modal-form-container');
-const tabs = document.querySelectorAll('.tab-btn');
-const editButtons = document.querySelectorAll('.edit-btn');
+// Initialize elements with null checks
+const profileModal = document.getElementById("profile-edit-modal");
+const modalFormContainer = document.getElementById("modal-form-container");
+const tabs = document.querySelectorAll(".tab-btn");
+const editButtons = document.querySelectorAll(".edit-btn");
+const saveButton = document.getElementById("save-changes");
 
-const saveButton = document.getElementById('save-changes');
+// Get tab elements
+const personalTab = document.getElementById("personal-tab");
+const contactTab = document.getElementById("contact-tab");
+const addressTab = document.getElementById("address-tab");
 
 let phAddresses = null;
+const LOCK_DURATION = 60 * 24 * 60 * 60 * 1000; // 60 days in ms
 
-let lastSavedTimestamp = localStorage.getItem('profileLastSaved') || 0;
-const LOCK_DURATION = 30 * 24 * 60 * 60 * 1000; // 30 days in ms
+// Form data storage object
+let formData = {
+  personal: {},
+  contact: {},
+  address: {},
+};
 
-profileModal.style.transition = 'opacity 0.3s ease';
-modalFormContainer.style.transition = 'opacity 0.2s ease';
+// Only set transitions if elements exist
+if (profileModal) profileModal.style.transition = "opacity 0.3s ease";
+if (modalFormContainer)
+  modalFormContainer.style.transition = "opacity 0.2s ease";
 
-document.addEventListener('DOMContentLoaded', async () => {
-    await loadAddressData();
-    await loadProfileData();
-    checkEditLock();
+document.addEventListener("DOMContentLoaded", async () => {
+  await loadAddressData();
+  await loadProfileData();
+  initTabs();
+  currentTab = "personal";
 
-    tabs.forEach(t => t.classList.remove('active'));
-    document.querySelector('.tab-btn[data-tab="personal"]').classList.add('active');
+  // Safely add event listeners to edit buttons
+  if (editButtons.length > 0) {
+    editButtons.forEach((button) => {
+      button.addEventListener("click", (e) => {
+        if (!button.disabled) {
+          const section = button.getAttribute("data-target");
+          if (section) {
+            openModal(section);
+          }
+        }
+      });
+    });
+  }
+
+  // Safely add event listener to close modal
+  if (profileModal) {
+    profileModal.addEventListener("click", closeModal);
+  }
+
+  // Add save button handler
+  if (saveButton) {
+    saveButton.addEventListener("click", async () => {
+      // Collect all data first
+      collectFormData();
+
+      // Simple validation - expand as needed
+      if (!formData.personal.firstName || !formData.personal.lastName) {
+        showAlert("First name and last name are required", "error");
+        return;
+      }
+
+      if (!formData.contact.email || !formData.contact.email.includes("@")) {
+        showAlert("Please enter a valid email address", "error");
+        return;
+      }
+
+      try {
+        const userId = await getUserId();
+        if (!userId) throw new Error("User not authenticated");
+
+        // Explicit update operation
+        const { error } = await supabase
+          .from("user_profiles")
+          .update({
+            first_name: formData.personal.firstName,
+            last_name: formData.personal.lastName,
+            middle_name: formData.personal.middleName,
+            birthdate: formData.personal.birthdate,
+            phone_number: formData.contact.phone,
+            email: formData.contact.email,
+            region: formData.address.region,
+            province: formData.address.province,
+            municipality: formData.address.municipality,
+            barangay: formData.address.barangay,
+            last_profile_edit: new Date().toISOString(),
+          })
+          .eq("user_id", userId);
+
+        if (error) throw error;
+
+        showAlert("Profile updated successfully!");
+        closeModal({ target: profileModal });
+        await loadProfileData();
+      } catch (error) {
+        console.error("Error saving profile:", error);
+        showAlert("Failed to save profile. Please try again.", "error");
+      }
+    });
+  }
 });
 
-function checkEditLock() {
-    const currentTime = new Date().getTime();
-    if (currentTime - lastSavedTimestamp < LOCK_DURATION){
-        editButtons.forEach(btn => {
-            btn.disabled = true;
-            btn.innerHTML = `<svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2z"/>
-            </svg>`;
-            btn.title = 'Editing locked for 30 days after last save';
-        });
+async function loadProfileData() {
+  const userId = await getUserId();
+  if (!userId) return;
+
+  try {
+    const { data, error } = await supabase
+      .from("user_profiles")
+      .select("*")
+      .eq("user_id", userId)
+      .maybeSingle();
+
+    if (error) throw error;
+
+    if (data) {
+      document.getElementById("last-name").textContent = data.last_name || "—";
+      document.getElementById("first-name").textContent =
+        data.first_name || "—";
+      document.getElementById("middle-name").textContent =
+        data.middle_name || "—";
+      document.getElementById("birthdate").textContent = data.birthdate || "—";
+      document.getElementById("phone").textContent = data.phone_number || "—";
+      document.getElementById("email").textContent = data.email || "—";
+      document.getElementById("region").textContent = data.region || "—";
+      document.getElementById("province").textContent = data.province || "—";
+      document.getElementById("municipality").textContent =
+        data.municipality || "—";
+      document.getElementById("barangay").textContent = data.barangay || "—";
+
+      formData = {
+        personal: {
+          lastName: data.last_name || "",
+          firstName: data.first_name || "",
+          middleName: data.middle_name || "",
+          birthdate: data.birthdate || "",
+        },
+        contact: {
+          phone: data.phone_number || "",
+          email: data.email || "",
+        },
+        address: {
+          region: data.region || "",
+          province: data.province || "",
+          municipality: data.municipality || "",
+          barangay: data.barangay || "",
+        },
+      };
     }
+  } catch (error) {
+    console.error("Error loading profile data:", error);
+  }
 }
 
-  
-async function loadAddressData() {
-    try {
-      const basePath = getBasePath();
-      const response = await fetch(`${basePath}/js/data/philippines-addresses.json`);
-      
-      if (!response.ok) throw new Error('Failed to load address data');
-      phAddresses = await response.json();
-    } catch (error) {
-      console.error('Error loading address JSON:', error);
-      alert('Unable to load address data. Please try again later.');
-    }
+function checkEditLock(lastProfileEdit) {
+  const currentTime = new Date().getTime();
+  if (lastProfileEdit && currentTime - lastProfileEdit < LOCK_DURATION) {
+    lockEditButtons();
+  } else {
+    enableEditButtons();
+  }
 }
 
-function showAlert(message, type = 'success'){
-    const alert = document.createElement('div');
-    alert.className = `fixed top-4 right-4 p-4 rounded-lg shadow-lg ${
-        type === 'error' ? 'bg-red-100 text-red-800' : 'bg-green-100 text-green-800'
-    }`;
-    alert.textContent = message;
-    document.body.appendChild(alert);
+function lockEditButtons() {
+  editButtons.forEach((btn) => {
+    btn.disabled = true;
+    btn.innerHTML = `<svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2z"/>
+        </svg>`;
+    btn.title = "Editing locked for 60 days after last save";
+  });
+}
 
-    setTimeout(() => {
-        alert.style.opacity = '0';
-        setTimeout(() => alert.remove(), 300);
-    }, 3000);
+function enableEditButtons() {
+  editButtons.forEach((btn) => {
+    btn.disabled = false;
+    btn.innerHTML = `<svg class="w-5 h-5 text-gray-800" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"/>
+        </svg>`;
+    btn.title = "Edit information";
+  });
 }
 
 async function getUserId() {
-    const { data: { user } } = await supabase.auth.getUser();
-    return user?.id;
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  return user?.id;
 }
 
 function sanitizeInputs(data) {
-    const sanitized = {};
-    for (const key in data) {
-        sanitized[key] = data[key]?.replace(/[<>]/g, '') || '';
-    }
-    return sanitized;
+  const sanitized = {};
+  for (const key in data) {
+    sanitized[key] = data[key]?.replace(/[<>]/g, "") || "";
+  }
+  return sanitized;
 }
 
 function validateFormData(data, section) {
-    let isValid = true;
-    
-    document.querySelectorAll('.border-red-500').forEach(el => {
-        el.classList.remove('border-red-500', 'bg-red-50');
-    });
-    
-    for (const key in data) {
-        if (!data[key]?.trim()) {
-            const fieldId = `edit-${key.replace('_', '-')}`;
-            const field = document.getElementById(fieldId);
-            if (field) {
-                field.classList.add('border-red-500', 'bg-red-50');
-                isValid = false;
-            }
-        }
+  let isValid = true;
+
+  document.querySelectorAll(".error-message").forEach((el) => el.remove());
+
+  for (const key in data) {
+    if (!data[key]?.trim()) {
+      const fieldId = `edit-${key.replace("_", "-")}`;
+      const field = document.getElementById(fieldId);
+      if (field) {
+        field.classList.add("border-red-500", "bg-red-50");
+        const error = document.createElement("p");
+        error.className = "error-message text-red-500 text-sm mt-1";
+        error.textContent = "This field is required";
+        field.after(error);
+        isValid = false;
+      }
     }
-    
-    if (section === 'contact') {
-        const email = data.email;
-        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-        if (!emailRegex.test(email)) {
-            document.getElementById('edit-email').classList.add('border-red-500', 'bg-red-50');
-            isValid = false;
-        }
+  }
+
+  if (section === "contact") {
+    const email = data.email;
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+      document
+        .getElementById("edit-email")
+        .classList.add("border-red-500", "bg-red-50");
+      isValid = false;
     }
-    
-    return isValid;
+  }
+
+  return isValid;
 }
 
+function initTabs() {
+  if (personalTab && contactTab && addressTab) {
+    personalTab.addEventListener("click", (e) => {
+      e.preventDefault();
+      switchTab(personalTab, "personal");
+    });
+
+    contactTab.addEventListener("click", (e) => {
+      e.preventDefault();
+      switchTab(contactTab, "contact");
+    });
+
+    addressTab.addEventListener("click", (e) => {
+      e.preventDefault();
+      switchTab(addressTab, "address");
+    });
+  }
+}
+
+function switchTab(activeTab, section) {
+  // Collect data from current form before switching
+  collectFormData();
+
+  // Remove active classes from all tabs
+  [personalTab, contactTab, addressTab].forEach((tab) => {
+    tab.classList.remove("active", "border-blue-500", "text-blue-500");
+    tab.classList.add("text-gray-700");
+  });
+
+  // Add active classes to clicked tab
+  activeTab.classList.add("active", "border-blue-500", "text-blue-500");
+  activeTab.classList.remove("text-gray-700");
+
+  // Load the corresponding form content
+  loadFormContent(section);
+}
 
 function openModal(section) {
-    profileModal.style.opacity = '0';
-    profileModal.classList.remove('hidden');
-    setTimeout(() => profileModal.style.opacity = '1', 10);
-    
-    modalFormContainer.style.opacity = '0';
-    setTimeout(() => {
-        loadFormContent(section);
-        modalFormContainer.style.opacity = '1';
-    }, 200);
+  if (!profileModal || !modalFormContainer) return;
+
+  profileModal.style.opacity = "0";
+  profileModal.classList.remove("hidden");
+
+  setTimeout(() => {
+    profileModal.style.opacity = "1";
+
+    // Initialize the correct tab based on which edit button was clicked
+    let activeTab;
+    switch (section) {
+      case "personal":
+        activeTab = personalTab;
+        break;
+      case "contact":
+        activeTab = contactTab;
+        break;
+      case "address":
+        activeTab = addressTab;
+        break;
+    }
+
+    if (activeTab) {
+      switchTab(activeTab, section);
+    }
+  }, 10);
 }
 
 function closeModal(e) {
-    if (e.target === profileModal || e.target.id === 'close-modal' || e.target.closest('#close-modal')) {
-        profileModal.style.opacity = '0';
-        setTimeout(() => profileModal.classList.add('hidden'), 300);
-    }
+  if (
+    e.target === profileModal ||
+    e.target.id === "close-modal" ||
+    e.target.closest("#close-modal")
+  ) {
+    profileModal.style.opacity = "0";
+    setTimeout(() => profileModal.classList.add("hidden"), 300);
+  }
 }
+
+function collectFormData() {
+  // Helper function to safely get values
+  const getValue = (id) => {
+    const element = document.getElementById(id);
+    if (!element) return "";
+    return element.value || "";
+  };
+
+  // Only update the section that's currently visible
+  switch (currentTab) {
+    case "personal":
+      formData.personal = {
+        lastName: getValue("edit-last-name"),
+        firstName: getValue("edit-first-name"),
+        middleName: getValue("edit-middle-name"),
+        birthdate: getValue("edit-birthdate"),
+      };
+      break;
+
+    case "contact":
+      formData.contact = {
+        phone: getValue("edit-phone"),
+        email: getValue("edit-email"),
+      };
+      break;
+
+    case "address":
+      formData.address = {
+        region: getValue("edit-region"),
+        province: getValue("edit-province"),
+        municipality: getValue("edit-municipality"),
+        barangay: getValue("edit-barangay"),
+      };
+      break;
+  }
+}
+
+// Track current tab globally
+let currentTab = "personal";
 
 function loadFormContent(section) {
-    let formHTML = '';
-    switch (section) {
-        case 'personal':
-            formHTML = `
+  collectFormData();
+  let formHTML = "";
+  switch (section) {
+    case "personal":
+      formHTML = `
                 <div class="space-y-4">
-                        <div>
-                            <label class="block text-gray-700 mb-1">Last Name</label>
-                            <input type="text" id="edit-last-name" class="w-full p-2 border rounded transition-colors focus:border-blue-500 focus:ring-1 focus:ring-blue-500" 
-                                   value="${document.getElementById('last-name').textContent}" />
-                        </div>
-                        <div>
-                            <label class="block text-gray-700">First Name</label>
-                            <input type="text" id="edit-first-name" class="w-full p-2 border rounded transition-colors focus:border-blue-500 focus:ring-1 focus:ring-blue-500" 
-                                value="${document.getElementById('first-name').textContent}" />
-                        </div>
-                        <div>
-                            <label class="block text-gray-700">Middle Name</label>
-                            <input type="text" id="edit-middle-name" class="w-full p-2 border rounded transition-colors focus:border-blue-500 focus:ring-1 focus:ring-blue-500" 
-                                value="${document.getElementById('middle-name').textContent}" />
-                        </div>
-                        <div>
-                            <label class="block text-gray-700">Birthdate</label>
-                            <input type="date" id="edit-birthdate" class="w-full p-2 border rounded transition-colors focus:border-blue-500 focus:ring-1 focus:ring-blue-500" 
-                                value="${document.getElementById('birthdate').textContent}" />
-                        </div>
+                    <div>
+                        <label for="edit-last-name" class="block text-sm font-medium text-gray-700">Last Name</label>
+                        <input type="text" id="edit-last-name" value="${
+                          formData.personal.lastName || ""
+                        }" class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500">
                     </div>
+                    <div>
+                        <label for="edit-first-name" class="block text-sm font-medium text-gray-700">First Name</label>
+                        <input type="text" id="edit-first-name" value="${
+                          formData.personal.firstName || ""
+                        }" class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500">
+                    </div>
+                    <div>
+                        <label for="edit-middle-name" class="block text-sm font-medium text-gray-700">Middle Name</label>
+                        <input type="text" id="edit-middle-name" value="${
+                          formData.personal.middleName || ""
+                        }" class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500">
+                    </div>
+                    <div>
+                        <label for="edit-birthdate" class="block text-sm font-medium text-gray-700">Birthdate</label>
+                        <input type="date" id="edit-birthdate" value="${
+                          formData.personal.birthdate || ""
+                        }" class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500">
+                    </div>
+                </div>
             `;
-            break;
-        case 'contact':
-            formHTML = `
+      break;
+    case "contact":
+      formHTML = `
                 <div class="space-y-4">
-                        <div>
-                            <label class="block text-gray-700 mb-1">Phone</label>
-                            <input type="tel" id="edit-phone" class="w-full p-2 border rounded transition-colors focus:border-blue-500 focus:ring-1 focus:ring-blue-500" 
-                                value="${document.getElementById('phone').textContent}" />
-                        </div>
-                        <div>
-                            <label class="block text-gray-700">Email</label>
-                            <input type="email" id="edit-email" class="w-full p-2 border rounded transition-colors focus:border-blue-500 focus:ring-1 focus:ring-blue-500" 
-                                value="${document.getElementById('email').textContent}" />
-                        </div>
+                    <div>
+                        <label for="edit-phone" class="block text-sm font-medium text-gray-700">Phone Number</label>
+                        <input type="tel" id="edit-phone" value="${
+                          formData.contact.phone || ""
+                        }" class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500">
                     </div>
+                    <div>
+                        <label for="edit-email" class="block text-sm font-medium text-gray-700">Email</label>
+                        <input type="email" id="edit-email" value="${
+                          formData.contact.email || ""
+                        }" class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500">
+                    </div>
+                </div>
             `;
-            break;
-        case 'address':
-            formHTML = `
+      break;
+    case "address":
+      formHTML = `
                 <div class="space-y-4">
-                        <div>
-                            <label class="block text-gray-700 mb-1">Region</label>
-                            <select id="edit-region" class="w-full p-2 border rounded transition-colors focus:border-blue-500 focus:ring-1 focus:ring-blue-500"></select>
-                        </div>
-                        <div>
-                            <label class="block text-gray-700">Province</label>
-                            <select id="edit-province" class="w-full p-2 border rounded transition-colors focus:border-blue-500 focus:ring-1 focus:ring-blue-500" disabled></select>
-                        </div>
-                        <div>
-                            <label class="block text-gray-700">City/Municipality</label>
-                            <select id="edit-municipality" class="w-full p-2 border rounded transition-colors focus:border-blue-500 focus:ring-1 focus:ring-blue-500" disabled></select>
-                        </div>
-                        <div>
-                            <label class="block text-gray-700">Barangay</label>
-                            <select id="edit-barangay" class="w-full p-2 border rounded transition-colors focus:border-blue-500 focus:ring-1 focus:ring-blue-500" disabled></select>
-                        </div>
+                    <div>
+      <label for="edit-region" class="block text-sm font-medium text-gray-700">Region</label>
+      <select id="edit-region" class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 bg-white z-50">
+        <option value="">Select Region</option>
+      </select>
+    </div>
+                    <div>
+                        <label for="edit-province" class="block text-sm font-medium text-gray-700">Province</label>
+                        <select id="edit-province" class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500" disabled>
+                            <option value="">Select Province</option>
+                        </select>
                     </div>
+                    <div>
+                        <label for="edit-municipality" class="block text-sm font-medium text-gray-700">City/Municipality</label>
+                        <select id="edit-municipality" class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500" disabled>
+                            <option value="">Select Municipality</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label for="edit-barangay" class="block text-sm font-medium text-gray-700">Barangay</label>
+                        <select id="edit-barangay" class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500" disabled>
+                            <option value="">Select Barangay</option>
+                        </select>
+                    </div>
+                </div>
             `;
-            break;
+      break;
+  }
+  modalFormContainer.innerHTML = formHTML;
+
+  if (section === "address") {
+    loadAddressDropdowns();
+    // Restore address selections if they exist
+    if (formData.address.region) {
+      setTimeout(() => {
+        const regionSelect = document.getElementById("edit-region");
+        if (regionSelect) regionSelect.value = formData.address.region;
+        regionSelect.dispatchEvent(new Event("change"));
+
+        // These will be set after the change events propagate
+        setTimeout(() => {
+          if (formData.address.province) {
+            const provinceSelect = document.getElementById("edit-province");
+            if (provinceSelect)
+              provinceSelect.value = formData.address.province;
+            provinceSelect.dispatchEvent(new Event("change"));
+          }
+
+          setTimeout(() => {
+            if (formData.address.municipality) {
+              const municipalitySelect =
+                document.getElementById("edit-municipality");
+              if (municipalitySelect)
+                municipalitySelect.value = formData.address.municipality;
+              municipalitySelect.dispatchEvent(new Event("change"));
+            }
+
+            setTimeout(() => {
+              if (formData.address.barangay) {
+                const barangaySelect = document.getElementById("edit-barangay");
+                if (barangaySelect)
+                  barangaySelect.value = formData.address.barangay;
+              }
+            }, 100);
+          }, 100);
+        }, 100);
+      }, 100);
     }
-    modalFormContainer.innerHTML = formHTML;
-
-    if (section === 'address') loadAddressDropdowns();
-}
-
-function switchTab(newTab) {
-    const currentTab = document.querySelector('.tab-btn.active');
-    if (currentTab === newTab) return;
-    
-    modalFormContainer.style.opacity = '0';
-    setTimeout(() => {
-        currentTab.classList.remove('active');
-        newTab.classList.add('active');
-        loadFormContent(newTab.getAttribute('data-tab'));
-        modalFormContainer.style.opacity = '1';
-    }, 200);
+  }
 }
 
 function loadAddressDropdowns() {
-    if (!phAddresses) {
-        console.error('Address data not loaded');
-        return;
-    }
+  if (!phAddresses) {
+    console.error("Address data not loaded");
+    return;
+  }
 
-    const regionSelect = document.getElementById('edit-region');
-    const provinceSelect = document.getElementById('edit-province');
-    const municipalitySelect = document.getElementById('edit-municipality');
-    const barangaySelect = document.getElementById('edit-barangay');
+  const regionSelect = document.getElementById("edit-region");
+  const provinceSelect = document.getElementById("edit-province");
+  const municipalitySelect = document.getElementById("edit-municipality");
+  const barangaySelect = document.getElementById("edit-barangay");
 
-    // Clear existing options
-    regionSelect.innerHTML = '<option value="">Select Region</option>';
+  // Reset dropdowns
+  const resetSelect = (select, placeholder) => {
+    select.innerHTML = `<option value="">${placeholder}</option>`;
+    select.className =
+      "mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 bg-white z-50";
+    select.disabled = select.id !== "edit-region";
+  };
+
+  resetSelect(regionSelect, "Select Region");
+  resetSelect(provinceSelect, "Select Province");
+  resetSelect(municipalitySelect, "Select Municipality");
+  resetSelect(barangaySelect, "Select Barangay");
+
+  // Populate regions
+  Object.entries(phAddresses).forEach(([code, region]) => {
+    regionSelect.add(new Option(region.region_name, code));
+  });
+
+  // Set initial values if they exist
+  if (formData.address.region) {
+    setTimeout(() => {
+      regionSelect.value = formData.address.region;
+      const changeEvent = new Event("change", { bubbles: true });
+      regionSelect.dispatchEvent(changeEvent);
+
+      if (formData.address.province) {
+        setTimeout(() => {
+          provinceSelect.value = formData.address.province;
+          provinceSelect.dispatchEvent(new Event("change", { bubbles: true }));
+
+          if (formData.address.municipality) {
+            setTimeout(() => {
+              municipalitySelect.value = formData.address.municipality;
+              municipalitySelect.dispatchEvent(
+                new Event("change", { bubbles: true })
+              );
+
+              if (formData.address.barangay) {
+                setTimeout(() => {
+                  barangaySelect.value = formData.address.barangay;
+                }, 50);
+              }
+            }, 50);
+          }
+        }, 50);
+      }
+    }, 100);
+  }
+
+  regionSelect.addEventListener("change", function () {
+    provinceSelect.disabled = !this.value;
+    municipalitySelect.disabled = true;
+    barangaySelect.disabled = true;
+
+    // Clear and reset dependent dropdowns
     provinceSelect.innerHTML = '<option value="">Select Province</option>';
-    municipalitySelect.innerHTML = '<option value="">Select Municipality</option>';
+    municipalitySelect.innerHTML =
+      '<option value="">Select Municipality</option>';
     barangaySelect.innerHTML = '<option value="">Select Barangay</option>';
 
-    // Populate regions
-    Object.keys(phAddresses).forEach(regionCode => {
-        const region = phAddresses[regionCode];
-        regionSelect.innerHTML += `<option value="${regionCode}">${region.region_name}</option>`;
-    });
+    if (this.value) {
+      // Populate provinces
+      const region = phAddresses[this.value];
+      Object.entries(region.province_list).forEach(([code, province]) => {
+        provinceSelect.add(new Option(province.province_name, code));
+      });
 
-    // Region change handler
-    regionSelect.addEventListener('change', () => {
-        const regionCode = regionSelect.value;
-        provinceSelect.innerHTML = '<option value="">Select Province</option>';
-        municipalitySelect.innerHTML = '<option value="">Select Municipality</option>';
-        barangaySelect.innerHTML = '<option value="">Select Barangay</option>';
-        provinceSelect.disabled = !regionCode;
+      // If we have a stored province value for this region
+      if (formData.address.region === this.value && formData.address.province) {
+        setTimeout(() => {
+          provinceSelect.value = formData.address.province;
+          provinceSelect.dispatchEvent(new Event("change"));
+        }, 50);
+      }
+    }
+  });
 
-        if (regionCode) {
-            const provinces = phAddresses[regionCode].province_list;
-            Object.keys(provinces).forEach(provinceName => {
-                provinceSelect.innerHTML += `<option value="${provinceName}">${provinceName}</option>`;
-            });
+  // Province change handler - modified version
+  provinceSelect.addEventListener("change", function () {
+    municipalitySelect.disabled = !this.value;
+    barangaySelect.disabled = true;
+
+    // Clear and reset dependent dropdowns
+    municipalitySelect.innerHTML =
+      '<option value="">Select Municipality</option>';
+    barangaySelect.innerHTML = '<option value="">Select Barangay</option>';
+
+    if (this.value && regionSelect.value) {
+      // Populate municipalities
+      const province =
+        phAddresses[regionSelect.value].province_list[this.value];
+      Object.entries(province.municipality_list).forEach(
+        ([code, municipality]) => {
+          municipalitySelect.add(
+            new Option(municipality.municipality_name, code)
+          );
         }
-    });
+      );
 
-    // Province change handler
-    provinceSelect.addEventListener('change', () => {
-        const regionCode = regionSelect.value;
-        const provinceName = provinceSelect.value;
-        municipalitySelect.innerHTML = '<option value="">Select Municipality</option>';
-        barangaySelect.innerHTML = '<option value="">Select Barangay</option>';
-        municipalitySelect.disabled = !provinceName;
-
-        if (regionCode && provinceName) {
-            const municipalities = phAddresses[regionCode].province_list[provinceName].municipality_list;
-            Object.keys(municipalities).forEach(municipalityName => {
-                municipalitySelect.innerHTML += `<option value="${municipalityName}">${municipalityName}</option>`;
-            });
-        }
-    });
-
-    // Municipality change handler
-    municipalitySelect.addEventListener('change', () => {
-        const regionCode = regionSelect.value;
-        const provinceName = provinceSelect.value;
-        const municipalityName = municipalitySelect.value;
-        barangaySelect.innerHTML = '<option value="">Select Barangay</option>';
-        barangaySelect.disabled = !municipalityName;
-
-        if (regionCode && provinceName && municipalityName) {
-            const barangays = phAddresses[regionCode]
-                .province_list[provinceName]
-                .municipality_list[municipalityName]
-                .barangay_list;
-
-            barangays.forEach(barangay => {
-                barangaySelect.innerHTML += `<option value="${barangay}">${barangay}</option>`;
-            });
-        }
-    });
+      // If we have a stored municipality value for this province
+      if (
+        formData.address.province === this.value &&
+        formData.address.municipality
+      ) {
+        setTimeout(() => {
+          municipalitySelect.value = formData.address.municipality;
+          municipalitySelect.dispatchEvent(new Event("change"));
+        }, 50);
+      }
+    }
+  });
 }
 
-async function loadProfileData() {
-    const userId = await getUserId();
-    if (!userId) return;
+async function loadAddressData() {
+  try {
+    const basePath = getBasePath();
+    const response = await fetch(
+      `${basePath}/js/data/philippines-addresses.json`
+    );
 
-    try {
-        const { data, error } = await supabase
-            .from('user_profiles')
-            .select('*')
-            .eq('user_id', userId)
-            .maybeSingle(); 
-
-        if (error) throw error;
-
-        if (data) {
-            document.getElementById('last-name').textContent = data.last_name || '—';
-            document.getElementById('first-name').textContent = data.first_name || '—';
-            document.getElementById('middle-name').textContent = data.middle_name || '—';
-            document.getElementById('birthdate').textContent = data.birthdate || '—';
-            document.getElementById('phone').textContent = data.phone_number || '—';
-            document.getElementById('email').textContent = data.email || '—';
-            document.getElementById('region').textContent = data.region || '—';
-            document.getElementById('province').textContent = data.province || '—';
-            document.getElementById('municipality').textContent = data.municipality || '—';
-            document.getElementById('barangay').textContent = data.barangay || '—';
-
-            if (!lastSavedTimestamp) {
-                lastSavedTimestamp = new Date().getTime();
-                localStorage.setItem('profileLastSaved', lastSavedTimestamp);
-            }
-        } else {
-            console.log('No profile data found');
-           
-            lastSavedTimestamp = new Date().getTime();
-            localStorage.setItem('profileLastSaved', lastSavedTimestamp);
-        }
-    } catch (error) {
-        console.error('Error loading profile:', error.message);
-        showAlert('Failed to load profile.', 'error');
-    }
+    if (!response.ok) throw new Error("Failed to load address data");
+    phAddresses = await response.json();
+  } catch (error) {
+    console.error("Error loading address JSON:", error);
+    alert("Unable to load address data. Please try again later.");
+  }
 }
 
-async function saveProfileData(section) {
-    const userId = await getUserId();
-    if (!userId) return;
+function showAlert(message, type = "success") {
+  const alert = document.createElement("div");
+  alert.className = `fixed top-4 right-4 p-4 rounded-lg shadow-lg ${
+    type === "error" ? "bg-red-100 text-red-800" : "bg-green-100 text-green-800"
+  }`;
+  alert.textContent = message;
+  document.body.appendChild(alert);
 
-    const updatedData = getFormData(section);
-    const isValid = validateFormData(updatedData, section);
-    
-    if (!isValid) {
-        showAlert('Please fix the highlighted fields', 'error');
-        return;
-    }
-
-    saveButton.disabled = true;
-    saveButton.innerHTML = `
-        <span class="inline-flex items-center">
-            <svg class="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-            </svg>
-            Saving...
-        </span>
-    `;
-
-    try {
-        const { error } = await supabase
-            .from('user_profiles')
-            .update(sanitizeInputs(updatedData))
-            .eq('user_id', userId);
-
-        if (error) throw error;
-        
-        lastSavedTimestamp = new Date().getTime();
-        localStorage.setItem('profileLastSaved', lastSavedTimestamp);
-        
-        showAlert('Profile updated! Editing locked for 30 days.');
-        checkEditLock();
-        closeModal({ target: profileModal });
-        loadProfileData();
-    } catch (error) {
-        console.error('Save error:', error);
-        showAlert('Error saving changes', 'error');
-    } finally {
-        saveButton.disabled = false;
-        saveButton.textContent = 'Save Changes';
-    }
+  setTimeout(() => {
+    alert.style.opacity = "0";
+    setTimeout(() => alert.remove(), 300);
+  }, 3000);
 }
-
-function getFormData(section) {
-    switch (section) {
-        case 'personal':
-            return {
-                last_name: document.getElementById('edit-last-name').value,
-                first_name: document.getElementById('edit-first-name').value,
-                middle_name: document.getElementById('edit-middle-name').value,
-                birthdate: document.getElementById('edit-birthdate').value
-            };
-        case 'contact':
-            return {
-                phone_number: document.getElementById('edit-phone').value,
-                email: document.getElementById('edit-email').value
-            };
-        case 'address':
-            return {
-                region: document.getElementById('edit-region').value,
-                province: document.getElementById('edit-province').value,
-                municipality: document.getElementById('edit-municipality').value,
-                barangay: document.getElementById('edit-barangay').value
-            };
-    }
-}
-
-editButtons.forEach(button => {
-    button.addEventListener('click', () => {
-        if (button.disabled) {
-            showAlert('Editing is locked for 30 days after saving', 'error');
-            return;
-        }
-        
-        const section = button.getAttribute('data-target');
-        const targetTab = document.querySelector(`.tab-btn[data-tab="${section}"]`);
-        switchTab(targetTab);
-        openModal(section);
-    });
-});
-
-tabs.forEach(tab => {
-    tab.addEventListener('click', () => switchTab(tab));
-});
-
-document.getElementById('close-modal').addEventListener('click', closeModal);
-profileModal.addEventListener('click', closeModal);
-
-
-
-document.getElementById('save-changes').addEventListener('click', async () => {
-    const activeTab = document.querySelector('.tab-btn.active');
-    const section = activeTab.getAttribute('data-tab');
-    await saveProfileData(section);
-});
-

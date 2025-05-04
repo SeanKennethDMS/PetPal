@@ -66,7 +66,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 
     await loadProducts();
     window.dispatchEvent(new Event("productAdded"));
-    // showToast('Product added successfully!');
+    showToast("Product added successfully!");
     addProductForm.reset();
   });
 

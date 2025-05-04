@@ -174,10 +174,11 @@ async function handleBookingConfirmation() {
 
     const time24 = convertTo24Hour(time);
     await createAppointment(serviceId, petId, date, time24);
+
+    await sendBookingNotification(petId, serviceId, date, time);
     
     alert("Appointment booked successfully!");
     resetAndCloseModal();
-    await sendBookingNotification(petId, serviceId, date, time);
     
   } catch (error) {
     console.error("Booking error:", error);
@@ -247,13 +248,152 @@ async function sendBookingNotification(petId, serviceId, date, time) {
     getServiceName(serviceId)
   ]);
 
-  const { error } = await supabase.from("notifications").insert([{
-    user_id: null,
-    message: `New appointment booked for ${petName} (${serviceName}) on ${date} at ${time}`,
-    is_read: false
-  }]);
+  const adminIds = await getAllAdminIds();
+  if (!adminIds?.length) {
+    console.error("No admin found to send notifications.");
+    return;
+  }
 
-  if (error) console.error("Notification error:", error);
+  const message = `<strong>${petName}</strong> booked an appointment for <strong>${serviceName}</strong> on <strong>${date} at ${time}</strong>.`;
+
+  for (const adminId of adminIds) {
+    const { error } = await supabase.from("notifications").insert([
+      {
+        recipient_id: adminId,
+        message,
+        status: "unread"
+      }
+    ]);
+
+    if (error) {
+      console.error(`Notification error for admin ${adminId}:`, error);
+    } else {
+      console.log(`Notification sent to admin ${adminId}`);
+    }
+  }
+}
+
+async function sendRescheduleNotification(petId, serviceId, oldDate, oldTime, newDate, newTime) {
+  const [petName, serviceName] = await Promise.all([
+    getPetName(petId),
+    getServiceName(serviceId)
+  ]);
+
+  const adminIds = await getAllAdminIds();
+  if (!adminIds?.length) {
+    console.error("No admin found to send notifications.");
+    return;
+  }
+
+  const message = `<strong>${petName}</strong> (<strong>${serviceName}</strong>) requested to reschedule from <strong>${oldDate} ${oldTime}</strong> to <strong>${newDate} ${newTime}</strong>.`;
+
+  for (const adminId of adminIds) {
+    const { error } = await supabase.from("notifications").insert([
+      {
+        recipient_id: adminId,
+        message,
+        status: "unread"
+      }
+    ]);
+
+    if (error) {
+      console.error(`Notification error for admin ${adminId}:`, error);
+    } else {
+      console.log(`Reschedule notification sent to admin ${adminId}`);
+    }
+  }
+}
+
+async function notifyAdminsCancelPending(petId, serviceId, date, time) {
+  const [petName, serviceName, adminIds] = await Promise.all([
+    getPetName(petId),
+    getServiceName(serviceId),
+    getAllAdminIds()
+  ]);
+
+  if (!adminIds || adminIds.length === 0) {
+    console.error("No admin found to send cancel-pending notification.");
+    return;
+  }
+
+  const message = `Pending appointment for ${petName} (${serviceName}) on ${date} at ${time} was canceled by the customer.`;
+
+  for (const adminId of adminIds) {
+    const { error } = await supabase.from("notifications").insert([{
+      recipient_id: adminId,
+      message,
+      status: 'unread'
+    }]);
+
+    if (error) console.error(`Notification error for admin ${adminId}:`, error);
+  }
+}
+
+async function notifyAdminsCancelAccepted(petId, serviceId, date, time) {
+  const [petName, serviceName, adminIds] = await Promise.all([
+    getPetName(petId),
+    getServiceName(serviceId),
+    getAllAdminIds()
+  ]);
+
+  if (!adminIds || adminIds.length === 0) {
+    console.error("No admin found to send cancel-accepted notification.");
+    return;
+  }
+
+  const message = `Accepted appointment for ${petName} (${serviceName}) on ${date} at ${time} was canceled by the customer.`;
+
+  for (const adminId of adminIds) {
+    const { error } = await supabase.from("notifications").insert([{
+      recipient_id: adminId,
+      message,
+      status: 'unread'
+    }]);
+
+    if (error) console.error(`Notification error for admin ${adminId}:`, error);
+  }
+}
+
+async function notifyAdminsRescheduleRequest(petId, serviceId, oldDate, oldTime, newDate, newTime) {
+  const [petName, serviceName] = await Promise.all([
+    getPetName(petId),
+    getServiceName(serviceId)
+  ]);
+
+  const adminIds = await getAllAdminIds();
+
+  if (!adminIds || adminIds.length === 0) {
+    console.error("No admin found to send notifications.");
+    return;
+  }
+
+  for (const adminId of adminIds) {
+    const { error } = await supabase.from("notifications").insert([{
+      recipient_id: adminId,
+      message: `${petName} (${serviceName}) requested to reschedule from ${oldDate} ${oldTime} to ${newDate} ${newTime}.`,
+      status: 'unread'
+    }]);
+
+    if (error) {
+      console.error(`Notification error for admin ${adminId}:`, error);
+    } else {
+      console.log(`Reschedule notification sent to admin ${adminId}`);
+    }
+  }
+}
+
+async function getAllAdminIds() {
+  const { data, error } = await supabase
+    .from('users_table')
+    .select('id')  
+    .eq('role', 'admin');  
+
+  if (error) {
+    console.error('Error fetching admin IDs:', error);
+    return [];
+  }
+
+  return data.map(admin => admin.id);  
 }
 
 async function loadAppointments() {
@@ -443,7 +583,8 @@ document.getElementById('confirm-reschedule').addEventListener('click', async ()
     .select('appointment_date, appointment_time, original_appointment_date, original_appointment_time')
     .eq('appointment_id', Number(id))
     .single();
-    console.log("Fetched appointment:", appt);
+
+  console.log("Fetched appointment:", appt);
 
   if (fetchErr) {
     alert("Failed to fetch original appointment.");
@@ -475,10 +616,30 @@ document.getElementById('confirm-reschedule').addEventListener('click', async ()
     return;
   }
 
+  const { data: apptDetails, error: detailsError } = await supabase
+    .from('appointments')
+    .select('pet_id, service_id')
+    .eq('appointment_id', id)
+    .single();
+
+  if (detailsError || !apptDetails) {
+    console.error("Failed to fetch pet/service for notification:", detailsError);
+  } else {
+    await notifyAdminsRescheduleRequest(
+      apptDetails.pet_id,
+      apptDetails.service_id,
+      appt.original_appointment_date || appt.appointment_date,
+      appt.original_appointment_time || appt.appointment_time,
+      newDate,
+      newTime
+    );
+  }
+
   alert("Reschedule request sent.");
   document.getElementById('reschedule-modal').classList.add('hidden');
   loadAppointments();
 });
+
 
 function renderPagination(totalCount) {
   const paginationContainer = document.getElementById("pagination");
@@ -747,6 +908,18 @@ async function getServiceName(serviceId) {
 async function cancelAppointment(appointmentId) {
   if (!appointmentId || !confirm("Are you sure you want to cancel this appointment?")) return;
 
+  const { data: appointment, error: fetchError } = await supabase
+    .from("appointments")
+    .select("pet_id, service_id, appointment_date, appointment_time, status")
+    .eq("appointment_id", appointmentId)
+    .single();
+
+  if (fetchError || !appointment) {
+    console.error("Fetch appointment error:", fetchError);
+    alert("Error fetching appointment details.");
+    return;
+  }
+
   const { error } = await supabase
     .from("appointments")
     .update({ status: "cancelled" })
@@ -756,6 +929,14 @@ async function cancelAppointment(appointmentId) {
     console.error("Cancel error:", error);
     alert("Error cancelling appointment.");
     return;
+  }
+
+  const { pet_id, service_id, appointment_date, appointment_time, status } = appointment;
+
+  if (status === "pending") {
+    await notifyAdminsCancelPending(pet_id, service_id, appointment_date, appointment_time);
+  } else if (status === "accepted") {
+    await notifyAdminsCancelAccepted(pet_id, service_id, appointment_date, appointment_time);
   }
 
   alert("Appointment cancelled successfully.");

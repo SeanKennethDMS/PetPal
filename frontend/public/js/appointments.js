@@ -1,4 +1,5 @@
 import supabase from './supabaseClient.js';
+import { notifyCustomerOfAppointmentStatus } from '../js/modal/notification.js';
 
 document.addEventListener("DOMContentLoaded", () => {
   const tabButtons = document.querySelectorAll(".tab-button");
@@ -230,6 +231,8 @@ document.addEventListener("DOMContentLoaded", () => {
       alert("Failed to update appointment status.");
     } else {
       console.log(`Appointment ${appointmentId} set to ${newStatus}`);
+  
+      notifyCustomerOfAppointmentStatus(appointmentId, newStatus);
   
       if (newStatus === 'completed') {
         const { data: apptData, error: selectErr } = await supabase

@@ -20,7 +20,7 @@ document.addEventListener("DOMContentLoaded", async () => {
   const userId = await getUserId();
   if (!userId) return;
 
-  const events = await fetchAppointments(userId);
+  const events = await fetchAppointments(userId); // ✅ FIXED: Now defined below
 
   const calendar = new FullCalendar.Calendar(calendarEl, {
     initialView: "dayGridMonth",
@@ -47,10 +47,9 @@ async function getUserId() {
   return data.user.id;
 }
 
-// Function to get the user role (admin or customer)
 async function getUserRole(userId) {
   const { data, error } = await supabase
-    .from("users") // Assuming you have a 'users' table
+    .from("users_table")
     .select("role")
     .eq("id", userId)
     .single();
@@ -60,10 +59,23 @@ async function getUserRole(userId) {
     return null;
   }
 
-  return data?.role; // Should return either 'admin' or 'customer'
+  return data?.role;
 }
 
-// Function to fetch appointments for customers
+async function fetchAppointments(userId) {
+  const role = await getUserRole(userId);
+  if (!role) {
+    console.error("Unable to determine user role");
+    return [];
+  }
+
+  if (role === "admin") {
+    return await fetchAdminEvents();
+  } else {
+    return await fetchCustomerEvents(userId);
+  }
+}
+
 async function fetchCustomerEvents(userId) {
   const { data, error } = await supabase
     .from("appointments")
@@ -82,9 +94,7 @@ async function fetchCustomerEvents(userId) {
   }));
 }
 
-// Function to fetch all appointments and stock expiration dates for admins
 async function fetchAdminEvents() {
-  // Fetch all appointments
   const { data: appointments, error: appError } = await supabase
     .from("appointments")
     .select("appointment_date, pets(pet_name), services(name), user_id")
@@ -95,9 +105,8 @@ async function fetchAdminEvents() {
     return [];
   }
 
-  // Fetch stock expiration dates
   const { data: stockItems, error: stockError } = await supabase
-    .from("stock") // Assuming you have a 'stock' table
+    .from("stock")
     .select("name, expiration_date");
 
   if (stockError) {
@@ -105,22 +114,19 @@ async function fetchAdminEvents() {
     return [];
   }
 
-  // Map appointments to events
   const appointmentEvents = appointments.map((app) => ({
     title: `${app.pets?.pet_name} • ${app.services?.name} (Customer: ${app.user_id})`,
     start: app.appointment_date,
-    color: "#3882F6", // Blue for appointments
+    color: "#3882F6",
     textColor: "white",
   }));
-
-  // Map stock expiration dates to events
+  vents;
   const stockEvents = stockItems.map((stock) => ({
     title: `${stock.name} Expiring`,
     start: stock.expiration_date,
-    color: "#FF5733", // Red-Orange for stock expiration
+    color: "#FF5733",
     textColor: "white",
   }));
 
-  // Combine appointments and stock expiration dates
   return [...appointmentEvents, ...stockEvents];
 }

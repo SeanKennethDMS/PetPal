@@ -1,314 +1,306 @@
-"use strict";
-
 import supabase from "../supabaseClient.js";
 
-// Elements
-const notificationBtn = document.getElementById("notificationBtn");
-const notificationModal = document.getElementById("notificationModal");
-const closeNotification = document.getElementById("closeNotification");
-const closeNotificationFooter = document.getElementById(
-  "closeNotificationFooter"
-);
-const notificationList = document.getElementById("notificationList");
-const notificationCount = document.getElementById("notificationCount");
+let currentUserId = null;
+let notificationChannel = null;
 
-// Go to specific section
-function goToSection(targetId) {
-  const sidebarLinks = document.querySelectorAll(".sidebar-link");
-  const contentSections = document.querySelectorAll(".content-section");
-
-  contentSections.forEach((section) => section.classList.add("hidden"));
-  const targetSection = document.getElementById(targetId);
-  if (targetSection) {
-    targetSection.classList.remove("hidden");
-  }
-
-  sidebarLinks.forEach((link) => {
-    link.classList.remove("font-bold", "bg-gray-700");
-    if (link.dataset.target === targetId) {
-      link.classList.add("font-bold", "bg-gray-700");
-    }
-  });
-}
-
-// Listen for real-time notifications for the user
-function listenForUserNotifications(userId) {
-  const channel = supabase
-    .channel("user-notification-channel")
-    .on(
-      "postgres_changes",
-      {
-        event: "INSERT",
-        schema: "public",
-        table: "notifications",
-        filter: `recipient_id=eq.${userId}`,
-      },
-      (payload) => {
-        console.log("Notification received:", payload.new);
-        addNotificationToList(payload.new);
-        updateNotificationBadge();
-      }
-    )
-    .subscribe((status) => {
-      if (status === "SUBSCRIBED") {
-        console.log("Listening for notifications...");
-      }
-    });
-}
-
-// Add notification to list
-function addNotificationToList(notification) {
-  if (!notificationList) return;
-
-  const li = document.createElement("li");
-  li.className = `p-3 border-b border-gray-200 hover:bg-gray-50 transition cursor-pointer ${
-    notification.status === "unread" ? "bg-blue-50" : "bg-white"
-  }`;
-
-  let message = notification.message || "You have a new notification.";
-
-  li.innerHTML = `
-    <div class="flex flex-col">
-      <div class="flex justify-between items-center">
-        <p class="text-sm text-gray-800">${message}</p>
-        <span class="text-xs text-gray-500">${new Date(
-          notification.created_at
-        ).toLocaleString()}</span>
-      </div>
-      ${
-        notification.appointment_id
-          ? `
-      <div class="mt-2 text-right">
-        <button class="text-blue-600 text-xs hover:underline section-link" data-target="booking" data-appointment-id="${notification.appointment_id}">
-          View Appointment
-        </button>
-      </div>`
-          : ""
-      }
-    </div>
-  `;
-
-  li.addEventListener("click", async (event) => {
-    if (event.target.classList.contains("section-link")) return;
-    if (notification.status === "unread") {
-      await markSingleNotificationAsRead(notification.id, li);
-    }
-  });
-
-  notificationList.prepend(li);
-
-  const goToBookingBtn = li.querySelector(".section-link");
-
-  if (goToBookingBtn) {
-    goToBookingBtn.addEventListener("click", (event) => {
-      event.stopPropagation();
-      goToSection("booking");
-      notificationModal?.classList.add("hidden");
-      notificationModal?.classList.remove("flex");
-    });
+function setupRealtimeNotifications() {
+  if (!notificationChannel) {
+    notificationChannel = supabase
+      .channel('public:notifications')
+      .on('postgres_changes', {
+        event: 'INSERT',
+        schema: 'public',
+        table: 'notifications',
+        filter: `recipient_id=eq.${currentUserId}`,
+      }, (payload) => {
+        console.log('New notification:', payload);
+        updateNotificationCount();
+        loadNotifications();
+      })
+      .subscribe();
   }
 }
 
-// Send notification
-async function sendNotification({
-  recipientId,
-  senderId = null,
-  message = "",
-  type = "general",
-  actionType = "",
-  appointmentId = null,
-  data = {},
-}) {
-  if (!recipientId) {
-    console.error("Recipient ID is required.");
+async function fetchCurrentUser() {
+  const { data: { user }, error } = await supabase.auth.getUser();
+  if (error) {
+    console.error('Error fetching user:', error.message);
+    return null;
+  }
+  if (!user) {
+    console.error('No user logged in.');
+    return null;
+  }
+  return user.id;
+}
+
+async function loadNotifications() {
+  if (!currentUserId) return;
+
+  const { data: notifications, error } = await supabase
+    .from('notifications')
+    .select('*')
+    .eq('recipient_id', currentUserId)
+    .order('created_at', { ascending: false });
+
+  const notifList = document.getElementById('notificationList');
+  notifList.innerHTML = '';
+
+  if (error) {
+    console.error('Error fetching notifications:', error.message);
+    notifList.innerHTML = `<div class="text-center text-gray-500">Error loading notifications</div>`;
     return;
   }
 
-  if (!message && actionType) {
-    switch (actionType) {
-      case "pending":
-        message = "A new appointment request has been submitted!";
-        break;
-      case "approved":
-        message = "Your appointment has been approved!";
-        break;
-      case "canceled":
-        message = "Your appointment has been canceled.";
-        break;
-      case "completed":
-        message = "Your appointment has been completed.";
-        break;
-      case "low_stock":
-        message = "Stock level is low for some products.";
-        break;
-      case "pet_updated":
-        message = "Your pet profile has been updated.";
-        break;
-      default:
-        message = "You have a new notification.";
-    }
+  if (!notifications.length) {
+    notifList.innerHTML = `<div class="text-center text-gray-500">No notifications yet</div>`;
+    return;
   }
 
+  notifications.forEach(notif => {
+    const notifItem = document.createElement('div');
+    notifItem.className = `notification-item p-2 rounded cursor-pointer ${
+      notif.status === 'unread' ? 'bg-blue-100' : 'bg-white'
+    } hover:bg-gray-100`;
+    notifItem.dataset.id = notif.id;
+    notifItem.dataset.status = notif.status;
+
+    let formattedMessage = notif.message
+      .replace(/for\s([^()]+)\s\(/, 'for <strong>$1</strong> (')
+      .replace(/on\s([\d-]+)/, 'on <strong>$1</strong>');
+
+    if (notif.message.toLowerCase().includes("new appointment booked")) {
+      formattedMessage += ` <a href="#" data-target="booking" class="text-blue-500 underline ml-1 view-link">View</a>`;
+    }
+
+    if (notif.message.toLowerCase().includes("requested to reschedule")) {
+      formattedMessage = notif.message
+        .replace(/^([^()]+)\s\(([^)]+)\)/, '<strong>$1</strong> (<strong>$2</strong>)') 
+        .replace(/from\s([\d-]+\s[\d:]+)/, 'from <strong>$1</strong>')                  
+        .replace(/to\s([\d-]+\s[\d:]+)/, 'to <strong>$1</strong>');                      
+    
+      formattedMessage += ` <a href="#" data-target="booking" class="text-blue-500 underline ml-1 view-link">View</a>`;
+    }
+
+    const createdAt = new Date(notif.created_at).toLocaleString([], {
+      month: 'short',
+      day: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit',
+      hour12: true
+    });
+
+    notifItem.innerHTML = `
+      <div class="flex justify-between items-start">
+        <div class="text-sm">${formattedMessage}</div>
+        <div class="text-xs text-gray-400 pl-2 whitespace-nowrap">${createdAt}</div>
+      </div>
+    `;
+
+    notifItem.addEventListener('click', async (e) => {
+      const viewLink = e.target.closest('.view-link');
+      
+      if (viewLink) {
+        e.preventDefault();
+        const targetId = viewLink.dataset.target;
+    
+        const targetSection = document.getElementById(targetId);
+        if (!targetSection) {
+          console.warn(`No section found with id: ${targetId}`);
+          return;
+        }
+    
+        const currentSections = document.querySelectorAll('.current-page');
+
+        if (currentSections.length === 0) {
+          const fallback = document.querySelector('#dashboard'); 
+          if (fallback) {
+            fallback.classList.add('hidden');
+            fallback.classList.remove('current-page');
+          }
+        } else {
+          currentSections.forEach(section => {
+            section.classList.add('hidden');
+            section.classList.remove('current-page');
+          });
+        }
+    
+        targetSection.classList.remove('hidden');
+        targetSection.classList.add('current-page');
+    
+        notifModal.classList.add('hidden');
+      }
+    
+      if (notifItem.dataset.status === 'unread') {
+        await markAsRead(notif.id, notifItem);
+      }
+    });
+    
+    notifList.appendChild(notifItem);
+  });
+}
+
+async function sendAppointmentReminders() {
+  const currentDate = new Date();
+  
+  const reminderDays = [5, 3, 1, 0];
+
+  for (let days of reminderDays) {
+    const reminderDate = new Date(currentDate);
+    reminderDate.setDate(currentDate.getDate() + days);
+    const formattedReminderDate = reminderDate.toISOString().split('T')[0]; 
+    
+    const { data: appointments, error } = await supabase
+      .from('appointments')
+      .select('appointment_id, appointment_date, appointment_time, user_id, pets(pet_name), status')
+      .eq('appointment_date', formattedReminderDate)
+      .order('appointment_time', { ascending: true });
+
+    if (error) {
+      console.error('Error fetching appointments:', error.message);
+      continue;
+    }
+
+    appointments.forEach(appointment => {
+      const customerMessage = `Reminder: Your appointment with ${appointment.pets.pet_name} is in ${days} day(s) on ${appointment.appointment_date} at ${appointment.appointment_time}.`;
+      sendNotificationToCustomer(appointment.user_id, customerMessage);
+
+      const adminMessage = `Admin Reminder: Appointment for ${appointment.pets.pet_name} with customer ID ${appointment.user_id} is in ${days} day(s) on ${appointment.appointment_date} at ${appointment.appointment_time}.`;
+      sendNotificationToAdmins(adminMessage);
+    });
+  }
+}
+
+async function sendNotificationToCustomer(userId, message) {
+  const { error } = await supabase.from("notifications").insert([{
+    recipient_id: userId,
+    message,
+    status: "unread",
+  }]);
+
+  if (error) {
+    console.error("Error sending customer notification:", error.message);
+  } else {
+    console.log("Customer notification sent:", userId);
+  }
+}
+
+
+
+async function sendNotificationToAdmins(message) {
+  const { data: admins, error } = await supabase
+    .from('users_table')
+    .select('id')
+    .eq('role', 'admin');
+
+  if (error) {
+    console.error('Error fetching admins:', error.message);
+    return;
+  }
+
+  if (!admins || admins.length === 0) {
+    console.warn('No admins found.');
+    return;
+  }
+
+  const notifications = admins.map(admin => ({
+    recipient_id: admin.id,
+    message: message,
+    status: 'unread'
+  }));
+
+  const { error: insertError } = await supabase
+    .from('notifications')
+    .insert(notifications);
+
+  if (insertError) {
+    console.error('Error sending notifications to admins:', insertError);
+  } else {
+    console.log('Notifications sent to admins.');
+  }
+}
+
+setInterval(sendAppointmentReminders, 24 * 60 * 60 * 1000); // Runs once every day
+
+async function updateNotificationCount() {
+  if (!currentUserId) return;
+
+  const { count, error } = await supabase
+    .from('notifications')
+    .select('*', { count: 'exact', head: true })
+    .eq('recipient_id', currentUserId)
+    .eq('status', 'unread');
+
+  const badge = document.getElementById('notificationCount');
+
+  if (error) {
+    console.error('Error fetching notification count:', error);
+    badge.classList.add('hidden');
+    return;
+  }
+
+  if (count > 0) {
+    badge.textContent = count;
+    badge.classList.remove('hidden');
+  } else {
+    badge.classList.add('hidden');
+  }
+}
+
+export async function notifyCustomerOfAppointmentStatus(userId, message) {
   const { error } = await supabase.from("notifications").insert([
     {
-      recipient_id: recipientId,
-      sender_id: senderId,
-      message: message,
-      type: type,
-      action_type: actionType,
-      appointment_id: appointmentId,
-      data: data,
+      recipient_id: userId,
+      message,
       status: "unread",
     },
   ]);
 
   if (error) {
-    console.error("Error sending notification:", error);
+    console.error("Customer notification error:", error.message);
   } else {
-    console.log("Notification sent successfully.");
+    console.log("Notification sent to customer", userId);
   }
 }
 
-// Mark a single notification as read
-async function markSingleNotificationAsRead(notificationId, listItem) {
+async function markAsRead(notificationId, notifItem) {
   const { error } = await supabase
-    .from("notifications")
-    .update({ status: "read" })
-    .eq("id", notificationId);
+    .from('notifications')
+    .update({ status: 'read' })
+    .eq('id', notificationId);
 
   if (error) {
-    console.error("Error marking as read:", error);
+    console.error('Error updating notification status:', error);
     return;
   }
 
-  listItem.classList.remove("bg-blue-50");
-  listItem.classList.add("bg-white");
+  notifItem.classList.remove('bg-blue-100');
+  notifItem.classList.add('bg-white');
+  notifItem.dataset.status = 'read';
 
-  let currentCount = parseInt(notificationCount.textContent) || 0;
-  if (currentCount > 1) {
-    notificationCount.textContent = currentCount - 1;
-  } else {
-    clearNotificationBadge();
-  }
+  updateNotificationCount();
 }
 
-// Update badge
-function updateNotificationBadge() {
-  if (!notificationCount) return;
+const notifBtn = document.getElementById('notificationBtn');
+const notifModal = document.getElementById('notificationModal');
 
-  let currentCount = parseInt(notificationCount.textContent) || 0;
-  notificationCount.textContent = currentCount + 1;
-  notificationCount.classList.remove("hidden");
-}
-
-// Clear badge
-function clearNotificationBadge() {
-  if (!notificationCount) return;
-
-  notificationCount.textContent = "";
-  notificationCount.classList.add("hidden");
-}
-
-// Check unread notifications on load
-async function checkUnreadNotifications(userId) {
-  const { data, error } = await supabase
-    .from("notifications")
-    .select("id")
-    .eq("recipient_id", userId)
-    .eq("status", "unread");
-
-  if (error) {
-    console.error("Error fetching unread notifications:", error);
-    return;
-  }
-
-  if (data.length > 0) {
-    notificationCount.textContent = data.length;
-    notificationCount.classList.remove("hidden");
-  } else {
-    clearNotificationBadge();
-  }
-}
-
-// Load notification history
-async function loadNotificationHistory(userId) {
-  const { data, error } = await supabase
-    .from("notifications")
-    .select("*")
-    .eq("recipient_id", userId)
-    .order("created_at", { ascending: false })
-    .limit(50);
-
-  if (error) {
-    console.error("Error loading history:", error);
-    return;
-  }
-
-  notificationList.innerHTML = "";
-
-  if (!data.length) {
-    notificationList.innerHTML = `<li class="p-3 text-gray-500">No notifications found.</li>`;
-    return;
-  }
-
-  data.forEach((notification) => addNotificationToList(notification));
-}
-
-// Mark all notifications as read
-async function markAllNotificationsAsRead(userId) {
-  const { error } = await supabase
-    .from("notifications")
-    .update({ status: "read" })
-    .eq("recipient_id", userId)
-    .eq("status", "unread");
-
-  if (error) {
-    console.error("Error marking all as read:", error);
-  }
-}
-
-// Initialize notifications
-async function initNotificationListener() {
-  const {
-    data: { user },
-    error,
-  } = await supabase.auth.getUser();
-
-  if (error || !user) {
-    console.error("Error fetching user:", error?.message || "No user found.");
-    return;
-  }
-
-  window.currentUserId = user.id;
-
-  listenForUserNotifications(user.id);
-  await checkUnreadNotifications(user.id);
-}
-
-// Open Notification Modal
-notificationBtn?.addEventListener("click", async () => {
-  notificationModal?.classList.remove("hidden");
-  notificationModal?.classList.add("flex");
-
-  if (window.currentUserId) {
-    await loadNotificationHistory(window.currentUserId);
-    await markAllNotificationsAsRead(window.currentUserId);
-    clearNotificationBadge();
-  }
+notifBtn.addEventListener('click', () => {
+  notifModal.classList.remove('hidden');
+  loadNotifications();
 });
 
-// Close Notification Modal
-[closeNotification, closeNotificationFooter].forEach((btn) => {
-  btn?.addEventListener("click", () => {
-    notificationModal?.classList.add("hidden");
-    notificationModal?.classList.remove("flex");
-  });
+document.getElementById('closeNotification').addEventListener('click', () => {
+  notifModal.classList.add('hidden');
 });
 
-// Run init on DOM load
-document.addEventListener("DOMContentLoaded", () => {
-  initNotificationListener();
+document.getElementById('closeNotificationFooter').addEventListener('click', () => {
+  notifModal.classList.add('hidden');
 });
 
-// Export sendNotification
-export { sendNotification };
+(async function initNotifications() {
+  currentUserId = await fetchCurrentUser();
+  if (currentUserId) {
+    setupRealtimeNotifications();
+    updateNotificationCount();
+  }
+})();
