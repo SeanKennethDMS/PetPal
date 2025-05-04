@@ -20,8 +20,7 @@ document.addEventListener("DOMContentLoaded", async () => {
   const userId = await getUserId();
   if (!userId) return;
 
-  const events = await fetchAppointments(userId); // ✅ FIXED: Now defined below
-
+  const events = await fetchAppointments(userId);
   const calendar = new FullCalendar.Calendar(calendarEl, {
     initialView: "dayGridMonth",
     height: 300,
@@ -106,7 +105,7 @@ async function fetchAdminEvents() {
   }
 
   const { data: stockItems, error: stockError } = await supabase
-    .from("stock")
+    .from("products")
     .select("name, expiration_date");
 
   if (stockError) {
@@ -120,7 +119,6 @@ async function fetchAdminEvents() {
     color: "#3882F6",
     textColor: "white",
   }));
-  vents;
   const stockEvents = stockItems.map((stock) => ({
     title: `${stock.name} Expiring`,
     start: stock.expiration_date,

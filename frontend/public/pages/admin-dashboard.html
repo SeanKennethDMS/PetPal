@@ -87,7 +87,7 @@
     <!-- Notification Modal -->
     <div
       id="notificationModal"
-      class="fixed inset-0 bg-black bg-opacity-50 hidden justify-center items-start pt-24 z-50"
+      class="fixed inset-0 hidden bg-black/20 backdrop-blur-sm flex justify-center items-center z-50"
     >
       <div class="bg-white rounded-lg shadow-lg w-80">
         <!-- Header -->
@@ -661,10 +661,8 @@
               <p class="text-gray-600 mt-2">
                 Check your upcoming appointments at a glance on the calendar.
               </p>
-              <div
-                class="rounded-lg bg-gray-50 h-40 mt-4 flex items-center justify-center text-gray-400"
-              >
-                Calendar Widget Here
+              <div class="w-full max-w-full overflow-x-auto">
+                <div id="calendar" class="min-w-[300px]"></div>
               </div>
             </div>
           </div>
@@ -1505,7 +1503,7 @@
     <script type="module" src="../js/posManagement.js"></script>
     <script type="module" src="../js/adminDashboard.js"></script>
     <script type="module" src="../js/adminQuickStats.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/index.global.min.js"></script>
     <script type="module" src="../js/calendar.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/fullcalendar@3.10.2/main.min.js"></script>
   </body>
 </html>
