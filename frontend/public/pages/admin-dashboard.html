@@ -147,9 +147,7 @@
           </svg>
         </button>
 
-        <!-- Sidebar content (no changes here) -->
         <h2 class="text-xl font-bold mb-4 mt-10 md:mt-0">Admin Dashboard</h2>
-        <!-- The rest of your sidebar menu stays the same -->
         <div class="mb-4">
           <h3 class="text-gray-400 uppercase text-sm mb-2">Main</h3>
           <ul>
@@ -203,6 +201,14 @@
                 class="sidebar-link block py-2 px-3 hover:bg-gray-700 rounded"
                 data-target="pos"
                 >Point of Sale</a
+              >
+            </li>
+            <li>
+              <a
+                href="#"
+                class="sidebar-link block py-2 px-3 hover:bg-gray-700 rounded"
+                data-target="audit-log"
+                >Audit Log</a
               >
             </li>
           </ul>
@@ -961,7 +967,7 @@
 
         <section id="inventory" class="content-section hidden">
           <h1 class="text-3xl font-bold flex items-center">
-            📦 Inventory Management
+            Inventory Management
           </h1>
           <p class="text-gray-600 mt-2">Manage products and inventory.</p>
 
@@ -1146,7 +1152,7 @@
         </section>
 
         <section id="pos" class="content-section hidden">
-          <h1 class="text-3xl font-bold flex items-center">🛒 Point of Sale</h1>
+          <h1 class="text-3xl font-bold flex items-center">Point of Sale</h1>
           <p class="text-gray-600 mt-2">Process transactions and sales.</p>
 
           <!-- Add to Cart -->
@@ -1283,6 +1289,96 @@
               class="mt-2 bg-gray-500 text-white px-4 py-2 rounded hover:bg-gray-700"
             >
               Monthly Report (PDF)
+            </button>
+          </div>
+        </section>
+
+        <section id="audit-log" class="content-section hidden">
+          <!-- Header Section -->
+          <h1 class="text-3xl font-bold flex items-center">Audit Log</h1>
+          <p class="text-gray-600 mt-2">Monitor Business Flow</p>
+
+          <!-- Filters Section -->
+          <div class="audit-log-filters mt-4 flex items-center gap-4">
+            <!-- Search Input -->
+            <input
+              type="text"
+              id="searchInput"
+              class="p-2 border rounded-md"
+              placeholder="Search logs..."
+              onkeyup="filterLogs()"
+            />
+
+            <!-- Action Type Filter -->
+            <select
+              id="actionTypeFilter"
+              class="p-2 border rounded-md"
+              onchange="filterLogs()"
+            >
+              <option value="">All Actions</option>
+              <option value="Appointment Created">Appointment Created</option>
+              <option value="Payment Processed">Payment Processed</option>
+              <option value="Appointment Cancelled">
+                Appointment Cancelled
+              </option>
+              <option value="Reschedule Accepted">Reschedule Accepted</option>
+              <option value="Reschedule Denied">Reschedule Denied</option>
+            </select>
+
+            <!-- Date Filters -->
+            <input
+              type="date"
+              id="startDate"
+              class="p-2 border rounded-md"
+              onchange="filterLogs()"
+            />
+            <input
+              type="date"
+              id="endDate"
+              class="p-2 border rounded-md"
+              onchange="filterLogs()"
+            />
+          </div>
+
+          <!-- Audit Log Table -->
+          <div class="mt-6">
+            <table
+              id="auditLogTable"
+              class="w-full table-auto border-collapse border border-gray-200"
+            >
+              <thead>
+                <tr>
+                  <th class="p-2 text-left border-b">Timestamp</th>
+                  <th class="p-2 text-left border-b">User</th>
+                  <th class="p-2 text-left border-b">Action Type</th>
+                  <th class="p-2 text-left border-b">Target Object</th>
+                  <th class="p-2 text-left border-b">Details</th>
+                </tr>
+              </thead>
+              <tbody id="auditLogBody">
+                <!-- Placeholder Row (to show when no logs are available) -->
+                <tr id="placeholderRow" style="display: none">
+                  <td colspan="5" class="p-4 text-center text-gray-500">
+                    No logs available
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          <!-- Pagination Controls -->
+          <div class="mt-4 flex justify-center">
+            <button
+              class="px-4 py-2 bg-blue-500 text-white rounded-md"
+              onclick="changePage('prev')"
+            >
+              Previous
+            </button>
+            <button
+              class="px-4 py-2 bg-blue-500 text-white rounded-md ml-4"
+              onclick="changePage('next')"
+            >
+              Next
             </button>
           </div>
         </section>
