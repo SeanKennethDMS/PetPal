@@ -2,10 +2,6 @@
 
 import supabase from "./supabaseClient.js";
 
-const firstName = document.getElementById("first-name");
-const lastName = document.getElementById("last-name");
-const email = document.getElementById("email");
-
 async function FetchUserInfo() {
     const { data: userData, error: authError } = await supabase.auth.getUser();
   
@@ -27,14 +23,23 @@ async function FetchUserInfo() {
       return;
     }
   
-    firstName.textContent = usersTable.first_name;
-    lastName.textContent = usersTable.last_name;
-    email.textContent = usersTable.email;
+    const updateIfExists = (id, value) => {
+      const element = document.getElementById(id);
+      if (element) element.textContent = value;
+    };
+  
+    updateIfExists("first-name", usersTable.first_name);
+    updateIfExists("last-name", usersTable.last_name);
+    updateIfExists("email", usersTable.email);
   
     const userGreeting = document.getElementById("userGreeting");
     if (userGreeting) {
       userGreeting.innerHTML = `Welcome, <strong>${usersTable.first_name}</strong>`;
     }
-  }
+}
 
-FetchUserInfo();
+if (document.getElementById("first-name") || 
+    document.getElementById("last-name") || 
+    document.getElementById("email")) {
+  FetchUserInfo();
+}

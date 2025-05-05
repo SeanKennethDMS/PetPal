@@ -8,26 +8,31 @@ const LOCK_DURATION = 60 * 24 * 60 * 60 * 1000; // 60 days in ms
 const ADDRESS_LEVELS = ['region', 'province', 'municipality', 'barangay'];
 
 // DOM Elements
-const profileModal = document.getElementById("profile-edit-modal");
-const modalFormContainer = document.getElementById("modal-form-container");
+const editProfileModal = document.getElementById("editProfileModal");
+const editProfileForm = document.getElementById("editProfileForm");
 const editButtons = document.querySelectorAll(".edit-btn");
-const saveButton = document.getElementById("save-changes");
-const personalTab = document.getElementById("personal-tab");
-const contactTab = document.getElementById("contact-tab");
-const addressTab = document.getElementById("address-tab");
+const saveEditBtn = document.getElementById("saveEditBtn");
+const cancelEditBtn = document.getElementById("cancelEditBtn");
+const closeModalBtn = document.getElementById("closeModalBtn");
 
 // State
-let currentTab = "personal";
 let formData = {
-  personal: {},
-  contact: {},
-  address: {}
+  last_name: "",
+  first_name: "",
+  middle_name: "",
+  birthdate: "",
+  phone: "",
+  email: "",
+  region: "",
+  province: "",
+  municipality: "",
+  barangay: ""
 };
 let phAddresses = null;
 
 // Initialize the module
 document.addEventListener("DOMContentLoaded", async () => {
-  if (!profileModal) return;
+  if (!editProfileModal) return;
 
   try {
     await loadAddressData();
@@ -46,31 +51,25 @@ function initEventListeners() {
     button.addEventListener("click", (e) => {
       e.preventDefault();
       if (!button.disabled) {
-        const section = button.getAttribute("data-target");
-        if (section) openModal(section);
+        openModal();
       }
     });
   });
 
   // Modal close
-  profileModal.addEventListener("click", closeModal);
+  closeModalBtn?.addEventListener("click", closeModal);
+  cancelEditBtn?.addEventListener("click", closeModal);
+  editProfileModal?.addEventListener("click", (e) => {
+    if (e.target === editProfileModal) closeModal();
+  });
 
   // Save button
-  saveButton?.addEventListener("click", handleSave);
+  editProfileForm?.addEventListener("submit", handleSave);
 
-  // Tab switching
-  personalTab?.addEventListener("click", (e) => {
-    e.preventDefault();
-    switchTab("personal");
-  });
-  contactTab?.addEventListener("click", (e) => {
-    e.preventDefault();
-    switchTab("contact");
-  });
-  addressTab?.addEventListener("click", (e) => {
-    e.preventDefault();
-    switchTab("address");
-  });
+  // Address dropdown changes
+  document.getElementById("input-region")?.addEventListener("change", updateProvinceDropdown);
+  document.getElementById("input-province")?.addEventListener("change", updateMunicipalityDropdown);
+  document.getElementById("input-municipality")?.addEventListener("change", updateBarangayDropdown);
 }
 
 // Data Loading
@@ -86,29 +85,28 @@ async function loadProfileData() {
       .maybeSingle();
 
     if (error) throw error;
-    if (!data) return;
+    
+    // If no profile exists, create an empty one
+    if (!data) {
+      await createEmptyProfile(userId);
+      return;
+    }
 
     // Update UI with profile data
     updateProfileDisplay(data);
     
     // Store form data
     formData = {
-      personal: {
-        lastName: data.last_name || "",
-        firstName: data.first_name || "",
-        middleName: data.middle_name || "",
-        birthdate: data.birthdate || ""
-      },
-      contact: {
-        phone: data.phone_number || "",
-        email: data.email || ""
-      },
-      address: {
-        region: data.region || "",
-        province: data.province || "",
-        municipality: data.municipality || "",
-        barangay: data.barangay || ""
-      }
+      last_name: data.last_name || "",
+      first_name: data.first_name || "",
+      middle_name: data.middle_name || "",
+      birthdate: data.birthdate || "",
+      phone: data.phone_number || "",
+      email: data.email || "",
+      region: data.region || "",
+      province: data.province || "",
+      municipality: data.municipality || "",
+      barangay: data.barangay || ""
     };
 
     // Check if editing is locked
@@ -125,24 +123,34 @@ async function loadProfileData() {
   }
 }
 
-function updateProfileDisplay(data) {
-  const fields = {
-    "last-name": data.last_name || "—",
-    "first-name": data.first_name || "—",
-    "middle-name": data.middle_name || "—",
-    "birthdate": data.birthdate || "—",
-    "phone": data.phone_number || "—",
-    "email": data.email || "—",
-    "region": data.region || "—",
-    "province": data.province || "—",
-    "municipality": data.municipality || "—",
-    "barangay": data.barangay || "—"
-  };
+async function createEmptyProfile(userId) {
+  const { data: userData } = await supabase.auth.getUser();
+  if (!userData?.user) return;
 
-  Object.entries(fields).forEach(([id, value]) => {
-    const element = document.getElementById(id);
-    if (element) element.textContent = value;
-  });
+  const { error } = await supabase
+    .from("user_profiles")
+    .upsert({
+      user_id: userId,
+      email: userData.user.email,
+      first_name: "",
+      last_name: "",
+      middle_name: "",
+      phone_number: "",
+      region: "",
+      province: "",
+      municipality: "",
+      barangay: ""
+    }, {
+      onConflict: ['user_id']
+    });
+
+  if (error) {
+    console.error("Error creating empty profile:", error);
+    throw error;
+  }
+
+  // Reload profile data
+  await loadProfileData();
 }
 
 async function loadAddressData() {
@@ -157,179 +165,66 @@ async function loadAddressData() {
   }
 }
 
-// Modal Management
-function openModal(section) {
-  if (!profileModal || !modalFormContainer) return;
+function updateProfileDisplay(data) {
+  const fields = {
+    "last-name": data.last_name || "—",
+    "first-name": data.first_name || "—",
+    "middle-name": data.middle_name || "—",
+    "birthdate": data.birthdate ? formatDate(data.birthdate) : "—",
+    "view-phone": data.phone_number || "—",
+    "view-email": data.email || "—",
+    "region": data.region || "Not set",
+    "province": data.province || "Not set",
+    "municipality": data.municipality || "Not set",
+    "barangay": data.barangay || "Not set"
+  };
 
-  profileModal.style.opacity = "0";
-  profileModal.classList.remove("hidden");
+  Object.entries(fields).forEach(([id, value]) => {
+    const element = document.getElementById(id);
+    if (element) element.textContent = value;
+  });
+}
+
+function formatDate(dateString) {
+  if (!dateString) return "";
+  const date = new Date(dateString);
+  return date.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
+}
+
+// Modal Management
+function openModal() {
+  if (!editProfileModal) return;
+
+  // Populate form fields
+  document.getElementById("input-last-name").value = formData.last_name;
+  document.getElementById("input-first-name").value = formData.first_name;
+  document.getElementById("input-middle-name").value = formData.middle_name;
+  document.getElementById("input-birthdate").value = formData.birthdate;
+  document.getElementById("input-phone").value = formData.phone;
+  document.getElementById("input-email").value = formData.email;
+
+  // Initialize address dropdowns
+  initAddressDropdowns();
+  restoreAddressSelections();
+
+  editProfileModal.style.opacity = "0";
+  editProfileModal.classList.remove("hidden");
 
   setTimeout(() => {
-    profileModal.style.opacity = "1";
-    switchTab(section);
+    editProfileModal.style.opacity = "1";
   }, 10);
 }
 
-function closeModal(e) {
-  if (e.target === profileModal || e.target.closest("#close-modal")) {
-    profileModal.style.opacity = "0";
-    setTimeout(() => profileModal.classList.add("hidden"), 300);
-  }
-}
-
-// Tab Management
-function switchTab(section) {
-  // Collect data from current form before switching
-  collectFormData();
-
-  // Update tab UI
-  [personalTab, contactTab, addressTab].forEach(tab => {
-    if (tab) {
-      tab.classList.remove("active", "border-blue-500", "text-blue-500");
-      tab.classList.add("text-gray-700");
-    }
-  });
-
-  const activeTab = {
-    personal: personalTab,
-    contact: contactTab,
-    address: addressTab
-  }[section];
-
-  if (activeTab) {
-    activeTab.classList.add("active", "border-blue-500", "text-blue-500");
-    activeTab.classList.remove("text-gray-700");
-  }
-
-  currentTab = section;
-  loadFormContent(section);
-}
-
-// Form Management
-function collectFormData() {
-  const getValue = id => {
-    const element = document.getElementById(id);
-    return element?.value || "";
-  };
-
-  switch (currentTab) {
-    case "personal":
-      formData.personal = {
-        lastName: getValue("edit-last-name"),
-        firstName: getValue("edit-first-name"),
-        middleName: getValue("edit-middle-name"),
-        birthdate: getValue("edit-birthdate")
-      };
-      break;
-
-    case "contact":
-      formData.contact = {
-        phone: getValue("edit-phone"),
-        email: getValue("edit-email")
-      };
-      break;
-
-    case "address":
-      formData.address = {
-        region: getValue("edit-region"),
-        province: getValue("edit-province"),
-        municipality: getValue("edit-municipality"),
-        barangay: getValue("edit-barangay")
-      };
-      break;
-  }
-}
-
-function loadFormContent(section) {
-  collectFormData();
-  
-  const templates = {
-    personal: getPersonalFormTemplate(),
-    contact: getContactFormTemplate(),
-    address: getAddressFormTemplate()
-  };
-
-  modalFormContainer.innerHTML = templates[section] || "";
-
-  if (section === "address") {
-    initAddressDropdowns();
-    restoreAddressSelections();
-  }
-}
-
-function getPersonalFormTemplate() {
-  const { lastName, firstName, middleName, birthdate } = formData.personal;
-  return `
-    <div class="space-y-4">
-      <div>
-        <label for="edit-last-name" class="block text-sm font-medium text-gray-700">Last Name</label>
-        <input type="text" id="edit-last-name" value="${lastName}" 
-          class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500">
-      </div>
-      <div>
-        <label for="edit-first-name" class="block text-sm font-medium text-gray-700">First Name</label>
-        <input type="text" id="edit-first-name" value="${firstName}" 
-          class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500">
-      </div>
-      <div>
-        <label for="edit-middle-name" class="block text-sm font-medium text-gray-700">Middle Name</label>
-        <input type="text" id="edit-middle-name" value="${middleName}" 
-          class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500">
-      </div>
-      <div>
-        <label for="edit-birthdate" class="block text-sm font-medium text-gray-700">Birthdate</label>
-        <input type="date" id="edit-birthdate" value="${birthdate}" 
-          class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500">
-      </div>
-    </div>
-  `;
-}
-
-function getContactFormTemplate() {
-  const { phone, email } = formData.contact;
-  return `
-    <div class="space-y-4">
-      <div>
-        <label for="edit-phone" class="block text-sm font-medium text-gray-700">Phone Number</label>
-        <input type="tel" id="edit-phone" value="${phone}" 
-          class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500">
-      </div>
-      <div>
-        <label for="edit-email" class="block text-sm font-medium text-gray-700">Email</label>
-        <input type="email" id="edit-email" value="${email}" 
-          class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500">
-      </div>
-    </div>
-  `;
-}
-
-function getAddressFormTemplate() {
-  return `
-    <div class="space-y-4">
-      ${ADDRESS_LEVELS.map(level => `
-        <div>
-          <label for="edit-${level}" class="block text-sm font-medium text-gray-700">
-            ${level.charAt(0).toUpperCase() + level.slice(1).replace('-', '/')}
-          </label>
-          <select id="edit-${level}" 
-            class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 bg-white"
-            ${level !== 'region' ? 'disabled' : ''}>
-            <option value="">-- Select ${level.charAt(0).toUpperCase() + level.slice(1)} --</option>
-          </select>
-        </div>
-      `).join('')}
-    </div>
-  `;
+function closeModal() {
+  editProfileModal.style.opacity = "0";
+  setTimeout(() => editProfileModal.classList.add("hidden"), 300);
 }
 
 // Address Dropdown Management
 function initAddressDropdowns() {
-  if (!phAddresses) {
-    console.error("Address data not loaded");
-    return;
-  }
+  if (!phAddresses) return;
 
-  const regionSelect = document.getElementById("edit-region");
+  const regionSelect = document.getElementById("input-region");
   if (!regionSelect) return;
 
   // Clear and populate region dropdown
@@ -341,103 +236,142 @@ function initAddressDropdowns() {
     regionSelect.appendChild(option);
   });
 
-  // Set up cascading dropdowns
-  setupCascadingDropdown('region', 'province');
-  setupCascadingDropdown('province', 'municipality');
-  setupCascadingDropdown('municipality', 'barangay');
+  // Initialize other dropdowns
+  const provinceSelect = document.getElementById("input-province");
+  provinceSelect.innerHTML = '<option value="">-- Select Province --</option>';
+  provinceSelect.disabled = true;
+
+  const municipalitySelect = document.getElementById("input-municipality");
+  municipalitySelect.innerHTML = '<option value="">-- Select Municipality --</option>';
+  municipalitySelect.disabled = true;
+
+  const barangaySelect = document.getElementById("input-barangay");
+  barangaySelect.innerHTML = '<option value="">-- Select Barangay --</option>';
+  barangaySelect.disabled = true;
 }
 
-function setupCascadingDropdown(parentLevel, childLevel) {
-  const parentSelect = document.getElementById(`edit-${parentLevel}`);
-  const childSelect = document.getElementById(`edit-${childLevel}`);
+function updateProvinceDropdown() {
+  const regionCode = this.value;
+  const provinceSelect = document.getElementById("input-province");
+  const municipalitySelect = document.getElementById("input-municipality");
+  const barangaySelect = document.getElementById("input-barangay");
 
-  if (!parentSelect || !childSelect) return;
+  provinceSelect.innerHTML = '<option value="">-- Select Province --</option>';
+  provinceSelect.disabled = !regionCode;
+  municipalitySelect.innerHTML = '<option value="">-- Select Municipality --</option>';
+  municipalitySelect.disabled = true;
+  barangaySelect.innerHTML = '<option value="">-- Select Barangay --</option>';
+  barangaySelect.disabled = true;
 
-  parentSelect.addEventListener("change", () => {
-    const parentValue = parentSelect.value;
-    childSelect.innerHTML = `<option value="">-- Select ${childLevel.charAt(0).toUpperCase() + childLevel.slice(1)} --</option>`;
-    childSelect.disabled = !parentValue;
+  if (!regionCode) return;
 
-    if (!parentValue) return;
-
-    // Get the child data based on parent selection
-    let childData = [];
-    if (parentLevel === 'region') {
-      const regionData = phAddresses[parentValue];
-      if (regionData && regionData.province_list) {
-        childData = Object.entries(regionData.province_list);
-      }
-    } else if (parentLevel === 'province') {
-      const region = document.getElementById("edit-region").value;
-      const provinceData = phAddresses[region]?.province_list?.[parentValue];
-      if (provinceData && provinceData.municipality_list) {
-        childData = Object.entries(provinceData.municipality_list);
-      }
-    } else if (parentLevel === 'municipality') {
-      const region = document.getElementById("edit-region").value;
-      const province = document.getElementById("edit-province").value;
-      const municipalityData = phAddresses[region]?.province_list?.[province]?.municipality_list?.[parentValue];
-      if (municipalityData && municipalityData.barangay_list) {
-        childData = municipalityData.barangay_list.map(barangay => [barangay, barangay]);
-      }
-    }
-
-    // Populate child dropdown
-    childData.forEach(([code, data]) => {
+  const regionData = phAddresses[regionCode];
+  if (regionData?.province_list) {
+    Object.entries(regionData.province_list).forEach(([provinceName, provinceData]) => {
       const option = document.createElement("option");
-      option.value = code;
-      option.textContent = typeof data === 'object' ? data[`${childLevel}_name`] || code : data;
-      childSelect.appendChild(option);
+      option.value = provinceName;
+      option.textContent = provinceName; 
+      provinceSelect.appendChild(option);
     });
-
-    // Enable child dropdown if there are options
-    childSelect.disabled = childSelect.options.length <= 1;
-  });
+  }
 }
 
-async function restoreAddressSelections() {
-  if (!formData.address) return;
 
-  const { region, province, municipality, barangay } = formData.address;
-  if (!region) return;
+function updateMunicipalityDropdown() {
+  const regionCode = document.getElementById("input-region").value;
+  const provinceCode = this.value;
+  const municipalitySelect = document.getElementById("input-municipality");
+  const barangaySelect = document.getElementById("input-barangay");
 
-  const regionSelect = document.getElementById("edit-region");
-  if (!regionSelect) return;
+  municipalitySelect.innerHTML = '<option value="">-- Select Municipality --</option>';
+  municipalitySelect.disabled = !provinceCode;
+  barangaySelect.innerHTML = '<option value="">-- Select Barangay --</option>';
+  barangaySelect.disabled = true;
 
-  // Set region and trigger change
-  regionSelect.value = region;
+  if (!regionCode || !provinceCode) return;
+
+  const provinceData = phAddresses[regionCode]?.province_list?.[provinceCode];
+  if (provinceData?.municipality_list) {
+    Object.entries(provinceData.municipality_list).forEach(([municipalityName, municipalityData]) => {
+      const option = document.createElement("option");
+      option.value = municipalityName;
+      option.textContent = municipalityName; 
+      municipalitySelect.appendChild(option);
+    });
+  }
+}
+
+function updateBarangayDropdown() {
+  const regionCode = document.getElementById("input-region").value;
+  const provinceCode = document.getElementById("input-province").value;
+  const municipalityCode = this.value;
+  const barangaySelect = document.getElementById("input-barangay");
+
+  barangaySelect.innerHTML = '<option value="">-- Select Barangay --</option>';
+  barangaySelect.disabled = !municipalityCode;
+
+  if (!regionCode || !provinceCode || !municipalityCode) return;
+
+  const municipalityData = phAddresses[regionCode]?.province_list?.[provinceCode]?.municipality_list?.[municipalityCode];
+  if (municipalityData?.barangay_list) {
+    municipalityData.barangay_list.forEach(barangay => {
+      const option = document.createElement("option");
+      option.value = barangay;
+      option.textContent = barangay;
+      barangaySelect.appendChild(option);
+    });
+  }
+}
+
+function restoreAddressSelections() {
+  if (!formData.region) return;
+
+  const regionSelect = document.getElementById("input-region");
+  regionSelect.value = formData.region;
   regionSelect.dispatchEvent(new Event("change"));
 
-  // Wait for dropdowns to populate
-  await wait(200);
-
-  if (province) {
-    const provinceSelect = document.getElementById("edit-province");
-    if (provinceSelect) {
-      provinceSelect.value = province;
+  // Wait for dropdowns to populate then set values
+  setTimeout(() => {
+    if (formData.province) {
+      const provinceSelect = document.getElementById("input-province");
+      provinceSelect.value = formData.province;
       provinceSelect.dispatchEvent(new Event("change"));
-      await wait(200);
-    }
-  }
 
-  if (municipality) {
-    const municipalitySelect = document.getElementById("edit-municipality");
-    if (municipalitySelect) {
-      municipalitySelect.value = municipality;
-      municipalitySelect.dispatchEvent(new Event("change"));
-      await wait(200);
-    }
-  }
+      setTimeout(() => {
+        if (formData.municipality) {
+          const municipalitySelect = document.getElementById("input-municipality");
+          municipalitySelect.value = formData.municipality;
+          municipalitySelect.dispatchEvent(new Event("change"));
 
-  if (barangay) {
-    const barangaySelect = document.getElementById("edit-barangay");
-    if (barangaySelect) barangaySelect.value = barangay;
-  }
+          setTimeout(() => {
+            if (formData.barangay) {
+              const barangaySelect = document.getElementById("input-barangay");
+              barangaySelect.value = formData.barangay;
+            }
+          }, 100);
+        }
+      }, 100);
+    }
+  }, 100);
 }
 
 // Save Handler
-async function handleSave() {
-  collectFormData();
+async function handleSave(e) {
+  e.preventDefault();
+  
+  // Collect form data
+  formData = {
+    last_name: document.getElementById("input-last-name").value,
+    first_name: document.getElementById("input-first-name").value,
+    middle_name: document.getElementById("input-middle-name").value,
+    birthdate: document.getElementById("input-birthdate").value,
+    phone: document.getElementById("input-phone").value,
+    email: document.getElementById("input-email").value,
+    region: document.getElementById("input-region").value,
+    province: document.getElementById("input-province").value,
+    municipality: document.getElementById("input-municipality").value,
+    barangay: document.getElementById("input-barangay").value
+  };
 
   // Validation
   if (!validateForm()) return;
@@ -448,25 +382,27 @@ async function handleSave() {
 
     const { error } = await supabase
       .from("user_profiles")
-      .update({
-        first_name: formData.personal.firstName,
-        last_name: formData.personal.lastName,
-        middle_name: formData.personal.middleName,
-        birthdate: formData.personal.birthdate,
-        phone_number: formData.contact.phone,
-        email: formData.contact.email,
-        region: formData.address.region,
-        province: formData.address.province,
-        municipality: formData.address.municipality,
-        barangay: formData.address.barangay,
+      .upsert({
+        user_id: userId,
+        first_name: formData.first_name,
+        last_name: formData.last_name,
+        middle_name: formData.middle_name,
+        birthdate: formData.birthdate,
+        phone_number: formData.phone,
+        email: formData.email,
+        region: formData.region,
+        province: formData.province,
+        municipality: formData.municipality,
+        barangay: formData.barangay,
         last_profile_edit: new Date().toISOString()
-      })
-      .eq("user_id", userId);
+      }, {
+        onConflict: ['user_id']
+      });
 
     if (error) throw error;
 
     showAlert("Profile updated successfully!");
-    closeModal({ target: profileModal });
+    closeModal();
     await loadProfileData();
   } catch (error) {
     console.error("Error saving profile:", error);
@@ -481,16 +417,16 @@ function validateForm() {
   document.querySelectorAll(".error-message").forEach(el => el.remove());
 
   // Personal info validation
-  if (!formData.personal.firstName?.trim() || !formData.personal.lastName?.trim()) {
+  if (!formData.first_name?.trim() || !formData.last_name?.trim()) {
     showAlert("First name and last name are required", "error");
     isValid = false;
   }
 
   // Contact info validation
-  if (!formData.contact.email?.trim()) {
+  if (!formData.email?.trim()) {
     showAlert("Email is required", "error");
     isValid = false;
-  } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.contact.email)) {
+  } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
     showAlert("Please enter a valid email address", "error");
     isValid = false;
   }
@@ -527,8 +463,4 @@ function showAlert(message, type = "success") {
     alert.style.opacity = "0";
     setTimeout(() => alert.remove(), 300);
   }, 3000);
-}
-
-function wait(ms) {
-  return new Promise(resolve => setTimeout(resolve, ms));
 }
