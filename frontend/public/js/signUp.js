@@ -1,4 +1,5 @@
 import supabase from "./supabaseClient.js";
+import { getBasePath } from "./path-config.js";
 
 function closeModal(modalId) {
     document.getElementById(modalId).style.display = 'none';
@@ -44,20 +45,18 @@ async function handleSignup(event) {
             return;
         }
 
-        // Sign up user
+        const basePath = getBasePath(); 
+
         const { data, error } = await supabase.auth.signUp({
-            email: email,
-            password: password,
-            options: {
-              emailRedirectTo: window.location.hostname === '127.0.0.1'
-                ? 'http://127.0.0.1:5501/frontend/public/pages/verifySignUp.html'
-                : 'https://pet-pal-alpha.vercel.app/pages/verifySignUp.html'
-            }
-          });
+          email: email,
+          password: password,
+          options: {
+            emailRedirectTo: `${basePath}/pages/verifySignUp.html`
+          }
+        });
 
         if (error) throw error;
 
-        // Insert into users table
         const { error: dbError } = await supabase
             .from("users_table")
             .insert([{
@@ -82,7 +81,6 @@ async function handleSignup(event) {
 }
 
 document.addEventListener('DOMContentLoaded', () => {
-    // Use form submission instead of button click
     document.getElementById('signupForm')?.addEventListener('submit', handleSignup);
 
     document.getElementById('closeSignupModalBtn')?.addEventListener('click', () => {

@@ -3,11 +3,9 @@
 import supabase from "../js/supabaseClient.js";
 import { getBasePath } from "./path-config.js";
 
-// Constants
-const LOCK_DURATION = 60 * 24 * 60 * 60 * 1000; // 60 days in ms
+const LOCK_DURATION = 60 * 24 * 60 * 60 * 1000; 
 const ADDRESS_LEVELS = ['region', 'province', 'municipality', 'barangay'];
 
-// DOM Elements
 const editProfileModal = document.getElementById("editProfileModal");
 const editProfileForm = document.getElementById("editProfileForm");
 const editButtons = document.querySelectorAll(".edit-btn");
@@ -15,7 +13,6 @@ const saveEditBtn = document.getElementById("saveEditBtn");
 const cancelEditBtn = document.getElementById("cancelEditBtn");
 const closeModalBtn = document.getElementById("closeModalBtn");
 
-// State
 let formData = {
   last_name: "",
   first_name: "",
@@ -30,7 +27,6 @@ let formData = {
 };
 let phAddresses = null;
 
-// Initialize the module
 document.addEventListener("DOMContentLoaded", async () => {
   if (!editProfileModal) return;
 
@@ -44,9 +40,7 @@ document.addEventListener("DOMContentLoaded", async () => {
   }
 });
 
-// Event Listeners
 function initEventListeners() {
-  // Edit buttons
   editButtons.forEach(button => {
     button.addEventListener("click", (e) => {
       e.preventDefault();
@@ -56,23 +50,19 @@ function initEventListeners() {
     });
   });
 
-  // Modal close
   closeModalBtn?.addEventListener("click", closeModal);
   cancelEditBtn?.addEventListener("click", closeModal);
   editProfileModal?.addEventListener("click", (e) => {
     if (e.target === editProfileModal) closeModal();
   });
 
-  // Save button
   editProfileForm?.addEventListener("submit", handleSave);
 
-  // Address dropdown changes
   document.getElementById("input-region")?.addEventListener("change", updateProvinceDropdown);
   document.getElementById("input-province")?.addEventListener("change", updateMunicipalityDropdown);
   document.getElementById("input-municipality")?.addEventListener("change", updateBarangayDropdown);
 }
 
-// Data Loading
 async function loadProfileData() {
   const userId = await getUserId();
   if (!userId) return;
@@ -86,16 +76,13 @@ async function loadProfileData() {
 
     if (error) throw error;
     
-    // If no profile exists, create an empty one
     if (!data) {
       await createEmptyProfile(userId);
       return;
     }
 
-    // Update UI with profile data
     updateProfileDisplay(data);
     
-    // Store form data
     formData = {
       last_name: data.last_name || "",
       first_name: data.first_name || "",
@@ -109,7 +96,6 @@ async function loadProfileData() {
       barangay: data.barangay || ""
     };
 
-    // Check if editing is locked
     if (data.last_profile_edit) {
       const lastEdit = new Date(data.last_profile_edit).getTime();
       const currentTime = new Date().getTime();
@@ -149,7 +135,6 @@ async function createEmptyProfile(userId) {
     throw error;
   }
 
-  // Reload profile data
   await loadProfileData();
 }
 
@@ -191,11 +176,9 @@ function formatDate(dateString) {
   return date.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
 }
 
-// Modal Management
 function openModal() {
   if (!editProfileModal) return;
 
-  // Populate form fields
   document.getElementById("input-last-name").value = formData.last_name;
   document.getElementById("input-first-name").value = formData.first_name;
   document.getElementById("input-middle-name").value = formData.middle_name;
@@ -203,7 +186,6 @@ function openModal() {
   document.getElementById("input-phone").value = formData.phone;
   document.getElementById("input-email").value = formData.email;
 
-  // Initialize address dropdowns
   initAddressDropdowns();
   restoreAddressSelections();
 
@@ -220,14 +202,12 @@ function closeModal() {
   setTimeout(() => editProfileModal.classList.add("hidden"), 300);
 }
 
-// Address Dropdown Management
 function initAddressDropdowns() {
   if (!phAddresses) return;
 
   const regionSelect = document.getElementById("input-region");
   if (!regionSelect) return;
 
-  // Clear and populate region dropdown
   regionSelect.innerHTML = '<option value="">-- Select Region --</option>';
   Object.entries(phAddresses).forEach(([code, region]) => {
     const option = document.createElement("option");
@@ -236,7 +216,6 @@ function initAddressDropdowns() {
     regionSelect.appendChild(option);
   });
 
-  // Initialize other dropdowns
   const provinceSelect = document.getElementById("input-province");
   provinceSelect.innerHTML = '<option value="">-- Select Province --</option>';
   provinceSelect.disabled = true;
@@ -330,7 +309,6 @@ function restoreAddressSelections() {
   regionSelect.value = formData.region;
   regionSelect.dispatchEvent(new Event("change"));
 
-  // Wait for dropdowns to populate then set values
   setTimeout(() => {
     if (formData.province) {
       const provinceSelect = document.getElementById("input-province");
@@ -355,11 +333,9 @@ function restoreAddressSelections() {
   }, 100);
 }
 
-// Save Handler
 async function handleSave(e) {
   e.preventDefault();
   
-  // Collect form data
   formData = {
     last_name: document.getElementById("input-last-name").value,
     first_name: document.getElementById("input-first-name").value,
@@ -373,7 +349,6 @@ async function handleSave(e) {
     barangay: document.getElementById("input-barangay").value
   };
 
-  // Validation
   if (!validateForm()) return;
 
   try {
@@ -413,16 +388,13 @@ async function handleSave(e) {
 function validateForm() {
   let isValid = true;
 
-  // Clear previous errors
   document.querySelectorAll(".error-message").forEach(el => el.remove());
 
-  // Personal info validation
   if (!formData.first_name?.trim() || !formData.last_name?.trim()) {
     showAlert("First name and last name are required", "error");
     isValid = false;
   }
 
-  // Contact info validation
   if (!formData.email?.trim()) {
     showAlert("Email is required", "error");
     isValid = false;
@@ -434,7 +406,6 @@ function validateForm() {
   return isValid;
 }
 
-// Utility Functions
 async function getUserId() {
   const { data: { user } } = await supabase.auth.getUser();
   return user?.id;
