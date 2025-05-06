@@ -1296,15 +1296,17 @@
 
         <section id="audit-log" class="content-section hidden">
           <!-- Header Section -->
-          <h1 class="text-3xl font-bold flex items-center">Audit Log</h1>
-          <p class="text-gray-600 mt-2">Monitor Business Flow</p>
+          <div class="px-4">
+            <h1 class="text-2xl md:text-3xl font-bold flex items-center">Audit Log</h1>
+            <p class="text-gray-600 mt-1 md:mt-2 text-sm md:text-base">Monitor Business Flow</p>
+          </div>
         
           <!-- Filter Section -->
-          <div class="audit-log-filters mt-4 flex items-center gap-4">
+          <div class="audit-log-filters mt-4 px-4 flex flex-col sm:flex-row items-start sm:items-center gap-2 sm:gap-4">
             <!-- Action Type Dropdown -->
             <select
               id="actionTypeFilter"
-              class="p-2 border rounded-md"
+              class="p-2 border rounded-md w-full sm:w-auto"
             >
               <option value="">All Actions</option>
               <!-- Populated dynamically -->
@@ -1313,23 +1315,23 @@
             <!-- Filter Button -->
             <button
               id="filterButton"
-              class="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
+              class="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 w-full sm:w-auto"
             >
               Filter
             </button>
           </div>
         
           <!-- Audit Log Table -->
-          <div class="mt-6">
+          <div class="mt-6 px-4 overflow-x-auto">
             <!-- Table -->
-            <table class="mt-4 w-full table-auto border-collapse border border-gray-300">
+            <table class="mt-4 w-full table-auto border-collapse border border-gray-300 text-sm md:text-base">
               <thead>
                 <tr>
-                  <th class="border p-2">Timestamp</th>
-                  <th class="border p-2">User Role</th>
-                  <th class="border p-2">Action</th>
-                  <th class="border p-2">Target</th>
-                  <th class="border p-2">Details</th>
+                  <th class="border p-2 text-left">Timestamp</th>
+                  <th class="border p-2 text-left hidden sm:table-cell">User Role</th>
+                  <th class="border p-2 text-left">Action</th>
+                  <th class="border p-2 text-left hidden md:table-cell">Target</th>
+                  <th class="border p-2 text-left">Details</th>
                 </tr>
               </thead>
               <tbody id="auditLogBody">
@@ -1341,16 +1343,16 @@
           </div>
         
           <!-- Pagination Controls -->
-          <div class="mt-4 flex justify-center">
+          <div class="mt-4 px-4 flex justify-center">
             <button
-              class="px-4 py-2 bg-blue-500 text-white rounded-md"
+              class="px-4 py-2 bg-blue-500 text-white rounded-md text-sm md:text-base"
               id="prevBtn"
               onclick="changePage('prev')"
             >
               Previous
             </button>
             <button
-              class="px-4 py-2 bg-blue-500 text-white rounded-md ml-4"
+              class="px-4 py-2 bg-blue-500 text-white rounded-md ml-4 text-sm md:text-base"
               id="nextBtn"
               onclick="changePage('next')"
             >
@@ -1361,17 +1363,17 @@
           <!-- View Changes Modal -->
           <div
             id="changesModal"
-            class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center hidden z-50"
+            class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center hidden z-50 p-4"
           >
-            <div class="bg-white rounded-lg p-6 w-full max-w-2xl shadow-lg">
-              <h2 class="text-xl font-bold mb-4">Change Details</h2>
-              <div id="changesContent" class="overflow-x-auto">
+            <div class="bg-white rounded-lg p-4 md:p-6 w-full max-w-2xl max-h-[90vh] overflow-y-auto shadow-lg">
+              <h2 class="text-lg md:text-xl font-bold mb-4">Change Details</h2>
+              <div id="changesContent" class="overflow-x-auto text-sm md:text-base">
                 <!-- Injected dynamically -->
               </div>
               <div class="text-right mt-4">
                 <button
                   onclick="closeChangesModal()"
-                  class="px-4 py-2 bg-gray-700 text-white rounded hover:bg-gray-800"
+                  class="px-4 py-2 bg-gray-700 text-white rounded hover:bg-gray-800 text-sm md:text-base"
                 >
                   Close
                 </button>
