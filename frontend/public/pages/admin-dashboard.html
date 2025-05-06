@@ -1298,91 +1298,88 @@
           <!-- Header Section -->
           <h1 class="text-3xl font-bold flex items-center">Audit Log</h1>
           <p class="text-gray-600 mt-2">Monitor Business Flow</p>
-
-          <!-- Filters Section -->
+        
+          <!-- Filter Section -->
           <div class="audit-log-filters mt-4 flex items-center gap-4">
-            <!-- Search Input -->
-            <input
-              type="text"
-              id="searchInput"
-              class="p-2 border rounded-md"
-              placeholder="Search logs..."
-              onkeyup="filterLogs()"
-            />
-
-            <!-- Action Type Filter -->
+            <!-- Action Type Dropdown -->
             <select
               id="actionTypeFilter"
               class="p-2 border rounded-md"
-              onchange="filterLogs()"
             >
               <option value="">All Actions</option>
-              <option value="Appointment Created">Appointment Created</option>
-              <option value="Payment Processed">Payment Processed</option>
-              <option value="Appointment Cancelled">
-                Appointment Cancelled
-              </option>
-              <option value="Reschedule Accepted">Reschedule Accepted</option>
-              <option value="Reschedule Denied">Reschedule Denied</option>
+              <!-- Populated dynamically -->
             </select>
-
-            <!-- Date Filters -->
-            <input
-              type="date"
-              id="startDate"
-              class="p-2 border rounded-md"
-              onchange="filterLogs()"
-            />
-            <input
-              type="date"
-              id="endDate"
-              class="p-2 border rounded-md"
-              onchange="filterLogs()"
-            />
+        
+            <!-- Filter Button -->
+            <button
+              id="filterButton"
+              class="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
+            >
+              Filter
+            </button>
           </div>
-
+        
           <!-- Audit Log Table -->
           <div class="mt-6">
-            <table
-              id="auditLogTable"
-              class="w-full table-auto border-collapse border border-gray-200"
-            >
+            <!-- Table -->
+            <table class="mt-4 w-full table-auto border-collapse border border-gray-300">
               <thead>
                 <tr>
-                  <th class="p-2 text-left border-b">Timestamp</th>
-                  <th class="p-2 text-left border-b">User</th>
-                  <th class="p-2 text-left border-b">Action Type</th>
-                  <th class="p-2 text-left border-b">Target Object</th>
-                  <th class="p-2 text-left border-b">Details</th>
+                  <th class="border p-2">Timestamp</th>
+                  <th class="border p-2">User Role</th>
+                  <th class="border p-2">Action</th>
+                  <th class="border p-2">Target</th>
+                  <th class="border p-2">Details</th>
                 </tr>
               </thead>
               <tbody id="auditLogBody">
-                <!-- Placeholder Row (to show when no logs are available) -->
-                <tr id="placeholderRow" style="display: none">
-                  <td colspan="5" class="p-4 text-center text-gray-500">
-                    No logs available
-                  </td>
+                <tr id="placeholderRow" style="display: none;">
+                  <td colspan="5" class="text-center p-4 text-gray-500">No audit logs found.</td>
                 </tr>
               </tbody>
             </table>
           </div>
-
+        
           <!-- Pagination Controls -->
           <div class="mt-4 flex justify-center">
             <button
               class="px-4 py-2 bg-blue-500 text-white rounded-md"
+              id="prevBtn"
               onclick="changePage('prev')"
             >
               Previous
             </button>
             <button
               class="px-4 py-2 bg-blue-500 text-white rounded-md ml-4"
+              id="nextBtn"
               onclick="changePage('next')"
             >
               Next
             </button>
           </div>
+        
+          <!-- View Changes Modal -->
+          <div
+            id="changesModal"
+            class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center hidden z-50"
+          >
+            <div class="bg-white rounded-lg p-6 w-full max-w-2xl shadow-lg">
+              <h2 class="text-xl font-bold mb-4">Change Details</h2>
+              <div id="changesContent" class="overflow-x-auto">
+                <!-- Injected dynamically -->
+              </div>
+              <div class="text-right mt-4">
+                <button
+                  onclick="closeChangesModal()"
+                  class="px-4 py-2 bg-gray-700 text-white rounded hover:bg-gray-800"
+                >
+                  Close
+                </button>
+              </div>
+            </div>
+          </div>
         </section>
+        
       </main>
     </div>
 
@@ -1600,6 +1597,7 @@
     <script type="module" src="../js/posManagement.js"></script>
     <script type="module" src="../js/adminDashboard.js"></script>
     <script type="module" src="../js/adminQuickStats.js"></script>
+    <script type="module" src="../js/auditLogs.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/index.global.min.js"></script>
     <script type="module" src="../js/calendar.js"></script>
   </body>
