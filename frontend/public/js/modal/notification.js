@@ -289,20 +289,9 @@ async function updateNotificationCount() {
 }
 
 export async function notifyCustomerOfAppointmentStatus(userId, message) {
-  const { data: user, error: userError } = await supabase
-    .from("users_table")
-    .select("id")  
-    .eq("id", userId) 
-    .single();
-
-  if (userError || !user) {
-    console.error("Failed to find user UUID:", userError?.message || "User not found");
-    return;
-  }
-
   const { error } = await supabase.from("notifications").insert([
     {
-      recipient_id: user.id, 
+      recipient_id: userId, // Directly pass the UUID
       message,
       status: "unread",
     },
