@@ -69,7 +69,15 @@ async function fetchAuditLogs() {
     }
 
     row.innerHTML = `
-      <td class="p-2 border-b">${new Date(log.timestamp).toLocaleString()}</td>
+      <td class="p-2 border-b">${new Date(log.timestamp + 'Z').toLocaleString('en-PH', {
+        timeZone: 'Asia/Manila',
+        year: 'numeric',
+        month: 'short',
+        day: 'numeric',
+        hour: 'numeric',
+        minute: '2-digit',
+        hour12: true
+      })}</td>
       <td class="p-2 border-b">
         ${log.users_table?.last_name || 'N/A'}, ${log.users_table?.first_name || ''} (${log.role})
       </td>
@@ -134,6 +142,44 @@ async function populateActionTypeFilter() {
   });
 }
 
+export const logAppointmentAction = async (action, appointmentData) => {
+  const { user_id, role, appointment_id, ...details } = appointmentData;
+  
+  try {
+    const { error } = await supabase
+      .from('audit_logs')
+      .insert({
+        user_id,
+        role,
+        action,
+        target: 'appointment',
+        details
+      });
+
+    if (error) throw error;
+  } catch (err) {
+    console.error(`Failed to log ${action}:`, err.message);
+    throw err;
+  }
+};
+
+export const appointmentLoggers = {
+  book: (data) => logAppointmentAction('book_appointment', data),
+  cancel: (data) => logAppointmentAction('cancel_appointment', { 
+    ...data, 
+    reason: data.reason || 'No reason provided' 
+  }),
+  rescheduleRequest: (data) => logAppointmentAction('reschedule_request', {
+    ...data,
+    old_date: data.old_date || new Date().toISOString()
+  }),
+  rescheduleApproved: (data) => logAppointmentAction('reschedule_approved', data),
+  rescheduleDenied: (data) => logAppointmentAction('reschedule_denied', data),
+  accept: (data) => logAppointmentAction('appointment_accepted', data),
+  complete: (data) => logAppointmentAction('appointment_completed', data),
+  markNoShow: (data) => logAppointmentAction('appointment_no_show', data)
+};
+
 function updateFilters() {
   filterState.actionType = document.getElementById('actionTypeFilter')?.value || '';
   filterState.startDate = document.getElementById('startDate')?.value || '';
@@ -153,9 +199,14 @@ window.changePage = function (direction) {
 };
 
 document.addEventListener('DOMContentLoaded', () => {
-  populateActionTypeFilter();
-  fetchAuditLogs();
+  const auditTable = document.getElementById('auditLogBody');
+  const actionTypeDropdown = document.getElementById('actionTypeFilter');
 
-  document.getElementById('actionTypeFilter')?.addEventListener('change', updateFilters);
-  document.getElementById('filterButton')?.addEventListener('click', updateFilters);
+  if (auditTable && actionTypeDropdown) {
+    populateActionTypeFilter();
+    fetchAuditLogs();
+
+    actionTypeDropdown.addEventListener('change', updateFilters);
+    document.getElementById('filterButton')?.addEventListener('click', updateFilters);
+  }
 });

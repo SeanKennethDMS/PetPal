@@ -1,6 +1,7 @@
 'use strict';
 
 import supabase from "../supabaseClient.js";
+import { appointmentLoggers } from "../auditLogs.js";
 
 let userId = null;
 let appointmentChannel = null;
@@ -173,13 +174,22 @@ async function handleBookingConfirmation() {
     if (await hasPendingAppointment(petId)) return;
 
     const time24 = convertTo24Hour(time);
-    await createAppointment(serviceId, petId, date, time24);
-
+    const appointmentId = await createAppointment(serviceId, petId, date, time24);
     await sendBookingNotification(petId, serviceId, date, time);
-    
+
+    await appointmentLoggers.book({
+      user_id: userId,
+      role: 'customer',
+      appointment_id: appointmentId,
+      service_id: serviceId,
+      pet_id: petId,
+      date,
+      time: time24
+    });
+
     alert("Appointment booked successfully!");
     resetAndCloseModal();
-    
+
   } catch (error) {
     console.error("Booking error:", error);
     alert(error.message || "An error occurred while booking.");
@@ -625,6 +635,18 @@ document.getElementById('confirm-reschedule').addEventListener('click', async ()
   if (detailsError || !apptDetails) {
     console.error("Failed to fetch pet/service for notification:", detailsError);
   } else {
+    await appointmentLoggers.rescheduleRequest({
+      user_id: userId,
+      role: 'customer',
+      appointment_id: id,
+      pet_id: apptDetails.pet_id,
+      service_id: apptDetails.service_id,
+      old_date: appt.original_appointment_date || appt.appointment_date,
+      old_time: appt.original_appointment_time || appt.appointment_time,
+      new_date: newDate,
+      new_time: newTime
+    });
+
     await notifyAdminsRescheduleRequest(
       apptDetails.pet_id,
       apptDetails.service_id,
@@ -723,7 +745,7 @@ async function autoCancelOldPendingAppointments() {
 
     const { data: oldAppointments, error } = await supabase
       .from("appointments")
-      .select("appointment_id, appointment_date, created_at")
+      .select("appointment_id, appointment_date, appointment_time, pet_id, service_id, created_at")
       .eq("status", "pending")
       .eq("user_id", userId);
 
@@ -736,10 +758,23 @@ async function autoCancelOldPendingAppointments() {
 
     if (toCancel.length > 0) {
       const ids = toCancel.map(a => a.appointment_id);
+
       await supabase
         .from("appointments")
         .update({ status: "cancelled" })
         .in("appointment_id", ids);
+
+      for (const appt of toCancel) {
+        await appointmentLoggers.cancel_appointment({
+          user_id: userId,
+          role: 'system',
+          appointment_id: appt.appointment_id,
+          pet_id: appt.pet_id,
+          service_id: appt.service_id,
+          date: appt.appointment_date,
+          time: appt.appointment_time
+        });
+      }
 
       console.log("Auto-cancelled:", ids.length, "appointment(s).");
     }
@@ -747,6 +782,7 @@ async function autoCancelOldPendingAppointments() {
     console.error("Error in auto-cancel logic:", err);
   }
 }
+
 
 function populateTimeDropdown(times, emptyMessage) {
   elements.appointmentTime.innerHTML = "";
@@ -920,6 +956,8 @@ async function cancelAppointment(appointmentId) {
     return;
   }
 
+  const { pet_id, service_id, appointment_date, appointment_time, status } = appointment;
+
   const { error } = await supabase
     .from("appointments")
     .update({ status: "cancelled" })
@@ -931,13 +969,22 @@ async function cancelAppointment(appointmentId) {
     return;
   }
 
-  const { pet_id, service_id, appointment_date, appointment_time, status } = appointment;
-
   if (status === "pending") {
     await notifyAdminsCancelPending(pet_id, service_id, appointment_date, appointment_time);
   } else if (status === "accepted") {
     await notifyAdminsCancelAccepted(pet_id, service_id, appointment_date, appointment_time);
   }
+
+  await appointmentLoggers.cancel({
+    user_id: userId,
+    role: 'customer',
+    appointment_id: appointmentId,
+    service_id,
+    pet_id,
+    date: appointment_date,
+    time: appointment_time,
+    status_before: status
+  });
 
   alert("Appointment cancelled successfully.");
   debounceLoadAppointments();
