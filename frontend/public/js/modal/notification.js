@@ -291,7 +291,7 @@ async function updateNotificationCount() {
 export async function notifyCustomerOfAppointmentStatus(userId, message) {
   const { data: user, error: userError } = await supabase
     .from("users_table")
-    .select("id") 
+    .select("id")  
     .eq("id", userId) 
     .single();
 
