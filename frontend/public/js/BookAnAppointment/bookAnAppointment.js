@@ -147,8 +147,30 @@ function setupEventListeners() {
     const id = button.dataset.id;
     const newDate = document.getElementById('resched-date').value;
     const newTime = document.getElementById('resched-time').value;
+    const originalDate = document.getElementById('resched-date').dataset.originalDate;
 
     if (!newDate || !newTime) return alert("Please select a new date and time.");
+    
+    // Validate date restrictions
+    const selectedDate = new Date(newDate);
+    const today = new Date();
+    const nextYear = new Date();
+    nextYear.setFullYear(today.getFullYear() + 1);
+    
+    if (selectedDate < today) {
+      alert("Cannot reschedule to a past date.");
+      return;
+    }
+    
+    if (selectedDate.toISOString().split('T')[0] === originalDate) {
+      alert("Cannot reschedule to the same date.");
+      return;
+    }
+    
+    if (selectedDate > nextYear) {
+      alert("Cannot reschedule beyond next year.");
+      return;
+    }
 
     button.disabled = true;
 
@@ -636,8 +658,28 @@ function renderAppointments(appointments) {
 
       document.getElementById('resched-service-name').textContent = appData.services?.name || 'N/A';
       document.getElementById('resched-current').textContent = `${formatDate(appData.appointment_date)} at ${convertToAMPM(appData.appointment_time)}`;
-      document.getElementById('resched-date').dataset.originalDate = appData.appointment_date;
-      document.getElementById('resched-date').value = '';
+      
+      // Set date restrictions for reschedule
+      const reschedDateInput = document.getElementById('resched-date');
+      const today = new Date();
+      const nextYear = new Date();
+      nextYear.setFullYear(today.getFullYear() + 1);
+      
+      // Set min date to tomorrow
+      const minDate = new Date(today);
+      minDate.setDate(today.getDate() + 1);
+      
+      // Set max date to end of next year
+      const maxDate = new Date(nextYear);
+      maxDate.setMonth(11, 31);
+      
+      reschedDateInput.min = minDate.toISOString().split('T')[0];
+      reschedDateInput.max = maxDate.toISOString().split('T')[0];
+      
+      // Store original date for validation
+      reschedDateInput.dataset.originalDate = appData.appointment_date;
+      
+      reschedDateInput.value = '';
       document.getElementById('resched-time').innerHTML = `<option value="" disabled selected>Select date first</option>`;
       document.getElementById('reschedule-modal').classList.remove('hidden');
       document.getElementById('confirm-reschedule').dataset.id = appointmentId;
