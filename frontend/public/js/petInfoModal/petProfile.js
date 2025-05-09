@@ -263,25 +263,90 @@ async function showPetDetails(petId) {
 
 async function deletePet(petId) {
   try {
-    const { error } = await supabase
+    // Check both active and completed appointments
+    const [{ data: activeAppointments, error: activeError }, { data: completedAppointments, error: completedError }] = await Promise.all([
+      supabase
+        .from('appointments')
+        .select('appointment_id')
+        .eq('pet_id', petId),
+      supabase
+        .from('completed_appointments')
+        .select('appointment_id')
+        .eq('pet_id', petId)
+    ]);
+
+    if (activeError) throw activeError;
+    if (completedError) throw completedError;
+
+    const hasAppointments = (activeAppointments && activeAppointments.length > 0) ||
+                          (completedAppointments && completedAppointments.length > 0);
+
+    if (hasAppointments) {
+      // Show warning modal
+      const modal = document.getElementById('warningModal');
+      const modalText = document.getElementById('warningModalText');
+      const confirmBtn = document.getElementById('confirmWarningBtn');
+      const cancelBtn = document.getElementById('cancelWarningBtn');
+
+      modalText.textContent = 'This pet has appointment history. Deleting this pet will also remove all associated appointment records. Are you sure you want to proceed?';
+      
+      // Show the modal
+      modal.style.display = 'block';
+
+      // Handle confirmation
+      confirmBtn.onclick = async () => {
+        try {
+          // Delete appointments from both tables
+          await Promise.all([
+            supabase
+              .from('appointments')
+              .delete()
+              .eq('pet_id', petId),
+            supabase
+              .from('completed_appointments')
+              .delete()
+              .eq('pet_id', petId)
+          ]);
+
+          // Then delete the pet
+          const { error: deletePetError } = await supabase
+            .from('pets')
+            .delete()
+            .eq('id', petId);
+
+          if (deletePetError) throw deletePetError;
+
+          // Close modal and refresh
+          modal.style.display = 'none';
+          await loadPets();
+          showAlert('Pet deleted successfully', 'success');
+        } catch (error) {
+          console.error('Error in deletion process:', error);
+          showAlert('Error deleting pet and associated records', 'error');
+        }
+      };
+
+      // Handle cancellation
+      cancelBtn.onclick = () => {
+        modal.style.display = 'none';
+      };
+
+      return;
+    }
+
+    // If no appointments, proceed with normal deletion
+    const { error: deleteError } = await supabase
       .from('pets')
       .delete()
       .eq('id', petId);
 
-    if (error) throw error;
+    if (deleteError) throw deleteError;
 
-    showAlert('Pet deleted successfully');
-    
     await loadPets();
-    
-    if (petId === currentPetId) {
-      petDisplayDefault.classList.remove("hidden");
-      petDisplay.classList.add("hidden");
-      currentPetId = null;
-    }
+    showAlert('Pet deleted successfully', 'success');
   } catch (error) {
-    console.error("Error deleting pet:", error);
-    showAlert('Failed to delete pet', 'error');
+    console.error('Error deleting pet:', error);
+    showAlert('Error deleting pet', 'error');
   }
 }
 

@@ -1,11 +1,26 @@
 import supabase from './supabaseClient.js';
 import { notifyCustomerOfAppointmentStatus } from '../js/modal/notification.js';
+import { NotificationService, NOTIFICATION_TYPES } from './notificationService.js';
+
+// Add showError function
+function showError(message) {
+  const errorDiv = document.createElement('div');
+  errorDiv.className = 'fixed top-4 right-4 bg-red-500 text-white px-6 py-3 rounded-lg shadow-lg z-50';
+  errorDiv.textContent = message;
+  document.body.appendChild(errorDiv);
+  
+  // Remove after 3 seconds
+  setTimeout(() => {
+    errorDiv.remove();
+  }, 3000);
+}
 
 document.addEventListener("DOMContentLoaded", () => {
   const tabButtons = document.querySelectorAll(".tab-button");
   const appointmentsContainer = document.getElementById("appointmentsContainer");
   const noAppointmentsMessage = document.getElementById("noAppointmentsMessage");
   let activeTab = "pending";
+  let appointmentChannel = null;
 
   function setActiveTab(tab) {
     tabButtons.forEach(btn => {
@@ -215,47 +230,188 @@ document.addEventListener("DOMContentLoaded", () => {
   
 
   async function handleStatusUpdate(appointmentId, newStatus) {
-    const updates = { status: newStatus };
-  
-    if (newStatus === 'completed') {
-      updates.completed_at = new Date().toISOString();
-    }
-  
-    const { error } = await supabase
-      .from("appointments")
-      .update(updates)
-      .eq("appointment_id", appointmentId);
-  
-    if (error) {
-      console.error("Status update error:", error.message);
-      alert("Failed to update appointment status.");
-    } else {
+    try {
+      // First, fetch the complete appointment data including user information
+      const { data: appointment, error: fetchError } = await supabase
+        .from('appointments')
+        .select(`
+          *,
+          pets!inner (
+            pet_name,
+            owner_id,
+            users_table!inner (
+              id,
+              first_name,
+              last_name
+            )
+          ),
+          services!inner (
+            name
+          )
+        `)
+        .eq('appointment_id', appointmentId)
+        .single();
+
+      if (fetchError) {
+        console.error('Error fetching appointment:', fetchError);
+        throw fetchError;
+      }
+
+      if (!appointment || !appointment.pets || !appointment.pets.owner_id) {
+        console.error('Invalid appointment data:', appointment);
+        throw new Error('Invalid appointment data');
+      }
+
+      const updates = { status: newStatus };
+    
+      if (newStatus === 'completed') {
+        updates.completed_at = new Date().toISOString();
+      }
+    
+      const { error: updateError } = await supabase
+        .from("appointments")
+        .update(updates)
+        .eq("appointment_id", appointmentId);
+    
+      if (updateError) {
+        console.error("Status update error:", updateError.message);
+        showError("Failed to update appointment status.");
+        return;
+      }
+
       console.log(`Appointment ${appointmentId} set to ${newStatus}`);
-  
-      notifyCustomerOfAppointmentStatus(appointmentId, newStatus);
-  
+    
+      const petName = appointment.pets.pet_name;
+      const serviceName = appointment.services.name;
+      const appointmentDate = new Date(appointment.appointment_date).toLocaleDateString();
+      const appointmentTime = appointment.appointment_time;
+
+      try {
+        switch (newStatus) {
+          case 'accepted':
+            await NotificationService.sendNotification(
+              appointment.pets.owner_id,
+              NOTIFICATION_TYPES.APPOINTMENT_ACCEPTED,
+              {
+                petName,
+                serviceName,
+                date: appointmentDate,
+                time: appointmentTime
+              }
+            );
+            break;
+          case 'cancelled':
+            await NotificationService.sendNotification(
+              appointment.pets.owner_id,
+              NOTIFICATION_TYPES.APPOINTMENT_CANCELLED,
+              {
+                petName,
+                serviceName,
+                date: appointmentDate
+              }
+            );
+            break;
+          case 'no show':
+            await NotificationService.sendNotification(
+              appointment.pets.owner_id,
+              NOTIFICATION_TYPES.APPOINTMENT_NO_SHOW,
+              {
+                petName,
+                serviceName,
+                date: appointmentDate
+              }
+            );
+            break;
+          case 'completed':
+            await NotificationService.sendNotification(
+              appointment.pets.owner_id,
+              NOTIFICATION_TYPES.APPOINTMENT_COMPLETED,
+              {
+                petName,
+                serviceName
+              }
+            );
+            break;
+          case 'rescheduled':
+            await NotificationService.sendNotification(
+              appointment.pets.owner_id,
+              NOTIFICATION_TYPES.RESCHEDULE_ACCEPTED,
+              {
+                petName,
+                serviceName,
+                date: appointmentDate,
+                time: appointmentTime
+              }
+            );
+            break;
+        }
+      } catch (notifError) {
+        console.error('Error sending notification:', notifError);
+        // Don't throw here, just log the error and continue
+      }
+    
       if (newStatus === 'completed') {
         const { data: apptData, error: selectErr } = await supabase
           .from("appointments")
           .select("*")
           .eq("appointment_id", appointmentId)
           .single();
-  
+    
         if (selectErr) {
           console.error("Failed to fetch completed appointment data:", selectErr.message);
         } else {
           const { error: insertErr } = await supabase
             .from("completed_appointments")
             .insert([apptData]);
-  
+    
           if (insertErr) {
             console.error("Failed to insert into completed_appointments:", insertErr.message);
           }
         }
       }
-  
+    
       loadAppointments(activeTab);
+    } catch (error) {
+      console.error('Error updating appointment status:', error);
+      showError('Failed to update appointment status');
     }
+  }
+
+  function setupRealtimeUpdates() {
+    // Clean up existing subscription if any
+    if (appointmentChannel) {
+      appointmentChannel.unsubscribe();
+      appointmentChannel = null;
+    }
+
+    const channelName = `appointments-channel-${Date.now()}`;
+    appointmentChannel = supabase
+      .channel(channelName)
+      .on('postgres_changes', {
+        event: '*',
+        schema: 'public',
+        table: 'appointments'
+      }, (payload) => {
+        console.log('Appointment change received:', payload);
+        // Only reload if the change affects the current tab
+        const currentTab = document.querySelector('.tab.active');
+        if (currentTab) {
+          const status = currentTab.dataset.status;
+          if (payload.new && payload.new.status === status) {
+            loadAppointments(status);
+          }
+        }
+      })
+      .subscribe((status) => {
+      });
+
+    // Cleanup on page unload
+    window.addEventListener('beforeunload', () => {
+      if (appointmentChannel) {
+        appointmentChannel.unsubscribe();
+        appointmentChannel = null;
+      }
+    });
   }
 
   tabButtons.forEach(button => {
@@ -271,19 +427,5 @@ document.addEventListener("DOMContentLoaded", () => {
   setActiveTab(activeTab);
   loadAppointments(activeTab);
 
-  supabase
-    .channel('realtime-appointments')
-    .on('postgres_changes', {
-      event: '*',
-      schema: 'public',
-      table: 'appointments'
-    }, payload => {
-      const newStatus = payload.new?.status;
-      const oldStatus = payload.old?.status;
-
-      if (newStatus === activeTab || oldStatus === activeTab) {
-        loadAppointments(activeTab);
-      }
-    })
-    .subscribe();
+  setupRealtimeUpdates();
 });

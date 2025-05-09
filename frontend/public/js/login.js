@@ -54,7 +54,7 @@ loginBtn.addEventListener("click", async function (event) {
     if (userData.role === "admin") {
         window.location.href = "./pages/admin-dashboard.html";
     } else if (userData.role === "customer") {
-        window.location.href = "./pages/customer-dashboard-orig.html";
+        window.location.href = "./pages/customer-dashboard.html";
     } else {
         alert("Invalid user role!");
     }

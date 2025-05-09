@@ -1,5 +1,3 @@
-
-
 document.addEventListener("DOMContentLoaded", function () {
     const userSession = localStorage.getItem("userSession");
     const userRole = localStorage.getItem("userRole");
@@ -19,7 +17,7 @@ document.addEventListener("DOMContentLoaded", function () {
         return;
     }
 
-    if (currentPage.includes("customer-dashboard-orig.html") && userRole !== "customer") {
+    if (currentPage.includes("customer-dashboard.html") && userRole !== "customer") {
         alert("Unauthorized access!");
         window.location.href = "/frontend/public/index.html"; // Redirect to home
         return;

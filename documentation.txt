@@ -1,0 +1,473 @@
+PETPAL SYSTEM DOCUMENTATION
+==========================
+
+HTML FILES
+----------
+1. admin-dashboard.html
+   - Main admin interface
+   - Contains dashboard, booking management, customer list, inventory, POS, and audit log sections
+   - Implements responsive design with mobile support
+   - Features:
+     * Navigation sidebar with all main sections
+     * Real-time notification system
+     * Calendar view for appointments
+     * Quick stats and analytics
+     * Mobile-responsive design
+
+2. customer-dashboard.html
+   - Customer interface
+   - Appointment management
+   - Pet profile management
+   - Features:
+     * Appointment booking
+     * Pet profile management
+     * Booking history
+
+3. index.html
+   - Main landing page
+   - User authentication interface
+   - Navigation to other pages
+   - Features:
+     * Login/Signup forms
+     * Responsive design
+     * User session management
+
+4. reset-password.html
+   - Password reset interface
+   - Features:
+     * Password reset form
+     * Email verification
+
+5. verifySignup.html
+   - Email verification interface
+   - Features:
+     * Account activation
+     * Success/Error handling
+
+JS FILES
+--------
+1. admin-dashboard.js
+   - Admin interface functionality
+   - Dashboard management
+   - Key functions:
+     * loadDashboardData()
+     * handleAdminActions()
+     * updateDashboardStats()
+
+2. adminDashboard.js
+   - Additional admin features
+   - System management
+   - Key functions:
+     * manageSystemSettings()
+     * handleAdminTasks()
+     * generateReports()
+
+3. adminQuickStats.js
+   - Dashboard statistics
+   - Real-time updates
+   - Key functions:
+     * updateQuickStats()
+     * generateCharts()
+     * refreshStats()
+
+4. appointment.js
+   - Appointment management
+   - Status updates
+   - Key functions:
+     * handleAppointmentStatus()
+     * updateAppointment()
+     * sendNotifications()
+
+5. auditLogs.js
+   - System activity tracking
+   - Log management
+   - Key functions:
+     * trackActivity()
+     * generateLogs()
+     * filterLogs()
+
+6. auth.js
+   - Authentication system
+   - User session management
+   - Key functions:
+     * handleLogin()
+     * manageSession()
+     * validateUser()
+
+7. bookAnAppointment.js
+   - Appointment booking system
+   - Form validation
+   - Date/time selection
+   - Key functions:
+     * handleBookingConfirmation()
+     * validateAppointmentData()
+     * sendBookingNotification()
+
+8. bookingHistory.js
+   - Booking history management
+   - Past appointments display
+   - Key functions:
+     * loadBookingHistory()
+     * filterBookings()
+     * displayBookingDetails()
+
+9. calendar.js
+   - Calendar functionality
+   - Appointment scheduling
+   - Key functions:
+     * initCalendar()
+     * handleDateSelection()
+     * updateCalendar()
+
+10. customer-list.js
+    - Customer management
+    - Customer data handling
+    - Key functions:
+      * loadCustomers()
+      * updateCustomerInfo()
+      * searchCustomers()
+
+11. dashboardStats.js
+    - Statistics generation
+    - Data visualization
+    - Key functions:
+      * generateStats()
+      * updateCharts()
+      * refreshData()
+
+12. forgotPassword.js
+    - Password recovery system
+    - Email verification
+    - Key functions:
+      * sendResetLink()
+      * validateEmail()
+      * handleResetRequest()
+
+13. inventoryManagement.js
+    - Inventory control
+    - Stock management
+    - Key functions:
+      * updateInventory()
+      * trackStock()
+      * generateReports()
+
+14. login.js
+    - Login functionality
+    - Authentication handling
+    - Key functions:
+      * handleLogin()
+      * validateCredentials()
+      * manageSession()
+
+15. logout.js
+    - Logout process
+    - Session cleanup
+    - Key functions:
+      * handleLogout()
+      * clearSession()
+      * redirectUser()
+
+16. lowStockAlert.js
+    - Stock monitoring
+    - Alert generation
+    - Key functions:
+      * checkStockLevels()
+      * generateAlerts()
+      * notifyAdmins()
+
+17. modal.js
+    - Modal window management
+    - UI component handling
+    - Key functions:
+      * openModal()
+      * closeModal()
+      * handleModalContent()
+
+18. notification.js
+    - Core notification system
+    - Real-time updates
+    - Key functions:
+      * setupRealtimeNotifications()
+      * loadNotifications()
+      * sendAppointmentReminders()
+
+19. notificationService.js
+    - Notification handling
+    - Message delivery
+    - Key functions:
+      * sendNotification()
+      * handleNotifications()
+      * manageTemplates()
+
+20. path-config.js
+    - Path configuration
+    - Route management
+    - Key functions:
+      * setPaths()
+      * handleRouting()
+      * validatePaths()
+
+21. petProfile.js
+    - Pet profile management
+    - Pet information handling
+    - Key functions:
+      * createPetProfile()
+      * updatePetInfo()
+      * loadPetDetails()
+
+22. posManagement.js
+    - Point of Sale system
+    - Transaction handling
+    - Key functions:
+      * processTransaction()
+      * handlePayments()
+      * generateReceipts()
+
+23. profile.js
+    - User profile management
+    - Profile data handling
+    - Key functions:
+      * loadProfile()
+      * updateProfile()
+      * handleSettings()
+
+24. profileEdit.js
+    - Profile editing
+    - Data validation
+    - Key functions:
+      * editProfile()
+      * validateChanges()
+      * saveUpdates()
+
+25. resetPassword.js
+    - Password reset handling
+    - Security validation
+    - Key functions:
+      * resetPassword()
+      * validateReset()
+      * updatePassword()
+
+26. scheduler.js
+    - Appointment scheduling
+    - Time management
+    - Key functions:
+      * scheduleAppointment()
+      * checkAvailability()
+      * sendReminders()
+
+27. settingsModal.js
+    - Settings management
+    - User preferences
+    - Key functions:
+      * loadSettings()
+      * updateSettings()
+      * savePreferences()
+
+28. signUp.js
+    - User registration
+    - Account creation
+    - Key functions:
+      * handleSignup()
+      * validateRegistration()
+      * createAccount()
+
+29. slideshow.js
+    - Image slideshow
+    - UI enhancement
+    - Key functions:
+      * initSlideshow()
+      * handleTransitions()
+      * manageControls()
+
+30. smoothScroll.js
+    - Smooth scrolling behavior
+    - Navigation enhancement
+    - Key functions:
+      * initSmoothScroll()
+      * handleScrollEvents()
+
+31. supabaseClient.js
+    - Database connection
+    - API management
+    - Key functions:
+      * initClient()
+      * handleQueries()
+      * manageConnection()
+
+32. verifySignUp.js
+    - Signup verification
+    - Account validation
+    - Key functions:
+      * verifyAccount()
+      * handleVerification()
+      * activateAccount()
+
+FEATURES
+--------
+1. User Management
+   - Authentication system
+   - Role-based access control
+   - Profile management
+   - Password recovery
+
+2. Appointment System
+   - Online booking
+   - Real-time scheduling
+   - Automated reminders
+   - Status updates
+
+3. Pet Management
+   - Pet profiles
+   - Appointment Tracking
+
+4. Notification System
+   - Real-time alerts
+   - Status updates
+   - Reminder system
+
+5. Inventory Management
+   - Stock tracking
+   - Low stock alerts
+   - Product management
+
+6. Point of Sale
+   - Transaction processing
+
+7. Admin Dashboard
+   - System overview
+   - Quick statistics
+   - User management
+
+TECHNICAL STACK
+--------------
+1. Frontend:
+   - HTML5
+   - CSS3 (Tailwind CSS)
+   - JavaScript (ES6+)
+   - FullCalendar.js
+   - Chart.js
+
+2. Backend:
+   - Supabase
+   - PostgreSQL
+
+3. Authentication:
+   - Supabase Auth
+   - JWT tokens
+
+4. Database:
+   - Supabase
+   - PostgreSQL
+   - Real-time capabilities
+
+5. Development Tools:
+   - Git version control
+   - VS Code
+   - Chrome DevTools
+
+DATABASE SCHEMA
+--------------
+1. appointments
+   - appointment_id (UUID)
+   - appointment_date (DATE)
+   - appointment_time (TIME)
+   - status (VARCHAR)
+   - created_at (TIMESTAMP)
+   - completed_at (TIMESTAMP)
+   - pet_id (UUID, FK)
+   - service_id (UUID, FK)
+
+2. notifications
+   - id (UUID)
+   - recipient_id (UUID, FK)
+   - message (TEXT)
+   - status (VARCHAR)
+   - type (VARCHAR)
+   - created_at (TIMESTAMP)
+   - read_at (TIMESTAMP)
+
+3. pets
+   - pet_id (UUID)
+   - pet_name (VARCHAR)
+   - owner_id (UUID, FK)
+   - species (VARCHAR)
+   - breed (VARCHAR)
+   - age (INTEGER)
+
+4. services
+   - service_id (UUID)
+   - name (VARCHAR)
+   - description (TEXT)
+   - price (DECIMAL)
+   - duration (INTEGER)
+
+5. users_table
+   - id (UUID)
+   - first_name (VARCHAR)
+   - last_name (VARCHAR)
+   - role (VARCHAR)
+   - email (VARCHAR)
+   - created_at (TIMESTAMP)
+   - last_login (TIMESTAMP)
+
+6. inventory
+   - product_id (UUID)
+   - name (VARCHAR)
+   - description (TEXT)
+   - price (DECIMAL)
+   - stock (INTEGER)
+   - category (VARCHAR)
+   - last_restocked (TIMESTAMP)
+
+7. transactions
+   - transaction_id (UUID)
+   - user_id (UUID, FK)
+   - amount (DECIMAL)
+   - payment_method (VARCHAR)
+   - status (VARCHAR)
+   - created_at (TIMESTAMP)
+   - items (JSONB)
+
+SECURITY FEATURES
+----------------
+1. Authentication & Authorization
+   - Supabase Auth integration for user authentication
+   - Role-based access control (Admin/Customer)
+   - Session management using localStorage
+   - Email verification system
+   - Password reset functionality
+
+2. Form Validation & Input Security
+   - Email format validation (Gmail specific)
+   - Password length validation (minimum 6 characters)
+   - Required field validation
+   - Date validation for appointments
+   - Phone number format validation
+   - Input sanitization
+
+3. Session Management
+   - Local storage for user session
+   - Session timeout handling
+   - Secure logout process
+   - Session cleanup on logout
+   - Role-based page access control
+
+4. Password Security
+   - Password reset via email
+   - Password confirmation matching
+   - Minimum password length requirements
+   - Secure password update process
+   - Password reset token validation
+
+5. Access Control
+   - Page access restrictions based on user role
+   - Unauthorized access redirection
+   - Protected route handling
+   - Role-based dashboard access
+
+6. Error Handling
+   - Secure error messages
+   - Error logging
+   - User-friendly error displays
+   - Form validation error handling
+   - API error handling

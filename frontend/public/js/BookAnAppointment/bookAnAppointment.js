@@ -2,6 +2,7 @@
 
 import supabase from "../supabaseClient.js";
 import { appointmentLoggers } from "../auditLogs.js";
+import { NotificationService, NOTIFICATION_TYPES } from '../notificationService.js';
 
 let userId = null;
 let appointmentChannel = null;
@@ -142,20 +143,36 @@ function setupEventListeners() {
 }
 
 function setupRealtimeUpdates() {
-  if (!appointmentChannel) {
-    appointmentChannel = supabase
-      .channel('public:appointments')
-      .on('postgres_changes', {
-        event: '*',
-        schema: 'public',
-        table: 'appointments',
-        filter: `user_id=eq.${userId}`
-      }, (payload) => {
-        console.log('Appointment change:', payload);
-        debounceLoadAppointments();
-      })
-      .subscribe();
+  // Clean up existing subscription if any
+  if (appointmentChannel) {
+    appointmentChannel.unsubscribe();
+    appointmentChannel = null;
   }
+
+  const channelName = `customer-appointments-${Date.now()}`;
+  appointmentChannel = supabase
+    .channel(channelName)
+    .on('postgres_changes', {
+      event: '*',
+      schema: 'public',
+      table: 'appointments'
+    }, (payload) => {
+      console.log('Customer appointment change received:', payload);
+      // Only reload if the change affects the current view
+      if (payload.new && payload.new.user_id === userId) {
+        debounceLoadAppointments();
+      }
+    })
+    .subscribe((status) => {
+    });
+
+  // Cleanup on page unload
+  window.addEventListener('beforeunload', () => {
+    if (appointmentChannel) {
+      appointmentChannel.unsubscribe();
+      appointmentChannel = null;
+    }
+  });
 }
 
 function resetAndCloseModal() {
@@ -239,129 +256,106 @@ async function hasPendingAppointment(petId) {
 }
 
 async function createAppointment(serviceId, petId, date, time) {
-  const { error } = await supabase.from("appointments").insert([{
-    user_id: userId,
-    pet_id: petId,
-    service_id: serviceId,
-    appointment_date: date,
-    appointment_time: time,
-    status: "pending"
-  }]);
+  try {
+    const { data: newAppointment, error } = await supabase
+      .from('appointments')
+      .insert([{
+        user_id: userId,
+        pet_id: petId,
+        service_id: serviceId,
+        appointment_date: date,
+        appointment_time: time,
+        status: "pending"
+      }])
+      .select()
+      .single();
 
-  if (error) throw error;
-  debounceLoadAppointments();
+    if (error) throw error;
+
+    // Don't call debounceLoadAppointments here as it will be handled by the real-time subscription
+    return newAppointment.appointment_id;
+  } catch (error) {
+    console.error('Error creating appointment:', error);
+    throw error;
+  }
 }
 
 async function sendBookingNotification(petId, serviceId, date, time) {
-  const [petName, serviceName] = await Promise.all([
+  const [petName, serviceName, customerInfo] = await Promise.all([
     getPetName(petId),
-    getServiceName(serviceId)
+    getServiceName(serviceId),
+    getCustomerName(petId)
   ]);
 
-  const adminIds = await getAllAdminIds();
-  if (!adminIds?.length) {
-    console.error("No admin found to send notifications.");
-    return;
-  }
-
-  const message = `<strong>${petName}</strong> booked an appointment for <strong>${serviceName}</strong> on <strong>${date} at ${time}</strong>.`;
-
-  for (const adminId of adminIds) {
-    const { error } = await supabase.from("notifications").insert([
-      {
-        recipient_id: adminId,
-        message,
-        status: "unread"
-      }
-    ]);
-
-    if (error) {
-      console.error(`Notification error for admin ${adminId}:`, error);
-    } else {
-      console.log(`Notification sent to admin ${adminId}`);
+  await NotificationService.sendNotificationToAdmins(
+    NOTIFICATION_TYPES.NEW_BOOKING,
+    {
+      customerName: customerInfo.name,
+      petName,
+      serviceName,
+      date,
+      time
     }
-  }
+  );
 }
 
 async function sendRescheduleNotification(petId, serviceId, oldDate, oldTime, newDate, newTime) {
-  const [petName, serviceName] = await Promise.all([
+  const [petName, serviceName, customerInfo] = await Promise.all([
     getPetName(petId),
-    getServiceName(serviceId)
+    getServiceName(serviceId),
+    getCustomerName(petId)
   ]);
 
-  const adminIds = await getAllAdminIds();
-  if (!adminIds?.length) {
-    console.error("No admin found to send notifications.");
-    return;
-  }
-
-  const message = `<strong>${petName}</strong> (<strong>${serviceName}</strong>) requested to reschedule from <strong>${oldDate} ${oldTime}</strong> to <strong>${newDate} ${newTime}</strong>.`;
-
-  for (const adminId of adminIds) {
-    const { error } = await supabase.from("notifications").insert([
-      {
-        recipient_id: adminId,
-        message,
-        status: "unread"
-      }
-    ]);
-
-    if (error) {
-      console.error(`Notification error for admin ${adminId}:`, error);
-    } else {
-      console.log(`Reschedule notification sent to admin ${adminId}`);
+  await NotificationService.sendNotificationToAdmins(
+    NOTIFICATION_TYPES.RESCHEDULE_REQUEST,
+    {
+      customerName: customerInfo.name,
+      petName,
+      serviceName,
+      oldDate,
+      oldTime,
+      newDate,
+      newTime
     }
-  }
+  );
 }
 
 async function notifyAdminsCancelPending(petId, serviceId, date, time) {
-  const [petName, serviceName, adminIds] = await Promise.all([
+  const [petName, serviceName, customerInfo] = await Promise.all([
     getPetName(petId),
     getServiceName(serviceId),
-    getAllAdminIds()
+    getCustomerName(petId)
   ]);
 
-  if (!adminIds || adminIds.length === 0) {
-    console.error("No admin found to send cancel-pending notification.");
-    return;
-  }
-
-  const message = `Pending appointment for ${petName} (${serviceName}) on ${date} at ${time} was canceled by the customer.`;
-
-  for (const adminId of adminIds) {
-    const { error } = await supabase.from("notifications").insert([{
-      recipient_id: adminId,
-      message,
-      status: 'unread'
-    }]);
-
-    if (error) console.error(`Notification error for admin ${adminId}:`, error);
-  }
+  await NotificationService.sendNotificationToAdmins(
+    NOTIFICATION_TYPES.CUSTOMER_CANCELLED_PENDING,
+    {
+      customerName: customerInfo.name,
+      petName,
+      serviceName,
+      date,
+      time
+    }
+  );
 }
 
 async function notifyAdminsCancelAccepted(petId, serviceId, date, time) {
-  const [petName, serviceName, adminIds] = await Promise.all([
+  const [petName, serviceName, customerInfo] = await Promise.all([
     getPetName(petId),
     getServiceName(serviceId),
-    getAllAdminIds()
+    getCustomerName(petId)
   ]);
 
-  if (!adminIds || adminIds.length === 0) {
-    console.error("No admin found to send cancel-accepted notification.");
-    return;
-  }
-
-  const message = `Accepted appointment for ${petName} (${serviceName}) on ${date} at ${time} was canceled by the customer.`;
-
-  for (const adminId of adminIds) {
-    const { error } = await supabase.from("notifications").insert([{
-      recipient_id: adminId,
-      message,
-      status: 'unread'
-    }]);
-
-    if (error) console.error(`Notification error for admin ${adminId}:`, error);
-  }
+  await NotificationService.sendNotificationToAdmins(
+    NOTIFICATION_TYPES.CUSTOMER_CANCELLED_ACCEPTED,
+    {
+      customerName: customerInfo.name,
+      petName,
+      serviceName,
+      date,
+      time
+    }
+  );
 }
 
 async function notifyAdminsRescheduleRequest(petId, serviceId, oldDate, oldTime, newDate, newTime) {
@@ -574,8 +568,6 @@ function renderAppointments(appointments) {
       timeSelect.innerHTML += `<option value="${time}">${convertToAMPM(time)}</option>`;
     });
   });
-
-  
 }
 
 document.getElementById('confirm-reschedule').addEventListener('click', async () => {
@@ -661,7 +653,6 @@ document.getElementById('confirm-reschedule').addEventListener('click', async ()
   document.getElementById('reschedule-modal').classList.add('hidden');
   loadAppointments();
 });
-
 
 function renderPagination(totalCount) {
   const paginationContainer = document.getElementById("pagination");
@@ -782,7 +773,6 @@ async function autoCancelOldPendingAppointments() {
     console.error("Error in auto-cancel logic:", err);
   }
 }
-
 
 function populateTimeDropdown(times, emptyMessage) {
   elements.appointmentTime.innerHTML = "";
@@ -1052,3 +1042,26 @@ async function getUserId() {
 
 window.cancelAppointment = cancelAppointment;
 window.loadAppointments = loadAppointments;
+
+// Helper function to get customer name and ID
+async function getCustomerName(petId) {
+  const { data: pet, error } = await supabase
+    .from('pets')
+    .select('owner_id, users_table(id, first_name, last_name)')
+    .eq('id', petId)
+    .single();
+
+  if (error) {
+    console.error('Error fetching customer info:', error);
+    return {
+      name: 'Customer',
+      id: null
+    };
+  }
+
+  return {
+    name: `${pet.users_table.first_name} ${pet.users_table.last_name}`,
+    id: pet.users_table.id
+  };
+}
+

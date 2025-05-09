@@ -53,7 +53,7 @@ document.getElementById("bookNowBtn").addEventListener("click", () => {
   });
 
 async function loadPetList() {
-  const petListEl = document.getElementById ('petList');
+  const petListEl = document.getElementById('petList');
 
   try {
     const { data: authData } = await supabase.auth.getUser();
@@ -68,24 +68,46 @@ async function loadPetList() {
       petListEl.innerHTML = `<li class="text-sm text-gray-500">You have no pets listed.</li>`;
       return;
     }
-    petListEl.innerHTML = pets.map(pet => `
-      <li class="flex justify-between items-center">
-        <div>
-          <p class="font-medium">${pet.pet_name}</p>
-          <p class="text-xs text-gray-500">${pet.species} • ${pet.breed}</p>
-        </div>
-        <button class="text-blue-500 text-sm hover:underline" data-pet='${JSON.stringify(pet)}'>
-          View Details
-        </button>
-      </li>
-    `).join('');
+    petListEl.innerHTML = pets.map(pet => {
+      let imageHTML = '';
+      
+      if (pet.image_url && pet.image_url.startsWith('http')) {
+        imageHTML = `<img src="${pet.image_url}" alt="${pet.pet_name}" class="w-10 h-10 rounded-full object-cover">`;
+      } 
+      else if (pet.image_url && pet.image_url.trim() !== '') {
+        const { data } = supabase
+          .storage
+          .from('pet_images')
+          .getPublicUrl(pet.image_url);
+        if (data?.publicUrl) {
+          imageHTML = `<img src="${data.publicUrl}" alt="${pet.pet_name}" class="w-10 h-10 rounded-full object-cover">`;
+        }
+      } 
+      else {
+        imageHTML = `<img src="../assets/images/${pet.species === 'dog' ? 'defaultDogIcon.png' : 'defaultCatIcon.png'}"
+                     alt="Default Pet Image" class="w-10 h-10 rounded-full object-cover">`;
+      }
 
-      document.querySelectorAll('[data-pet]').forEach(button => {
-        button.addEventListener('click', () => {
-          const pet = JSON.parse(button.getAttribute('data-pet'));
-          showPetModal(pet);
-        });
+      return `
+        <li class="flex items-center gap-3 py-2">
+          ${imageHTML}
+          <div class="flex-grow">
+            <p class="font-medium">${pet.pet_name}</p>
+            <p class="text-xs text-gray-500">${pet.species} • ${pet.breed}</p>
+          </div>
+          <button class="text-blue-500 text-sm hover:underline" data-pet='${JSON.stringify(pet)}'>
+            View Details
+          </button>
+        </li>
+      `;
+    }).join('');
+
+    document.querySelectorAll('[data-pet]').forEach(button => {
+      button.addEventListener('click', () => {
+        const pet = JSON.parse(button.getAttribute('data-pet'));
+        showPetModal(pet);
       });
+    });
   } catch (err) {
     console.error('Error loading pets:', err);
     petListEl.innerHTML = `<li class="text-lg text-red-500">Failed to load pets.</li>`;
@@ -136,8 +158,6 @@ function showPetModal(pet) {
   modal.classList.remove("hidden");
 }
 
-
-
 document.getElementById('closePetModal').addEventListener('click', () => {
   document.getElementById('petModal').classList.add('hidden');
 });
@@ -183,8 +203,6 @@ async function loadRecentActivities() {
     activitiesEl.innerHTML = `<p class="text-sm text-red-500">Failed to load activities.</p>`;
   }
 }
-
-
 
 async function loadUpcomingAppointments() {
   const upcomingEl = document.getElementById("upcomingAppointments");

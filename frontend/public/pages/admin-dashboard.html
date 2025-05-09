@@ -1574,10 +1574,7 @@
           return;
         }
 
-        if (
-          currentPage.includes("customer-dashboard-orig.html") &&
-          userRole !== "customer"
-        ) {
+        if (currentPage.includes("customer-dashboard.html") && userRole !== "customer") {
           alert("Unauthorized access!");
           window.location.href = "/frontend/public/index.html";
           return;
