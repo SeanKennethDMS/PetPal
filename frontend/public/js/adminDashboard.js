@@ -1,10 +1,8 @@
 import { NotificationService, NOTIFICATION_TYPES } from './notificationService.js';
 import supabase from './supabaseClient.js';
 
-// Constants
 const ITEMS_PER_PAGE = 10;
 
-// State Management
 const state = {
   currentPage: 1,
   totalPages: 1,
@@ -13,10 +11,8 @@ const state = {
   services: []
 };
 
-// Channel Management
 let appointmentChannel = null;
 
-// Initialize dashboard
 document.addEventListener('DOMContentLoaded', () => {
   loadDashboard();
   setupEventListeners();
@@ -561,7 +557,10 @@ async function handleAppointmentAction(appointmentId, action) {
 
     const { error: updateError } = await supabase
       .from('appointments')
-      .update({ status: newStatus })
+      .update({ 
+        status: newStatus,
+        completed_at: new Date().toISOString()
+      })
       .eq('appointment_id', appointmentId);
 
     if (updateError) throw updateError;
@@ -716,6 +715,9 @@ window.openProceedModal = async function(appointmentId) {
     const modal = document.getElementById('proceedModal');
     const appointmentDetails = document.getElementById('appointmentDetails');
     
+    // Store the appointment ID in the modal's dataset
+    modal.dataset.appointmentId = appointmentId;
+    
     // Show loading state
     appointmentDetails.innerHTML = '<p class="text-sm text-gray-500">Loading appointment details...</p>';
     modal.classList.remove('hidden');
@@ -754,6 +756,88 @@ window.openProceedModal = async function(appointmentId) {
 
     // Initialize billing list
     initializeBillingList(appointment);
+
+    // Set up complete button event listener
+    const completeBtn = document.getElementById('completeBillingBtn');
+    if (completeBtn) {
+      completeBtn.replaceWith(completeBtn.cloneNode(true));
+      const newCompleteBtn = document.getElementById('completeBillingBtn');
+      newCompleteBtn.addEventListener('click', async () => {
+        try {
+          const paymentMethod = document.getElementById('paymentMethodSelect').value;
+          const total = parseFloat(document.getElementById('billingTotal').textContent);
+          
+          if (!paymentMethod) {
+            showError('Please select a payment method');
+            return;
+          }
+
+          // Ensure payment method matches database constraints exactly
+          const validPaymentMethods = ['Cash', 'GCash', 'Credit Card', 'Other'];
+          if (!validPaymentMethods.includes(paymentMethod)) {
+            showError('Invalid payment method selected');
+            return;
+          }
+
+          // Calculate amounts
+          const subtotal = total / 1.12; 
+          const tax = total - subtotal;
+
+          // Get all items from billing list
+          const billingItems = Array.from(document.getElementById('billingList').children).map(item => {
+            const [name, price] = item.textContent.split('₱');
+            return {
+              name: name.trim(),
+              price: parseFloat(price)
+            };
+          });
+
+          // Create transaction record
+          const { data: transaction, error: transactionError } = await supabase
+            .from('transactions')
+            .insert({
+              transaction_code: 'TXN-' + Date.now().toString(36).toUpperCase(),
+              total_amount: total,
+              tax_amount: tax,
+              subtotal_amount: subtotal,
+              payment_method: paymentMethod,
+              status: 'Paid',
+              transaction_type: 'Sale',
+              remarks: `Appointment ID: ${appointmentId}`
+            })
+            .select();
+
+          if (transactionError) throw transactionError;
+
+          // Update appointment status to completed
+          const { error: appointmentError } = await supabase
+            .from('appointments')
+            .update({ 
+              status: 'completed',
+              completed_at: new Date().toISOString()
+            })
+            .eq('appointment_id', appointmentId);
+
+          if (appointmentError) throw appointmentError;
+
+          showError('Transaction completed successfully!');
+          modal.classList.add('hidden');
+          
+          // Reset form
+          document.getElementById('billingList').innerHTML = '';
+          document.getElementById('billingTotal').textContent = '0.00';
+          document.getElementById('serviceSelect').value = '';
+          document.getElementById('productSelect').value = '';
+          
+          // Reload dashboard to reflect changes
+          loadDashboard();
+          
+        } catch (error) {
+          console.error('Error completing transaction:', error);
+          showError('Failed to complete transaction: ' + error.message);
+        }
+      });
+    }
 
   } catch (error) {
     console.error('Error opening proceed modal:', error);
@@ -929,23 +1013,77 @@ function setupModalEventListeners() {
   document.getElementById('completeBillingBtn').addEventListener('click', async () => {
     try {
       const paymentMethod = document.getElementById('paymentMethodSelect').value;
-      const total = document.getElementById('billingTotal').textContent;
+      const total = parseFloat(document.getElementById('billingTotal').textContent);
+      const appointmentId = document.getElementById('proceedModal').dataset.appointmentId;
       
-      // Here you would typically:
-      // 1. Create a transaction record
-      // 2. Update inventory
-      // 3. Send receipt
-      // 4. Close modal
-      
+      if (!paymentMethod) {
+        showError('Please select a payment method');
+        return;
+      }
+
+      // Ensure payment method matches database constraints exactly
+      const validPaymentMethods = ['Cash', 'GCash', 'Credit Card', 'Other'];
+      if (!validPaymentMethods.includes(paymentMethod)) {
+        showError('Invalid payment method selected');
+        return;
+      }
+
+      // Calculate amounts
+      const subtotal = total / 1.12; 
+      const tax = total - subtotal;
+
+      // Get all items from billing list
+      const billingItems = Array.from(document.getElementById('billingList').children).map(item => {
+        const [name, price] = item.textContent.split('₱');
+        return {
+          name: name.trim(),
+          price: parseFloat(price)
+        };
+      });
+
+      // Create transaction record
+      const { data: transaction, error: transactionError } = await supabase
+        .from('transactions')
+        .insert({
+          transaction_code: 'TXN-' + Date.now().toString(36).toUpperCase(),
+          total_amount: total,
+          tax_amount: tax,
+          subtotal_amount: subtotal,
+          payment_method: paymentMethod,
+          status: 'Paid',
+          transaction_type: 'Sale',
+          remarks: `Appointment ID: ${appointmentId}`
+        })
+        .select();
+
+      if (transactionError) throw transactionError;
+
+      // Update appointment status to completed
+      const { error: appointmentError } = await supabase
+        .from('appointments')
+        .update({ 
+          status: 'completed',
+          completed_at: new Date().toISOString()
+        })
+        .eq('appointment_id', appointmentId);
+
+      if (appointmentError) throw appointmentError;
+
       showError('Transaction completed successfully!');
-      document.getElementById('proceedModal').classList.add('hidden');
+      modal.classList.add('hidden');
+      
+      // Reset form
+      document.getElementById('billingList').innerHTML = '';
+      document.getElementById('billingTotal').textContent = '0.00';
+      document.getElementById('serviceSelect').value = '';
+      document.getElementById('productSelect').value = '';
       
       // Reload dashboard to reflect changes
       loadDashboard();
       
     } catch (error) {
       console.error('Error completing transaction:', error);
-      showError('Failed to complete transaction');
+      showError('Failed to complete transaction: ' + error.message);
     }
   });
 }
@@ -956,3 +1094,4 @@ export {
   checkLowStock,
   loadDashboard
 };
+
