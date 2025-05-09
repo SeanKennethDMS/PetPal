@@ -153,9 +153,11 @@ async function loadTodaysSchedule() {
                 <p class="text-xs text-gray-500">${time}</p>
               </div>
               <div class="flex gap-2">
-                <button onclick="openProceedModal('${app.appointment_id}')" 
-                  class="px-3 py-1 text-sm bg-blue-600 text-white rounded hover:bg-blue-700">
+                <button class="proceed-btn px-3 py-1 text-sm bg-blue-600 text-white rounded hover:bg-blue-700" data-appointment-id="${app.appointment_id}">
                   Proceed
+                </button>
+                <button class="no-show-btn px-3 py-1 text-sm bg-red-600 text-white rounded hover:bg-red-700" data-appointment-id="${app.appointment_id}">
+                  No Show
                 </button>
               </div>
             </div>
@@ -163,6 +165,21 @@ async function loadTodaysSchedule() {
         </div>
       `;
     }).join('');
+
+    // Add event listeners after rendering
+    container.querySelectorAll('.proceed-btn').forEach(button => {
+      button.addEventListener('click', () => {
+        const appointmentId = button.dataset.appointmentId;
+        openProceedModal(appointmentId);
+      });
+    });
+
+    container.querySelectorAll('.no-show-btn').forEach(button => {
+      button.addEventListener('click', () => {
+        const appointmentId = button.dataset.appointmentId;
+        handleAppointmentAction(appointmentId, 'no_show');
+      });
+    });
 
   } catch (error) {
     console.error('Error loading today\'s schedule:', error);
@@ -515,7 +532,7 @@ async function loadAppointments(status = 'pending', page = 1) {
 async function handleAppointmentAction(appointmentId, action) {
   try {
     const { data: appointment, error: fetchError } = await supabase
-            .from('appointments')
+      .from('appointments')
       .select(`
         *,
         pets!inner (
@@ -528,7 +545,8 @@ async function handleAppointmentAction(appointmentId, action) {
           )
         ),
         services!inner (
-          service_name
+          name,
+          price
         )
       `)
       .eq('appointment_id', appointmentId)
@@ -556,6 +574,7 @@ async function handleAppointmentAction(appointmentId, action) {
 
     await loadDashboard();
   } catch (error) {
+    console.error('Error in handleAppointmentAction:', error);
     showError('Failed to process appointment action. Please try again.');
   }
 }
@@ -638,7 +657,7 @@ function getActionDetails(action, appointment) {
   const baseData = {
     customerName,
     petName: appointment.pets.pet_name,
-    serviceName: appointment.services.service_name,
+    serviceName: appointment.services.name,
     date: appointment.appointment_date,
     time: appointment.appointment_time
   };
@@ -667,6 +686,12 @@ function getActionDetails(action, appointment) {
           newDate: appointment.new_date,
           newTime: appointment.new_time
         }
+      };
+    case 'no_show':
+      return {
+        newStatus: 'no show',
+        notificationType: NOTIFICATION_TYPES.APPOINTMENT_NO_SHOW,
+        notificationData: baseData
       };
     default:
       throw new Error('Invalid action');
