@@ -710,6 +710,7 @@ window.openProceedModal = async function(appointmentId) {
           )
         ),
         services!inner (
+          id,
           name,
           price
         )
@@ -723,7 +724,7 @@ window.openProceedModal = async function(appointmentId) {
     populateAppointmentDetails(appointment);
 
     // Load services and products
-    await loadServices();
+    await loadServices(appointment.services.service_id);
     await loadProducts();
 
     // Initialize billing list
@@ -756,7 +757,7 @@ function populateAppointmentDetails(appointment) {
   `;
 }
 
-async function loadServices() {
+async function loadServices(initialServiceId = null) {
   try {
     const { data: services, error } = await supabase
       .from('services')
@@ -767,11 +768,16 @@ async function loadServices() {
 
     const serviceSelect = document.getElementById('serviceSelect');
     serviceSelect.innerHTML = '<option value="">-- Select a Service --</option>' +
-      services.map(service => `
-        <option value="${service.service_id}" data-price="${service.price}">
-          ${service.name} - ₱${service.price}
-        </option>
-      `).join('');
+      services.map(service => {
+        // Parse the JSON price and get the first value
+        const priceObj = typeof service.price === 'string' ? JSON.parse(service.price) : service.price;
+        const price = Object.values(priceObj)[0] || 0;
+        return `
+          <option value="${service.id}" data-price="${price}" ${service.id === initialServiceId ? 'selected' : ''}>
+            ${service.name} - ₱${price.toFixed(2)}
+          </option>
+        `;
+      }).join('');
 
   } catch (error) {
     console.error('Error loading services:', error);
@@ -792,7 +798,7 @@ async function loadProducts() {
     productSelect.innerHTML = '<option value="">-- Select a Product --</option>' +
       products.map(product => `
         <option value="${product.product_id}" data-price="${product.price}">
-          ${product.item_name} - ₱${product.price}
+          ${product.name} - ₱${product.price}
         </option>
       `).join('');
 
@@ -808,7 +814,9 @@ function initializeBillingList(appointment) {
   
   // Add initial service to billing
   const service = appointment.services;
-  const price = parseFloat(service.price) || 0;
+  // Parse the JSON price and get the first value
+  const priceObj = typeof service.price === 'string' ? JSON.parse(service.price) : service.price;
+  const price = Object.values(priceObj)[0] || 0;
   
   billingList.innerHTML = `
     <li class="flex justify-between items-center">
