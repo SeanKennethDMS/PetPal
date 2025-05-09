@@ -9,6 +9,7 @@ const NOTIFICATION_TYPES = {
   RESCHEDULE_DENIED: 'reschedule_denied',
   ADMIN_CANCELLED: 'admin_cancelled',
   APPOINTMENT_NO_SHOW: 'appointment_no_show',
+  APPOINTMENT_COMPLETED: 'appointment_completed',
   
   // Admin Notifications
   NEW_BOOKING: 'new_booking',
@@ -40,6 +41,9 @@ const MESSAGE_TEMPLATES = {
   
   [NOTIFICATION_TYPES.APPOINTMENT_NO_SHOW]: (data) =>
     `Your appointment for ${data.petName} has been marked as no show. Please contact us to reschedule.`,
+  
+  [NOTIFICATION_TYPES.APPOINTMENT_COMPLETED]: (data) =>
+    `Your appointment for ${data.petName} has been completed. Thank you for choosing our services!`,
   
   [NOTIFICATION_TYPES.NEW_BOOKING]: (data) =>
     `New appointment request from ${data.customerName} for ${data.petName} on ${data.date} at ${data.time}.`,

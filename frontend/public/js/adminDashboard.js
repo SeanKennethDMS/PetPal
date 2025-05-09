@@ -692,6 +692,12 @@ function getActionDetails(action, appointment) {
         notificationType: NOTIFICATION_TYPES.APPOINTMENT_NO_SHOW,
         notificationData: baseData
       };
+    case 'complete':
+      return {
+        newStatus: 'completed',
+        notificationType: NOTIFICATION_TYPES.APPOINTMENT_COMPLETED,
+        notificationData: baseData
+      };
     default:
       throw new Error('Invalid action');
   }
