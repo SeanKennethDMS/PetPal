@@ -140,6 +140,109 @@ function setupEventListeners() {
   });
 
   elements.confirmBookingBtn.addEventListener("click", handleBookingConfirmation);
+
+  // Add reschedule confirmation event listener
+  document.getElementById('confirm-reschedule')?.addEventListener('click', async () => {
+    const button = document.getElementById('confirm-reschedule');
+    const id = button.dataset.id;
+    const newDate = document.getElementById('resched-date').value;
+    const newTime = document.getElementById('resched-time').value;
+
+    if (!newDate || !newTime) return alert("Please select a new date and time.");
+
+    button.disabled = true;
+
+    const { data: appt, error: fetchErr } = await supabase
+      .from('appointments')
+      .select('appointment_date, appointment_time, original_appointment_date, original_appointment_time')
+      .eq('appointment_id', Number(id))
+      .single();
+
+    console.log("Fetched appointment:", appt);
+
+    if (fetchErr) {
+      alert("Failed to fetch original appointment.");
+      console.error(fetchErr.message);
+      button.disabled = false;
+      return;
+    }
+
+    const updates = {
+      appointment_date: newDate,
+      appointment_time: newTime,
+      status: 'rescheduled',
+    };
+
+    if (!appt.original_appointment_date || !appt.original_appointment_time) {
+      updates.original_appointment_date = appt.appointment_date;
+      updates.original_appointment_time = appt.appointment_time;
+    }
+
+    const { error: updateErr } = await supabase
+      .from('appointments')
+      .update(updates)
+      .eq('appointment_id', id);
+
+    if (updateErr) {
+      alert("Failed to reschedule.");
+      console.error("Reschedule error:", updateErr.message);
+      button.disabled = false;
+      return;
+    }
+
+    const { data: apptDetails, error: detailsError } = await supabase
+      .from('appointments')
+      .select('pet_id, service_id')
+      .eq('appointment_id', id)
+      .single();
+
+    if (detailsError || !apptDetails) {
+      console.error("Failed to fetch pet/service for notification:", detailsError);
+    } else {
+      await appointmentLoggers.rescheduleRequest({
+        user_id: userId,
+        role: 'customer',
+        appointment_id: id,
+        pet_id: apptDetails.pet_id,
+        service_id: apptDetails.service_id,
+        old_date: appt.original_appointment_date || appt.appointment_date,
+        old_time: appt.original_appointment_time || appt.appointment_time,
+        new_date: newDate,
+        new_time: newTime
+      });
+
+      await notifyAdminsRescheduleRequest(
+        apptDetails.pet_id,
+        apptDetails.service_id,
+        appt.original_appointment_date || appt.appointment_date,
+        appt.original_appointment_time || appt.appointment_time,
+        newDate,
+        newTime
+      );
+    }
+
+    alert("Reschedule request sent.");
+    document.getElementById('reschedule-modal').classList.add('hidden');
+    loadAppointments();
+  });
+
+  // Add cancel reschedule event listener
+  document.getElementById('cancel-reschedule')?.addEventListener('click', () => {
+    document.getElementById('reschedule-modal').classList.add('hidden');
+  });
+
+  // Add reschedule date change event listener
+  document.getElementById('resched-date')?.addEventListener('change', async (e) => {
+    const selectedDate = e.target.value;
+    const serviceName = document.getElementById('resched-service-name').textContent;
+
+    const timeOptions = await getAvailableTimes(selectedDate, serviceName);
+    const timeSelect = document.getElementById('resched-time');
+    timeSelect.innerHTML = '';
+    timeOptions.forEach(time => {
+      timeSelect.innerHTML += `<option value="${time}">${convertToAMPM(time)}</option>`;
+    });
+  });
 }
 
 function setupRealtimeUpdates() {
@@ -517,15 +620,16 @@ function renderAppointments(appointments) {
 
   elements.appointmentsContainer.innerHTML = html;
 
+  // Add event listeners for appointment actions
   document.querySelectorAll('[data-id]').forEach(button => {
-    button.addEventListener('click', function () {
+    button.addEventListener('click', function() {
       const appointmentId = this.getAttribute('data-id');
       cancelAppointment(appointmentId);
     });
   });
 
   document.querySelectorAll('[data-resched]').forEach(button => {
-    button.addEventListener('click', function () {
+    button.addEventListener('click', function() {
       const appointmentId = this.getAttribute('data-resched');
       const appData = currentAppointments.find(app => app.appointment_id == appointmentId);
       if (!appData) return;
@@ -539,120 +643,7 @@ function renderAppointments(appointments) {
       document.getElementById('confirm-reschedule').dataset.id = appointmentId;
     });
   });
-
-  document.getElementById('cancel-reschedule').addEventListener('click', () => {
-    document.getElementById('reschedule-modal').classList.add('hidden');
-  });
-
-  document.getElementById('resched-date').addEventListener('focus', function () {
-    const input = this;
-    const originalDate = new Date(input.dataset.originalDate);
-    const today = new Date();
-
-    const minDate = originalDate > today ? originalDate : today;
-    const maxDate = new Date();
-    maxDate.setDate(today.getDate() + 60);
-
-    input.min = minDate.toISOString().split('T')[0];
-    input.max = maxDate.toISOString().split('T')[0];
-  });
-
-  document.getElementById('resched-date').addEventListener('change', async (e) => {
-    const selectedDate = e.target.value;
-    const serviceName = document.getElementById('resched-service-name').textContent;
-
-    const timeOptions = await getAvailableTimes(selectedDate, serviceName);
-    const timeSelect = document.getElementById('resched-time');
-    timeSelect.innerHTML = '';
-    timeOptions.forEach(time => {
-      timeSelect.innerHTML += `<option value="${time}">${convertToAMPM(time)}</option>`;
-    });
-  });
 }
-
-document.getElementById('confirm-reschedule').addEventListener('click', async () => {
-  const button = document.getElementById('confirm-reschedule');
-  const id = button.dataset.id;
-  const newDate = document.getElementById('resched-date').value;
-  const newTime = document.getElementById('resched-time').value;
-
-  if (!newDate || !newTime) return alert("Please select a new date and time.");
-
-  button.disabled = true;
-
-  const { data: appt, error: fetchErr } = await supabase
-    .from('appointments')
-    .select('appointment_date, appointment_time, original_appointment_date, original_appointment_time')
-    .eq('appointment_id', Number(id))
-    .single();
-
-  console.log("Fetched appointment:", appt);
-
-  if (fetchErr) {
-    alert("Failed to fetch original appointment.");
-    console.error(fetchErr.message);
-    button.disabled = false;
-    return;
-  }
-
-  const updates = {
-    appointment_date: newDate,
-    appointment_time: newTime,
-    status: 'rescheduled',
-  };
-
-  if (!appt.original_appointment_date || !appt.original_appointment_time) {
-    updates.original_appointment_date = appt.appointment_date;
-    updates.original_appointment_time = appt.appointment_time;
-  }
-
-  const { error: updateErr } = await supabase
-    .from('appointments')
-    .update(updates)
-    .eq('appointment_id', id);
-
-  if (updateErr) {
-    alert("Failed to reschedule.");
-    console.error("Reschedule error:", updateErr.message);
-    button.disabled = false;
-    return;
-  }
-
-  const { data: apptDetails, error: detailsError } = await supabase
-    .from('appointments')
-    .select('pet_id, service_id')
-    .eq('appointment_id', id)
-    .single();
-
-  if (detailsError || !apptDetails) {
-    console.error("Failed to fetch pet/service for notification:", detailsError);
-  } else {
-    await appointmentLoggers.rescheduleRequest({
-      user_id: userId,
-      role: 'customer',
-      appointment_id: id,
-      pet_id: apptDetails.pet_id,
-      service_id: apptDetails.service_id,
-      old_date: appt.original_appointment_date || appt.appointment_date,
-      old_time: appt.original_appointment_time || appt.appointment_time,
-      new_date: newDate,
-      new_time: newTime
-    });
-
-    await notifyAdminsRescheduleRequest(
-      apptDetails.pet_id,
-      apptDetails.service_id,
-      appt.original_appointment_date || appt.appointment_date,
-      appt.original_appointment_time || appt.appointment_time,
-      newDate,
-      newTime
-    );
-  }
-
-  alert("Reschedule request sent.");
-  document.getElementById('reschedule-modal').classList.add('hidden');
-  loadAppointments();
-});
 
 function renderPagination(totalCount) {
   const paginationContainer = document.getElementById("pagination");
