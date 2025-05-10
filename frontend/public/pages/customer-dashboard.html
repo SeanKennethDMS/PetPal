@@ -1413,15 +1413,7 @@
           return;
         }
 
-        if (
-          currentPage.includes("admin-dashboard.html") &&
-          userRole !== "admin"
-        ) {
-          alert("Unauthorized access!");
-          window.location.href = "/frontend/public/index.html";
-          return;
-        }
-
+        // Only allow customers to access customer dashboard
         if (
           currentPage.includes("customer-dashboard.html") &&
           userRole !== "customer"

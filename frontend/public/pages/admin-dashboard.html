@@ -176,6 +176,7 @@
             <li>
               <a
                 href="#"
+                id="sidebarCustomersLink"
                 class="sidebar-link block py-2 px-3 hover:bg-gray-700 rounded"
                 data-target="customers"
                 >Customers</a
@@ -206,6 +207,7 @@
             <li>
               <a
                 href="#"
+                id="sidebarAuditLogLink"
                 class="sidebar-link block py-2 px-3 hover:bg-gray-700 rounded"
                 data-target="audit-log"
                 >Audit Log</a
@@ -271,7 +273,7 @@
         <!-- Dashboard -->
         <section id="dashboard" class="content-section space-y-2">
           <!-- Welcome Header -->
-          <h1 class="text-3xl font-bold">Welcome, Admin!</h1>
+          <h1 id="welcomeHeader" class="text-3xl font-bold">Welcome, Admin!</h1>
           <p class="text-gray-600">Here's what's happening today.</p>
 
           <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mt-6">
@@ -680,23 +682,37 @@
           <p class="text-gray-600 mt-2">View and manage customers.</p>
 
           <!-- Search & Filter -->
-          <div
-            class="mt-4 bg-white p-4 rounded-lg shadow-md border-l-4 border-blue-500"
-          >
-            <h2 class="text-lg font-semibold">🔍 Search Customers</h2>
-            <input
-              type="text"
-              id="searchCustomer"
-              placeholder="Search by name, email, or contact"
-              class="mt-2x p-2 w-full border border-gray-300 rounded"
-            />
+          <div class="mt-4 bg-white p-4 rounded-lg shadow-md border-l-4 border-blue-500">
+            <h2 class="text-lg font-semibold mb-2">Search Customers</h2>
+            <div class="flex flex-col md:flex-row gap-4">
+              
+              <!-- Search input (80%) -->
+              <div class="md:w-[80%] w-full">
+                <input
+                  type="text"
+                  id="searchCustomer"
+                  placeholder="Search by name, email, or contact"
+                  class="p-2 w-full border border-gray-300 rounded"
+                />
+              </div>
+
+              <!-- Button (20%) -->
+              <div class="md:w-[20%] w-full flex gap-2">
+                <button id="addAccountBtn"
+                  class="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700 w-full"
+                >
+                  Create User Account
+                </button>
+              </div>
+              
+            </div>
           </div>
 
           <!-- Customer Table -->
           <div
             class="mt-4 bg-white p-4 rounded-lg shadow-md border-l-4 border-green-500"
           >
-            <h2 class="text-lg font-semibold">📋 Customer List</h2>
+            <h2 class="text-lg font-semibold">Customer List</h2>
 
             <!-- Scrollable Container -->
             <div
@@ -748,29 +764,29 @@
           <div
             class="mt-4 bg-white p-4 rounded-lg shadow-md border-l-4 border-purple-500"
           >
-            <h2 class="text-lg font-semibold">➕ Add New Customer</h2>
+            <h2 class="text-lg font-semibold">Add In-Store Customer</h2>
             <form id="addCustomerForm" class="mt-2">
               <input
                 type="text"
-                id="customerLastName"
+                id="walkinLastName"
                 placeholder="Last Name"
                 class="p-2 w-full border border-gray-300 rounded mt-2"
               />
               <input
                 type="text"
-                id="customerFirstName"
+                id="walkinFirstName"
                 placeholder="First Name"
                 class="p-2 w-full border border-gray-300 rounded mt-2"
               />
               <input
                 type="email"
-                id="customerEmail"
+                id="walkinEmail"
                 placeholder="Email"
                 class="p-2 w-full border border-gray-300 rounded mt-2"
               />
               <input
                 type="text"
-                id="customerContact"
+                id="walkinContact"
                 placeholder="Contact Number"
                 class="p-2 w-full border border-gray-300 rounded mt-2"
               />
@@ -778,10 +794,48 @@
                 type="submit"
                 class="mt-2 bg-green-500 text-white px-4 py-2 rounded hover:bg-green-700"
               >
-                Add Customer
+                Add In-Store Customer
               </button>
             </form>
           </div>
+
+         <!-- Add Account Modal -->
+         <div id="createAccountModal" class="fixed inset-0 bg-black bg-opacity-40 flex justify-center items-center z-50 hidden">
+          <div class="bg-white p-4 rounded-md">
+            <h2 class="text-xl font-semibold mb-4">Create Account</h2>
+            <div>
+              <label>
+                <input type="radio" name="accountType" value="customer" checked>
+                Customer
+              </label>
+              <label class="ml-4">
+                <input type="radio" name="accountType" value="business_admin">
+                Business Admin
+              </label>
+            </div>
+        
+            <!-- Customer Form -->
+            <div id="customerForm" class="mt-4">
+              <input id="customerFirstName" type="text" placeholder="First Name" class="border p-2 mb-2 w-full">
+              <input id="customerLastName" type="text" placeholder="Last Name" class="border p-2 mb-2 w-full">
+              <input id="customerEmail" type="email" placeholder="Email" class="border p-2 mb-2 w-full">
+              <input id="customerPhone" type="password" placeholder="Password" class="border p-2 mb-2 w-full">
+            </div>
+        
+            <!-- Business Admin Form -->
+            <div id="businessAdminForm" class="mt-4 hidden">
+              <input id="businessFirstName" type="text" placeholder="First Name" class="border p-2 mb-2 w-full">
+              <input id="businessLastName" type="text" placeholder="Last Name" class="border p-2 mb-2 w-full">
+              <input id="businessEmail" type="email" placeholder="Email" class="border p-2 mb-2 w-full">
+              <input id="businessPassword" type="password" placeholder="Password" class="border p-2 mb-2 w-full">
+            </div>
+        
+            <div class="mt-4">
+              <button id="saveAccountBtn" class="bg-blue-500 text-white p-2 rounded">Create Account</button>
+              <button id="closeModalBtn" class="bg-red-500 text-white p-2 rounded ml-2">Close</button>
+            </div>
+          </div>
+        </div>
 
           <!-- Edit Customer Modal -->
           <div
@@ -789,7 +843,7 @@
             class="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center hidden z-50"
           >
             <div class="bg-white rounded-lg shadow-lg w-96 p-6 relative">
-              <h2 class="text-xl font-bold mb-4">✏️ Edit Customer</h2>
+              <h2 class="text-xl font-bold mb-4">Edit Customer</h2>
               <form id="editCustomerForm">
                 <input type="hidden" id="editCustomerId" />
 
@@ -828,13 +882,14 @@
                 <div class="flex justify-end">
                   <button
                     type="button"
-                    onclick="closeEditModal()"
+                    id="cancelEditBtn"  
                     class="bg-gray-300 text-gray-800 px-4 py-2 rounded mr-2 hover:bg-gray-400"
                   >
                     Cancel
                   </button>
                   <button
                     type="submit"
+                    id="submitEditBtn" 
                     class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-700"
                   >
                     Save
@@ -844,7 +899,6 @@
             </div>
           </div>
 
-          <!-- EDIT PHONE MODAL -->
           <div
             id="editModal"
             class="fixed inset-0 bg-gray-800 bg-opacity-50 flex items-center justify-center z-50 hidden transition-opacity duration-300 ease-in-out"
@@ -1328,7 +1382,7 @@
               <thead>
                 <tr>
                   <th class="border p-2 text-left">Timestamp</th>
-                  <th class="border p-2 text-left hidden sm:table-cell">User Role</th>
+                  <th class="border p-2 text-left hidden sm:table-cell">User</th>
                   <th class="border p-2 text-left">Action</th>
                   <th class="border p-2 text-left hidden md:table-cell">Target</th>
                   <th class="border p-2 text-left">Details</th>
@@ -1553,35 +1607,54 @@
     </script>
 
     <script>
-      document.addEventListener("DOMContentLoaded", function () {
-        const userSession = localStorage.getItem("userSession");
-        const userRole = localStorage.getItem("userRole");
-        const currentPage = window.location.pathname;
+     document.addEventListener("DOMContentLoaded", function () {
+      const userSession = localStorage.getItem("userSession");
+      const userRole = localStorage.getItem("userRole");
+      const currentPage = window.location.pathname;
 
-        if (!userSession) {
-          alert("Access denied. Please log in.");
-          window.location.href = "/frontend/public/index.html";
-          return;
+      if (!userSession) {
+        alert("Access denied. Please log in.");
+        window.location.href = "/frontend/public/index.html";
+        return;
+      }
+
+      if (
+        currentPage.includes("admin-dashboard.html") &&
+        !["system_admin", "business_admin"].includes(userRole)
+      ) {
+        alert("Unauthorized access!");
+        window.location.href = "/frontend/public/index.html";
+        return;
+      }
+
+      const welcomeHeader = document.getElementById("welcomeHeader");
+      if (welcomeHeader) {
+        if (userRole === "business_admin") {
+          welcomeHeader.textContent = "Welcome, Staff!";
+        } else if (userRole === "system_admin") {
+          welcomeHeader.textContent = "Welcome, Admin!";
         }
+      }
 
-        // Ensure correct role-based access
-        if (
-          currentPage.includes("admin-dashboard.html") &&
-          userRole !== "admin"
-        ) {
-          alert("Unauthorized access!");
-          window.location.href = "/frontend/public/index.html";
-          return;
-        }
+      // Apply visibility logic for business_admin
+      if (userRole === "business_admin") {
+        // Hide main sections
+        const customersSection = document.getElementById("customers");
+        const auditLogSection = document.getElementById("audit-log");
 
-        if (currentPage.includes("customer-dashboard.html") && userRole !== "customer") {
-          alert("Unauthorized access!");
-          window.location.href = "/frontend/public/index.html";
-          return;
-        }
+        if (customersSection) customersSection.classList.add("hidden");
+        if (auditLogSection) auditLogSection.classList.add("hidden");
 
-        document.body.classList.remove("hidden");
-      });
+        // Hide sidebar links
+        const customersLink = document.getElementById("sidebarCustomersLink");
+        const auditLogLink = document.getElementById("sidebarAuditLogLink");
+
+        if (customersLink) customersLink.classList.add("hidden");
+        if (auditLogLink) auditLogLink.classList.add("hidden");
+      }
+
+      document.body.classList.remove("hidden");
+    });
     </script>
 
     <script src="../js/auth.js"></script>

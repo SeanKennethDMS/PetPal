@@ -1,25 +1,31 @@
 document.addEventListener("DOMContentLoaded", function () {
     const userSession = localStorage.getItem("userSession");
     const userRole = localStorage.getItem("userRole");
+    const currentPage = window.location.pathname;
 
     if (!userSession) {
         alert("Access denied. Please log in.");
-        window.location.href = "/frontend/public/index.html"; // Redirect to login page
+        window.location.href = "/frontend/public/index.html";
         return;
     }
 
-    // Ensure correct role-based access
-    const currentPage = window.location.pathname;
-
-    if (currentPage.includes("admin-dashboard.html") && userRole !== "admin") {
+    // Admin page access: system_admin and business_admin only
+    if (
+        currentPage.includes("admin-dashboard.html") &&
+        !["system_admin", "business_admin"].includes(userRole)
+    ) {
         alert("Unauthorized access!");
-        window.location.href = "/frontend/public/index.html"; // Redirect to home
+        window.location.href = "/frontend/public/index.html";
         return;
     }
 
-    if (currentPage.includes("customer-dashboard.html") && userRole !== "customer") {
+    // Customer page access: customer only
+    if (
+        currentPage.includes("customer-dashboard.html") &&
+        userRole !== "customer"
+    ) {
         alert("Unauthorized access!");
-        window.location.href = "/frontend/public/index.html"; // Redirect to home
+        window.location.href = "/frontend/public/index.html";
         return;
     }
 });
