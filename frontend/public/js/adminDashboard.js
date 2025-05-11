@@ -1,19 +1,22 @@
-import { NotificationService, NOTIFICATION_TYPES } from './notificationService.js';
-import supabase from './supabaseClient.js';
+import {
+  NotificationService,
+  NOTIFICATION_TYPES,
+} from "./notificationService.js";
+import supabase from "./supabaseClient.js";
 
 const ITEMS_PER_PAGE = 10;
 
 const state = {
   currentPage: 1,
   totalPages: 1,
-  currentFilter: 'pending',
+  currentFilter: "pending",
   products: [],
-  services: []
+  services: [],
 };
 
 let appointmentChannel = null;
 
-document.addEventListener('DOMContentLoaded', () => {
+document.addEventListener("DOMContentLoaded", () => {
   loadDashboard();
   setupEventListeners();
   setupModalEventListeners();
@@ -22,8 +25,8 @@ document.addEventListener('DOMContentLoaded', () => {
 // Event Listeners Setup
 function setupEventListeners() {
   // Tab buttons
-  document.querySelectorAll('.tab-button').forEach(button => {
-    button.addEventListener('click', () => {
+  document.querySelectorAll(".tab-button").forEach((button) => {
+    button.addEventListener("click", () => {
       const tab = button.dataset.tab;
       setActiveTab(tab);
       state.currentFilter = tab;
@@ -35,13 +38,23 @@ function setupEventListeners() {
 
 // Tab Management
 function setActiveTab(tab) {
-  document.querySelectorAll('.tab-button').forEach(button => {
+  document.querySelectorAll(".tab-button").forEach((button) => {
     if (button.dataset.tab === tab) {
-      button.classList.add('text-blue-600', 'font-semibold', 'border-b-2', 'border-blue-600');
-      button.classList.remove('text-gray-600', 'hover:text-blue-600');
+      button.classList.add(
+        "text-blue-600",
+        "font-semibold",
+        "border-b-2",
+        "border-blue-600"
+      );
+      button.classList.remove("text-gray-600", "hover:text-blue-600");
     } else {
-      button.classList.remove('text-blue-600', 'font-semibold', 'border-b-2', 'border-blue-600');
-      button.classList.add('text-gray-600', 'hover:text-blue-600');
+      button.classList.remove(
+        "text-blue-600",
+        "font-semibold",
+        "border-b-2",
+        "border-blue-600"
+      );
+      button.classList.add("text-gray-600", "hover:text-blue-600");
     }
   });
 }
@@ -58,23 +71,27 @@ async function loadDashboard() {
     const channelName = `admin-appointments-${Date.now()}`;
     appointmentChannel = supabase
       .channel(channelName)
-      .on('postgres_changes', {
-        event: '*',
-        schema: 'public',
-        table: 'appointments'
-      }, (payload) => {
-        console.log('Admin appointment change received:', payload);
-        // Reload all sections when there's a change
-        loadTodaysSchedule();
-        loadTodaysAppointments();
-        loadPendingRequests();
-        loadUpcomingAppointments();
-        loadAppointments(state.currentFilter);
-      })
+      .on(
+        "postgres_changes",
+        {
+          event: "*",
+          schema: "public",
+          table: "appointments",
+        },
+        (payload) => {
+          console.log("Admin appointment change received:", payload);
+          // Reload all sections when there's a change
+          loadTodaysSchedule();
+          loadTodaysAppointments();
+          loadPendingRequests();
+          loadUpcomingAppointments();
+          loadAppointments(state.currentFilter);
+        }
+      )
       .subscribe();
 
     // Cleanup on page unload
-    window.addEventListener('beforeunload', () => {
+    window.addEventListener("beforeunload", () => {
       if (appointmentChannel) {
         appointmentChannel.unsubscribe();
         appointmentChannel = null;
@@ -87,26 +104,28 @@ async function loadDashboard() {
       loadTodaysAppointments(),
       loadPendingRequests(),
       loadUpcomingAppointments(),
-      loadAppointments('pending')
+      loadAppointments("pending"),
     ]);
   } catch (error) {
-    console.error('Error loading dashboard:', error);
-    showError('Failed to load dashboard');
+    console.error("Error loading dashboard:", error);
+    showError("Failed to load dashboard");
   }
 }
 
-// Today's Schedule
+let allTodaysAppointments = [];
+
 async function loadTodaysSchedule() {
-  const container = document.getElementById('todaysSchedule');
+  const container = document.getElementById("todaysSchedule");
   if (!container) return;
 
   container.innerHTML = `<p class="text-sm text-gray-500">Loading today's schedule...</p>`;
 
   try {
-    const today = new Date().toISOString().split('T')[0];
+    const today = new Date().toISOString().split("T")[0];
     const { data: appointments, error } = await supabase
-      .from('appointments')
-      .select(`
+      .from("appointments")
+      .select(
+        `
         *,
         pets!inner (
           pet_name,
@@ -116,69 +135,19 @@ async function loadTodaysSchedule() {
         services!inner (
           name
         )
-      `)
-      .eq('appointment_date', today)
-      .eq('status', 'accepted')
-      .order('appointment_time', { ascending: true });
+      `
+      )
+      .eq("appointment_date", today)
+      .eq("status", "accepted")
+      .order("appointment_time", { ascending: true });
 
     if (error) throw error;
 
-    if (!appointments || appointments.length === 0) {
-      container.innerHTML = `
-        <div class="text-center py-4">
-          <p class="text-sm text-gray-500">No appointments scheduled for today.</p>
-        </div>
-      `;
-      return;
-    }
+    allTodaysAppointments = appointments || [];
 
-    container.innerHTML = appointments.map(app => {
-      const pet = app.pets;
-      const service = app.services?.name || 'Service';
-      const time = formatTime(app.appointment_time);
-      const imageUrl = getPetImage(pet);
-
-      return `
-        <div class="flex items-start gap-4 bg-white p-4 rounded-lg shadow-sm border border-gray-100">
-          <img src="${imageUrl}" alt="${pet?.pet_name}" class="w-12 h-12 rounded-full object-cover border">
-          <div class="flex-1">
-            <div class="flex justify-between items-start">
-              <div>
-                <p class="font-semibold text-gray-800">${pet?.pet_name || 'Pet Name'}</p>
-                <p class="text-sm text-gray-600">${service}</p>
-                <p class="text-xs text-gray-500">${time}</p>
-              </div>
-              <div class="flex gap-2">
-                <button class="proceed-btn px-3 py-1 text-sm bg-blue-600 text-white rounded hover:bg-blue-700" data-appointment-id="${app.appointment_id}">
-                  Proceed
-                </button>
-                <button class="no-show-btn px-3 py-1 text-sm bg-red-600 text-white rounded hover:bg-red-700" data-appointment-id="${app.appointment_id}">
-                  No Show
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
-      `;
-    }).join('');
-
-    // Add event listeners after rendering
-    container.querySelectorAll('.proceed-btn').forEach(button => {
-      button.addEventListener('click', () => {
-        const appointmentId = button.dataset.appointmentId;
-        openProceedModal(appointmentId);
-      });
-    });
-
-    container.querySelectorAll('.no-show-btn').forEach(button => {
-      button.addEventListener('click', () => {
-        const appointmentId = button.dataset.appointmentId;
-        handleAppointmentAction(appointmentId, 'no_show');
-      });
-    });
-
+    renderTodaysAppointments(allTodaysAppointments);
   } catch (error) {
-    console.error('Error loading today\'s schedule:', error);
+    console.error("Error loading today's schedule:", error);
     container.innerHTML = `
       <div class="text-center py-4">
         <p class="text-sm text-red-500">Failed to load today's schedule.</p>
@@ -187,23 +156,123 @@ async function loadTodaysSchedule() {
   }
 }
 
+function renderTodaysAppointments(appointments) {
+  const container = document.getElementById("todaysSchedule");
+  if (!appointments || appointments.length === 0) {
+    container.innerHTML = `
+      <div class="text-center py-4">
+        <p class="text-sm text-gray-500">No appointments scheduled for today.</p>
+      </div>
+    `;
+    return;
+  }
+
+  container.innerHTML = appointments
+    .map((app) => {
+      const pet = app.pets;
+      const service = app.services?.name || "Service";
+      const time = formatTime(app.appointment_time);
+      const imageUrl = getPetImage(pet);
+      const urn = app.urn || "URN not found";
+
+      return `
+        <div class="flex items-start gap-4 bg-white p-4 rounded-lg shadow-sm border border-gray-100 appointment-item" data-urn="${urn}">
+          <img src="${imageUrl}" alt="${
+        pet?.pet_name
+      }" class="w-12 h-12 rounded-full object-cover border">
+          <div class="flex-1">
+            <div class="flex justify-between items-start">
+              <div>
+                <p class="font-semibold text-gray-800">${
+                  pet?.pet_name || "Pet Name"
+                }</p>
+                <p class="text-sm text-gray-600">${service}</p>
+                <p class="text-xs text-gray-500">${time}</p>
+                <p class="text-xs text-blue-700 font-mono mt-1"><span class="font-semibold">URN:</span> ${urn}</p>
+              </div>
+              <div class="flex gap-2">
+                <button class="proceed-btn px-3 py-1 text-sm bg-blue-600 text-white rounded hover:bg-blue-700" data-appointment-id="${
+                  app.appointment_id
+                }">
+                  Proceed
+                </button>
+                <button class="no-show-btn px-3 py-1 text-sm bg-red-600 text-white rounded hover:bg-red-700" data-appointment-id="${
+                  app.appointment_id
+                }">
+                  No Show
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      `;
+    })
+    .join("");
+
+  // Re-attach event listeners after rendering
+  container.querySelectorAll(".proceed-btn").forEach((button) => {
+    button.addEventListener("click", () => {
+      const appointmentId = button.dataset.appointmentId;
+      openProceedModal(appointmentId);
+    });
+  });
+
+  container.querySelectorAll(".no-show-btn").forEach((button) => {
+    button.addEventListener("click", () => {
+      const appointmentId = button.dataset.appointmentId;
+      handleAppointmentAction(appointmentId, "no_show");
+    });
+  });
+}
+
+function debounce(func, delay = 300) {
+  let timer;
+  return function (...args) {
+    clearTimeout(timer);
+    timer = setTimeout(() => func.apply(this, args), delay);
+  };
+}
+
+const urnSearchInput = document.getElementById("urn-search");
+if (urnSearchInput) {
+  urnSearchInput.addEventListener(
+    "input",
+    debounce(function () {
+      const query = urnSearchInput.value.trim().toLowerCase();
+      if (!query) {
+        renderTodaysAppointments(allTodaysAppointments);
+        return;
+      }
+      const filtered = allTodaysAppointments.filter(
+        (app) => app.urn && app.urn.toLowerCase().includes(query)
+      );
+      renderTodaysAppointments(filtered);
+    }, 300)
+  );
+}
+
 // Today's Appointments
 async function loadTodaysAppointments(page = 1, limit = 3) {
-  const container = document.getElementById('todaysAppointmentsAdmin');
-  const pagination = document.getElementById('todaysAppointmentsPagination');
+  const container = document.getElementById("todaysAppointmentsAdmin");
+  const pagination = document.getElementById("todaysAppointmentsPagination");
 
   if (!container || !pagination) return;
 
   container.innerHTML = `<p class="text-sm text-gray-500">Loading today's appointments...</p>`;
-  pagination.innerHTML = '';
+  pagination.innerHTML = "";
 
   try {
-    const today = new Date().toISOString().split('T')[0];
+    const today = new Date().toISOString().split("T")[0];
     const offset = (page - 1) * limit;
 
-    const { data: appointments, error, count } = await supabase
-      .from('appointments')
-      .select(`
+    const {
+      data: appointments,
+      error,
+      count,
+    } = await supabase
+      .from("appointments")
+      .select(
+        `
         *,
         pets!inner (
           pet_name,
@@ -217,10 +286,12 @@ async function loadTodaysAppointments(page = 1, limit = 3) {
         services!inner (
           name
         )
-      `, { count: 'exact' })
-      .eq('appointment_date', today)
-      .eq('status', 'accepted')
-      .order('appointment_time', { ascending: true })
+      `,
+        { count: "exact" }
+      )
+      .eq("appointment_date", today)
+      .eq("status", "accepted")
+      .order("appointment_time", { ascending: true })
       .range(offset, offset + limit - 1);
 
     if (error) throw error;
@@ -230,20 +301,25 @@ async function loadTodaysAppointments(page = 1, limit = 3) {
       return;
     }
 
-    container.innerHTML = appointments.map(app => {
-      const pet = app.pets;
-      const service = app.services?.name || 'Service';
-      const time = formatTime(app.appointment_time);
-      const imageUrl = getPetImage(pet);
-      const customerName = `${pet.users_table.first_name} ${pet.users_table.last_name}`;
+    container.innerHTML = appointments
+      .map((app) => {
+        const pet = app.pets;
+        const service = app.services?.name || "Service";
+        const time = formatTime(app.appointment_time);
+        const imageUrl = getPetImage(pet);
+        const customerName = `${pet.users_table.first_name} ${pet.users_table.last_name}`;
 
-      return `
+        return `
         <div class="flex items-start gap-4 bg-white p-4 rounded-lg shadow-sm border border-gray-100">
-          <img src="${imageUrl}" alt="${pet?.pet_name}" class="w-12 h-12 rounded-full object-cover border">
+          <img src="${imageUrl}" alt="${
+          pet?.pet_name
+        }" class="w-12 h-12 rounded-full object-cover border">
           <div class="flex-1">
             <div class="flex justify-between items-start">
               <div>
-                <p class="font-semibold text-gray-800">${pet?.pet_name || 'Pet Name'}</p>
+                <p class="font-semibold text-gray-800">${
+                  pet?.pet_name || "Pet Name"
+                }</p>
                 <p class="text-sm text-gray-600">${service}</p>
                 <p class="text-xs text-gray-500">${time}</p>
                 <p class="text-xs text-gray-500">Customer: ${customerName}</p>
@@ -252,31 +328,41 @@ async function loadTodaysAppointments(page = 1, limit = 3) {
           </div>
         </div>
       `;
-    }).join('');
+      })
+      .join("");
 
-    renderPagination(pagination, page, Math.ceil(count / limit), loadTodaysAppointments);
-
+    renderPagination(
+      pagination,
+      page,
+      Math.ceil(count / limit),
+      loadTodaysAppointments
+    );
   } catch (error) {
-    console.error('Error loading today\'s appointments:', error);
+    console.error("Error loading today's appointments:", error);
     container.innerHTML = `<p class="text-sm text-red-500">Failed to load today's appointments.</p>`;
   }
 }
 
 // Pending Requests
 async function loadPendingRequests(page = 1, limit = 3) {
-  const container = document.getElementById('pendingRequestsAdmin');
-  const pagination = document.getElementById('pendingRequestsPagination');
+  const container = document.getElementById("pendingRequestsAdmin");
+  const pagination = document.getElementById("pendingRequestsPagination");
 
   if (!container || !pagination) return;
 
   container.innerHTML = `<p class="text-sm text-gray-500">Loading pending requests...</p>`;
-  pagination.innerHTML = '';
+  pagination.innerHTML = "";
 
   try {
     const offset = (page - 1) * limit;
-    const { data: appointments, error, count } = await supabase
-      .from('appointments')
-      .select(`
+    const {
+      data: appointments,
+      error,
+      count,
+    } = await supabase
+      .from("appointments")
+      .select(
+        `
         *,
         pets!inner (
           pet_name,
@@ -290,9 +376,11 @@ async function loadPendingRequests(page = 1, limit = 3) {
         services!inner (
           name
         )
-      `, { count: 'exact' })
-      .in('status', ['pending', 'rescheduled'])
-      .order('appointment_date', { ascending: true })
+      `,
+        { count: "exact" }
+      )
+      .in("status", ["pending", "rescheduled"])
+      .order("appointment_date", { ascending: true })
       .range(offset, offset + limit - 1);
 
     if (error) throw error;
@@ -302,21 +390,26 @@ async function loadPendingRequests(page = 1, limit = 3) {
       return;
     }
 
-    container.innerHTML = appointments.map(app => {
-      const pet = app.pets;
-      const service = app.services?.name || 'Service';
-      const date = formatDate(app.appointment_date);
-      const time = formatTime(app.appointment_time);
-      const imageUrl = getPetImage(pet);
-      const customerName = `${pet.users_table.first_name} ${pet.users_table.last_name}`;
+    container.innerHTML = appointments
+      .map((app) => {
+        const pet = app.pets;
+        const service = app.services?.name || "Service";
+        const date = formatDate(app.appointment_date);
+        const time = formatTime(app.appointment_time);
+        const imageUrl = getPetImage(pet);
+        const customerName = `${pet.users_table.first_name} ${pet.users_table.last_name}`;
 
-      return `
+        return `
         <div class="flex items-start gap-4 bg-white p-4 rounded-lg shadow-sm border border-gray-100">
-          <img src="${imageUrl}" alt="${pet?.pet_name}" class="w-12 h-12 rounded-full object-cover border">
+          <img src="${imageUrl}" alt="${
+          pet?.pet_name
+        }" class="w-12 h-12 rounded-full object-cover border">
           <div class="flex-1">
             <div class="flex justify-between items-start">
               <div>
-                <p class="font-semibold text-gray-800">${pet?.pet_name || 'Pet Name'}</p>
+                <p class="font-semibold text-gray-800">${
+                  pet?.pet_name || "Pet Name"
+                }</p>
                 <p class="text-sm text-gray-600">${service}</p>
                 <p class="text-xs text-gray-500">${date} at ${time}</p>
                 <p class="text-xs text-gray-500">Customer: ${customerName}</p>
@@ -325,35 +418,45 @@ async function loadPendingRequests(page = 1, limit = 3) {
           </div>
         </div>
       `;
-    }).join('');
+      })
+      .join("");
 
-    renderPagination(pagination, page, Math.ceil(count / limit), loadPendingRequests);
-
+    renderPagination(
+      pagination,
+      page,
+      Math.ceil(count / limit),
+      loadPendingRequests
+    );
   } catch (error) {
-    console.error('Error loading pending requests:', error);
+    console.error("Error loading pending requests:", error);
     container.innerHTML = `<p class="text-sm text-red-500">Failed to load pending requests.</p>`;
   }
 }
 
 // Upcoming Appointments
 async function loadUpcomingAppointments(page = 1, limit = 3) {
-  const container = document.getElementById('upcomingAppointmentsAdmin');
-  const pagination = document.getElementById('upcomingAppointmentsPagination');
+  const container = document.getElementById("upcomingAppointmentsAdmin");
+  const pagination = document.getElementById("upcomingAppointmentsPagination");
 
   if (!container || !pagination) return;
 
   container.innerHTML = `<p class="text-sm text-gray-500">Loading upcoming appointments...</p>`;
-  pagination.innerHTML = '';
+  pagination.innerHTML = "";
 
   try {
     const tomorrow = new Date();
     tomorrow.setDate(tomorrow.getDate() + 1);
-    const tomorrowStr = tomorrow.toISOString().split('T')[0];
+    const tomorrowStr = tomorrow.toISOString().split("T")[0];
     const offset = (page - 1) * limit;
 
-    const { data: appointments, error, count } = await supabase
-      .from('appointments')
-      .select(`
+    const {
+      data: appointments,
+      error,
+      count,
+    } = await supabase
+      .from("appointments")
+      .select(
+        `
         *,
         pets!inner (
           pet_name,
@@ -367,10 +470,12 @@ async function loadUpcomingAppointments(page = 1, limit = 3) {
         services!inner (
           name
         )
-      `, { count: 'exact' })
-      .eq('status', 'accepted')
-      .gte('appointment_date', tomorrowStr)
-      .order('appointment_date', { ascending: true })
+      `,
+        { count: "exact" }
+      )
+      .eq("status", "accepted")
+      .gte("appointment_date", tomorrowStr)
+      .order("appointment_date", { ascending: true })
       .range(offset, offset + limit - 1);
 
     if (error) throw error;
@@ -380,21 +485,26 @@ async function loadUpcomingAppointments(page = 1, limit = 3) {
       return;
     }
 
-    container.innerHTML = appointments.map(app => {
-      const pet = app.pets;
-      const service = app.services?.name || 'Service';
-      const date = formatDate(app.appointment_date);
-      const time = formatTime(app.appointment_time);
-      const imageUrl = getPetImage(pet);
-      const customerName = `${pet.users_table.first_name} ${pet.users_table.last_name}`;
+    container.innerHTML = appointments
+      .map((app) => {
+        const pet = app.pets;
+        const service = app.services?.name || "Service";
+        const date = formatDate(app.appointment_date);
+        const time = formatTime(app.appointment_time);
+        const imageUrl = getPetImage(pet);
+        const customerName = `${pet.users_table.first_name} ${pet.users_table.last_name}`;
 
-      return `
+        return `
         <div class="flex items-start gap-4 bg-white p-4 rounded-lg shadow-sm border border-gray-100">
-          <img src="${imageUrl}" alt="${pet?.pet_name}" class="w-12 h-12 rounded-full object-cover border">
+          <img src="${imageUrl}" alt="${
+          pet?.pet_name
+        }" class="w-12 h-12 rounded-full object-cover border">
           <div class="flex-1">
             <div class="flex justify-between items-start">
               <div>
-                <p class="font-semibold text-gray-800">${pet?.pet_name || 'Pet Name'}</p>
+                <p class="font-semibold text-gray-800">${
+                  pet?.pet_name || "Pet Name"
+                }</p>
                 <p class="text-sm text-gray-600">${service}</p>
                 <p class="text-xs text-gray-500">${date} at ${time}</p>
                 <p class="text-xs text-gray-500">Customer: ${customerName}</p>
@@ -403,28 +513,38 @@ async function loadUpcomingAppointments(page = 1, limit = 3) {
           </div>
         </div>
       `;
-    }).join('');
+      })
+      .join("");
 
-    renderPagination(pagination, page, Math.ceil(count / limit), loadUpcomingAppointments);
-
+    renderPagination(
+      pagination,
+      page,
+      Math.ceil(count / limit),
+      loadUpcomingAppointments
+    );
   } catch (error) {
-    console.error('Error loading upcoming appointments:', error);
+    console.error("Error loading upcoming appointments:", error);
     container.innerHTML = `<p class="text-sm text-red-500">Failed to load upcoming appointments.</p>`;
   }
 }
 
 // Load Appointments
-async function loadAppointments(status = 'pending', page = 1) {
-  const container = document.getElementById('appointmentsList');
+async function loadAppointments(status = "pending", page = 1) {
+  const container = document.getElementById("appointmentsList");
   if (!container) return;
 
   container.innerHTML = `<p class="text-sm text-gray-500">Loading appointments...</p>`;
 
   try {
     const offset = (page - 1) * ITEMS_PER_PAGE;
-    const { data: appointments, error, count } = await supabase
-      .from('appointments')
-      .select(`
+    const {
+      data: appointments,
+      error,
+      count,
+    } = await supabase
+      .from("appointments")
+      .select(
+        `
         *,
         pets!inner (
           pet_name,
@@ -438,10 +558,12 @@ async function loadAppointments(status = 'pending', page = 1) {
         services!inner (
           name
         )
-      `, { count: 'exact' })
-      .eq('status', status)
-      .order('appointment_date', { ascending: true })
-      .order('appointment_time', { ascending: true })
+      `,
+        { count: "exact" }
+      )
+      .eq("status", status)
+      .order("appointment_date", { ascending: true })
+      .order("appointment_time", { ascending: true })
       .range(offset, offset + ITEMS_PER_PAGE - 1);
 
     if (error) throw error;
@@ -455,27 +577,34 @@ async function loadAppointments(status = 'pending', page = 1) {
       return;
     }
 
-    container.innerHTML = appointments.map(app => {
-      const pet = app.pets;
-      const service = app.services?.name || 'Service';
-      const date = formatDate(app.appointment_date);
-      const time = formatTime(app.appointment_time);
-      const imageUrl = getPetImage(pet);
-      const customerName = `${pet.users_table.first_name} ${pet.users_table.last_name}`;
+    container.innerHTML = appointments
+      .map((app) => {
+        const pet = app.pets;
+        const service = app.services?.name || "Service";
+        const date = formatDate(app.appointment_date);
+        const time = formatTime(app.appointment_time);
+        const imageUrl = getPetImage(pet);
+        const customerName = `${pet.users_table.first_name} ${pet.users_table.last_name}`;
 
-      return `
+        return `
         <div class="flex items-start gap-4 bg-white p-4 rounded-lg shadow-sm border border-gray-100">
-          <img src="${imageUrl}" alt="${pet?.pet_name}" class="w-12 h-12 rounded-full object-cover border">
+          <img src="${imageUrl}" alt="${
+          pet?.pet_name
+        }" class="w-12 h-12 rounded-full object-cover border">
           <div class="flex-1">
             <div class="flex justify-between items-start">
               <div>
-                <p class="font-semibold text-gray-800">${pet?.pet_name || 'Pet Name'}</p>
+                <p class="font-semibold text-gray-800">${
+                  pet?.pet_name || "Pet Name"
+                }</p>
                 <p class="text-sm text-gray-600">${service}</p>
                 <p class="text-xs text-gray-500">${date} at ${time}</p>
                 <p class="text-xs text-gray-500">Customer: ${customerName}</p>
               </div>
               <div class="flex gap-2">
-                ${status === 'pending' ? `
+                ${
+                  status === "pending"
+                    ? `
                   <button onclick="handleAppointmentAction('${app.appointment_id}', 'accept')" 
                     class="px-3 py-1 text-sm text-green-600 hover:bg-green-50 rounded">
                     Accept
@@ -484,8 +613,12 @@ async function loadAppointments(status = 'pending', page = 1) {
                     class="px-3 py-1 text-sm text-red-600 hover:bg-red-50 rounded">
                     Cancel
                   </button>
-                ` : ''}
-                ${status === 'accepted' ? `
+                `
+                    : ""
+                }
+                ${
+                  status === "accepted"
+                    ? `
                   <button onclick="handleAppointmentAction('${app.appointment_id}', 'cancel')" 
                     class="px-3 py-1 text-sm text-red-600 hover:bg-red-50 rounded">
                     Cancel
@@ -494,28 +627,32 @@ async function loadAppointments(status = 'pending', page = 1) {
                     class="px-3 py-1 text-sm text-blue-600 hover:bg-blue-50 rounded">
                     Reschedule
                   </button>
-                ` : ''}
+                `
+                    : ""
+                }
               </div>
             </div>
           </div>
         </div>
       `;
-    }).join('');
+      })
+      .join("");
 
     // Update pagination
     const totalPages = Math.ceil(count / ITEMS_PER_PAGE);
     state.totalPages = totalPages;
     state.currentPage = page;
 
-    const paginationContainer = document.getElementById('appointmentsPagination');
+    const paginationContainer = document.getElementById(
+      "appointmentsPagination"
+    );
     if (paginationContainer) {
       renderPagination(paginationContainer, page, totalPages, (newPage) => {
         loadAppointments(status, newPage);
       });
     }
-
   } catch (error) {
-    console.error('Error loading appointments:', error);
+    console.error("Error loading appointments:", error);
     container.innerHTML = `
       <div class="text-center py-4">
         <p class="text-sm text-red-500">Failed to load appointments.</p>
@@ -528,8 +665,9 @@ async function loadAppointments(status = 'pending', page = 1) {
 async function handleAppointmentAction(appointmentId, action) {
   try {
     const { data: appointment, error: fetchError } = await supabase
-      .from('appointments')
-      .select(`
+      .from("appointments")
+      .select(
+        `
         *,
         pets!inner (
           pet_name,
@@ -544,24 +682,28 @@ async function handleAppointmentAction(appointmentId, action) {
           name,
           price
         )
-      `)
-      .eq('appointment_id', appointmentId)
+      `
+      )
+      .eq("appointment_id", appointmentId)
       .single();
 
     if (fetchError) throw fetchError;
     if (!appointment || !appointment.pets || !appointment.pets.owner_id) {
-      throw new Error('Invalid appointment data');
+      throw new Error("Invalid appointment data");
     }
 
-    const { newStatus, notificationType, notificationData } = getActionDetails(action, appointment);
+    const { newStatus, notificationType, notificationData } = getActionDetails(
+      action,
+      appointment
+    );
 
     const { error: updateError } = await supabase
-      .from('appointments')
-      .update({ 
+      .from("appointments")
+      .update({
         status: newStatus,
-        completed_at: new Date().toISOString()
+        completed_at: new Date().toISOString(),
       })
-      .eq('appointment_id', appointmentId);
+      .eq("appointment_id", appointmentId);
 
     if (updateError) throw updateError;
 
@@ -573,8 +715,8 @@ async function handleAppointmentAction(appointmentId, action) {
 
     await loadDashboard();
   } catch (error) {
-    console.error('Error in handleAppointmentAction:', error);
-    showError('Failed to process appointment action. Please try again.');
+    console.error("Error in handleAppointmentAction:", error);
+    showError("Failed to process appointment action. Please try again.");
   }
 }
 
@@ -582,9 +724,9 @@ async function handleAppointmentAction(appointmentId, action) {
 async function checkLowStock() {
   try {
     const { data: lowStockItems, error } = await supabase
-      .from('inventory')
-            .select('*')
-      .lt('quantity', 'minimum_stock');
+      .from("inventory")
+      .select("*")
+      .lt("quantity", "minimum_stock");
 
     if (error) throw error;
 
@@ -594,54 +736,64 @@ async function checkLowStock() {
         {
           itemName: item.item_name,
           currentStock: item.quantity,
-          minimumStock: item.minimum_stock
+          minimumStock: item.minimum_stock,
         }
       );
     }
   } catch (error) {
-    showError('Failed to check low stock items.');
+    showError("Failed to check low stock items.");
   }
 }
 
 // Utility Functions
 function formatTime(timeStr) {
-  if (!timeStr) return '';
-  const [hour, minute] = timeStr.split(':');
+  if (!timeStr) return "";
+  const [hour, minute] = timeStr.split(":");
   const h = parseInt(hour);
-  const ampm = h >= 12 ? 'PM' : 'AM';
+  const ampm = h >= 12 ? "PM" : "AM";
   const displayHour = h % 12 || 12;
   return `${displayHour}:${minute} ${ampm}`;
 }
 
 function formatDate(dateStr) {
   return new Date(dateStr).toLocaleDateString(undefined, {
-    month: 'short',
-    day: 'numeric',
-    year: 'numeric'
+    month: "short",
+    day: "numeric",
+    year: "numeric",
   });
 }
 
 function getPetImage(pet) {
-  if (pet?.image_url && pet.image_url.startsWith('http')) {
+  if (pet?.image_url && pet.image_url.startsWith("http")) {
     return pet.image_url;
   }
-  return `../assets/images/${pet?.species === 'dog' ? 'defaultDogIcon.png' : 'defaultCatIcon.png'}`;
+  return `../assets/images/${
+    pet?.species === "dog" ? "defaultDogIcon.png" : "defaultCatIcon.png"
+  }`;
 }
 
 function renderPagination(container, currentPage, totalPages, callback) {
   if (totalPages <= 1) return;
 
-  const prevBtn = document.createElement('button');
-  prevBtn.textContent = '◀';
-  prevBtn.className = `px-3 py-1 border rounded ${currentPage === 1 ? 'text-gray-400 cursor-not-allowed' : 'text-blue-600 hover:bg-gray-100'}`;
+  const prevBtn = document.createElement("button");
+  prevBtn.textContent = "◀";
+  prevBtn.className = `px-3 py-1 border rounded ${
+    currentPage === 1
+      ? "text-gray-400 cursor-not-allowed"
+      : "text-blue-600 hover:bg-gray-100"
+  }`;
   prevBtn.disabled = currentPage === 1;
   prevBtn.onclick = () => {
     if (currentPage > 1) callback(currentPage - 1);
   };
 
-  const nextBtn = document.createElement('button');
-  nextBtn.textContent = '▶';
-  nextBtn.className = `px-3 py-1 border rounded ${currentPage === totalPages ? 'text-gray-400 cursor-not-allowed' : 'text-blue-600 hover:bg-gray-100'}`;
+  const nextBtn = document.createElement("button");
+  nextBtn.textContent = "▶";
+  nextBtn.className = `px-3 py-1 border rounded ${
+    currentPage === totalPages
+      ? "text-gray-400 cursor-not-allowed"
+      : "text-blue-600 hover:bg-gray-100"
+  }`;
   nextBtn.disabled = currentPage === totalPages;
   nextBtn.onclick = () => {
     if (currentPage < totalPages) callback(currentPage + 1);
@@ -658,54 +810,55 @@ function getActionDetails(action, appointment) {
     petName: appointment.pets.pet_name,
     serviceName: appointment.services.name,
     date: appointment.appointment_date,
-    time: appointment.appointment_time
+    time: appointment.appointment_time,
   };
 
   switch (action) {
-    case 'accept':
+    case "accept":
       return {
-        newStatus: 'accepted',
+        newStatus: "accepted",
         notificationType: NOTIFICATION_TYPES.APPOINTMENT_ACCEPTED,
-        notificationData: baseData
+        notificationData: baseData,
       };
-    case 'cancel':
+    case "cancel":
       return {
-        newStatus: 'cancelled',
+        newStatus: "cancelled",
         notificationType: NOTIFICATION_TYPES.APPOINTMENT_CANCELLED,
-        notificationData: baseData
+        notificationData: baseData,
       };
-    case 'reschedule':
+    case "reschedule":
       return {
-        newStatus: 'rescheduled',
+        newStatus: "rescheduled",
         notificationType: NOTIFICATION_TYPES.RESCHEDULE_ACCEPTED,
         notificationData: {
           ...baseData,
           oldDate: appointment.appointment_date,
           oldTime: appointment.appointment_time,
           newDate: appointment.new_date,
-          newTime: appointment.new_time
-        }
+          newTime: appointment.new_time,
+        },
       };
-    case 'no_show':
+    case "no_show":
       return {
-        newStatus: 'no show',
+        newStatus: "no show",
         notificationType: NOTIFICATION_TYPES.APPOINTMENT_NO_SHOW,
-        notificationData: baseData
+        notificationData: baseData,
       };
-    case 'complete':
+    case "complete":
       return {
-        newStatus: 'completed',
+        newStatus: "completed",
         notificationType: NOTIFICATION_TYPES.APPOINTMENT_COMPLETED,
-        notificationData: baseData
+        notificationData: baseData,
       };
     default:
-      throw new Error('Invalid action');
+      throw new Error("Invalid action");
   }
 }
 
 function showError(message) {
   const alert = document.createElement("div");
-  alert.className = "fixed top-4 right-4 p-4 rounded-lg shadow-lg bg-red-100 text-red-800";
+  alert.className =
+    "fixed top-4 right-4 p-4 rounded-lg shadow-lg bg-red-100 text-red-800";
   alert.textContent = message;
   document.body.appendChild(alert);
 
@@ -716,22 +869,24 @@ function showError(message) {
 }
 
 // Modal Management
-window.openProceedModal = async function(appointmentId) {
+window.openProceedModal = async function (appointmentId) {
   try {
-    const modal = document.getElementById('proceedModal');
-    const appointmentDetails = document.getElementById('appointmentDetails');
-    
+    const modal = document.getElementById("proceedModal");
+    const appointmentDetails = document.getElementById("appointmentDetails");
+
     // Store the appointment ID in the modal's dataset
     modal.dataset.appointmentId = appointmentId;
-    
+
     // Show loading state
-    appointmentDetails.innerHTML = '<p class="text-sm text-gray-500">Loading appointment details...</p>';
-    modal.classList.remove('hidden');
+    appointmentDetails.innerHTML =
+      '<p class="text-sm text-gray-500">Loading appointment details...</p>';
+    modal.classList.remove("hidden");
 
     // Fetch appointment details
     const { data: appointment, error } = await supabase
-      .from('appointments')
-      .select(`
+      .from("appointments")
+      .select(
+        `
         *,
         pets!inner (
           pet_name,
@@ -747,8 +902,9 @@ window.openProceedModal = async function(appointmentId) {
           name,
           price
         )
-      `)
-      .eq('appointment_id', appointmentId)
+      `
+      )
+      .eq("appointment_id", appointmentId)
       .single();
 
     if (error) throw error;
@@ -764,52 +920,58 @@ window.openProceedModal = async function(appointmentId) {
     initializeBillingList(appointment);
 
     // Set up complete button event listener
-    const completeBtn = document.getElementById('completeBillingBtn');
+    const completeBtn = document.getElementById("completeBillingBtn");
     if (completeBtn) {
       completeBtn.replaceWith(completeBtn.cloneNode(true));
-      const newCompleteBtn = document.getElementById('completeBillingBtn');
-      newCompleteBtn.addEventListener('click', async () => {
+      const newCompleteBtn = document.getElementById("completeBillingBtn");
+      newCompleteBtn.addEventListener("click", async () => {
         try {
-          const paymentMethod = document.getElementById('paymentMethodSelect').value;
-          const total = parseFloat(document.getElementById('billingTotal').textContent);
-          
+          const paymentMethod = document.getElementById(
+            "paymentMethodSelect"
+          ).value;
+          const total = parseFloat(
+            document.getElementById("billingTotal").textContent
+          );
+
           if (!paymentMethod) {
-            showError('Please select a payment method');
+            showError("Please select a payment method");
             return;
           }
 
           // Ensure payment method matches database constraints exactly
-          const validPaymentMethods = ['Cash', 'GCash', 'Credit Card', 'Other'];
+          const validPaymentMethods = ["Cash", "GCash", "Credit Card", "Other"];
           if (!validPaymentMethods.includes(paymentMethod)) {
-            showError('Invalid payment method selected');
+            showError("Invalid payment method selected");
             return;
           }
 
           // Calculate amounts
-          const subtotal = total / 1.12; 
+          const subtotal = total / 1.12;
           const tax = total - subtotal;
 
           // Get all items from billing list
-          const billingItems = Array.from(document.getElementById('billingList').children).map(item => {
-            const [name, price] = item.textContent.split('₱');
+          const billingItems = Array.from(
+            document.getElementById("billingList").children
+          ).map((item) => {
+            const [name, price] = item.textContent.split("₱");
             return {
               name: name.trim(),
-              price: parseFloat(price)
+              price: parseFloat(price),
             };
           });
 
           // Create transaction record
           const { data: transaction, error: transactionError } = await supabase
-            .from('transactions')
+            .from("transactions")
             .insert({
-              transaction_code: 'TXN-' + Date.now().toString(36).toUpperCase(),
+              transaction_code: "TXN-" + Date.now().toString(36).toUpperCase(),
               total_amount: total,
               tax_amount: tax,
               subtotal_amount: subtotal,
               payment_method: paymentMethod,
-              status: 'Paid',
-              transaction_type: 'Sale',
-              remarks: `Appointment ID: ${appointmentId}`
+              status: "Paid",
+              transaction_type: "Sale",
+              remarks: `Appointment ID: ${appointmentId}`,
             })
             .select();
 
@@ -817,56 +979,62 @@ window.openProceedModal = async function(appointmentId) {
 
           // Update appointment status to completed
           const { error: appointmentError } = await supabase
-            .from('appointments')
-            .update({ 
-              status: 'completed',
-              completed_at: new Date().toISOString()
+            .from("appointments")
+            .update({
+              status: "completed",
+              completed_at: new Date().toISOString(),
             })
-            .eq('appointment_id', appointmentId);
+            .eq("appointment_id", appointmentId);
 
           if (appointmentError) throw appointmentError;
 
-          showError('Transaction completed successfully!');
-          modal.classList.add('hidden');
-          
+          showError("Transaction completed successfully!");
+          modal.classList.add("hidden");
+
           // Reset form
-          document.getElementById('billingList').innerHTML = '';
-          document.getElementById('billingTotal').textContent = '0.00';
-          document.getElementById('serviceSelect').value = '';
-          document.getElementById('productSelect').value = '';
-          
+          document.getElementById("billingList").innerHTML = "";
+          document.getElementById("billingTotal").textContent = "0.00";
+          document.getElementById("serviceSelect").value = "";
+          document.getElementById("productSelect").value = "";
+
           // Reload dashboard to reflect changes
           loadDashboard();
-          
         } catch (error) {
-          console.error('Error completing transaction:', error);
-          showError('Failed to complete transaction: ' + error.message);
+          console.error("Error completing transaction:", error);
+          showError("Failed to complete transaction: " + error.message);
         }
       });
     }
-
   } catch (error) {
-    console.error('Error opening proceed modal:', error);
-    showError('Failed to load appointment details');
+    console.error("Error opening proceed modal:", error);
+    showError("Failed to load appointment details");
   }
 };
 
 function populateAppointmentDetails(appointment) {
-  const appointmentDetails = document.getElementById('appointmentDetails');
+  const appointmentDetails = document.getElementById("appointmentDetails");
   const pet = appointment.pets;
   const service = appointment.services;
   const customerName = `${pet.users_table.first_name} ${pet.users_table.last_name}`;
   const imageUrl = getPetImage(pet);
+  const urn = appointment.urn || "N/A";
 
   appointmentDetails.innerHTML = `
     <div class="flex items-start gap-4">
-      <img src="${imageUrl}" alt="${pet.pet_name}" class="w-16 h-16 rounded-full object-cover border">
+      <img src="${imageUrl}" alt="${
+    pet.pet_name
+  }" class="w-16 h-16 rounded-full object-cover border">
       <div>
         <h3 class="font-semibold text-lg">${pet.pet_name}</h3>
         <p class="text-sm text-gray-600">${service.name}</p>
         <p class="text-sm text-gray-500">Customer: ${customerName}</p>
-        <p class="text-sm text-gray-500">Date: ${formatDate(appointment.appointment_date)}</p>
-        <p class="text-sm text-gray-500">Time: ${formatTime(appointment.appointment_time)}</p>
+        <p class="text-sm text-gray-500">Date: ${formatDate(
+          appointment.appointment_date
+        )}</p>
+        <p class="text-sm text-gray-500">Time: ${formatTime(
+          appointment.appointment_time
+        )}</p>
+        <p><span>URN:</span> <span class="text-blue-700 font-mono">${urn}</span></p>
       </div>
     </div>
   `;
@@ -875,64 +1043,78 @@ function populateAppointmentDetails(appointment) {
 async function loadServices(initialServiceId = null) {
   try {
     const { data: services, error } = await supabase
-      .from('services')
-      .select('*')
-      .order('name');
+      .from("services")
+      .select("*")
+      .order("name");
 
     if (error) throw error;
 
-    const serviceSelect = document.getElementById('serviceSelect');
-    serviceSelect.innerHTML = '<option value="">-- Select a Service --</option>' +
-      services.map(service => {
-        // Parse the JSON price and get the first value
-        const priceObj = typeof service.price === 'string' ? JSON.parse(service.price) : service.price;
-        const price = Object.values(priceObj)[0] || 0;
-        return `
-          <option value="${service.id}" data-price="${price}" ${service.id === initialServiceId ? 'selected' : ''}>
+    const serviceSelect = document.getElementById("serviceSelect");
+    serviceSelect.innerHTML =
+      '<option value="">-- Select a Service --</option>' +
+      services
+        .map((service) => {
+          // Parse the JSON price and get the first value
+          const priceObj =
+            typeof service.price === "string"
+              ? JSON.parse(service.price)
+              : service.price;
+          const price = Object.values(priceObj)[0] || 0;
+          return `
+          <option value="${service.id}" data-price="${price}" ${
+            service.id === initialServiceId ? "selected" : ""
+          }>
             ${service.name} - ₱${price.toFixed(2)}
           </option>
         `;
-      }).join('');
-
+        })
+        .join("");
   } catch (error) {
-    console.error('Error loading services:', error);
-    showError('Failed to load services');
+    console.error("Error loading services:", error);
+    showError("Failed to load services");
   }
 }
 
 async function loadProducts() {
   try {
     const { data: products, error } = await supabase
-      .from('products')
-      .select('*')
-      .order('name');
+      .from("products")
+      .select("*")
+      .order("name");
 
     if (error) throw error;
 
-    const productSelect = document.getElementById('productSelect');
-    productSelect.innerHTML = '<option value="">-- Select a Product --</option>' +
-      products.map(product => `
+    const productSelect = document.getElementById("productSelect");
+    productSelect.innerHTML =
+      '<option value="">-- Select a Product --</option>' +
+      products
+        .map(
+          (product) => `
         <option value="${product.product_id}" data-price="${product.price}">
           ${product.name} - ₱${product.price}
         </option>
-      `).join('');
-
+      `
+        )
+        .join("");
   } catch (error) {
-    console.error('Error loading products:', error);
-    showError('Failed to load products');
+    console.error("Error loading products:", error);
+    showError("Failed to load products");
   }
 }
 
 function initializeBillingList(appointment) {
-  const billingList = document.getElementById('billingList');
-  const billingTotal = document.getElementById('billingTotal');
-  
+  const billingList = document.getElementById("billingList");
+  const billingTotal = document.getElementById("billingTotal");
+
   // Add initial service to billing
   const service = appointment.services;
   // Parse the JSON price and get the first value
-  const priceObj = typeof service.price === 'string' ? JSON.parse(service.price) : service.price;
+  const priceObj =
+    typeof service.price === "string"
+      ? JSON.parse(service.price)
+      : service.price;
   const price = Object.values(priceObj)[0] || 0;
-  
+
   billingList.innerHTML = `
     <li class="flex justify-between items-center">
       <span>${service.name}</span>
@@ -945,18 +1127,18 @@ function initializeBillingList(appointment) {
 // Event Listeners Setup
 function setupModalEventListeners() {
   // Add Service Button
-  document.getElementById('addServiceBtn').addEventListener('click', () => {
-    const serviceSelect = document.getElementById('serviceSelect');
+  document.getElementById("addServiceBtn").addEventListener("click", () => {
+    const serviceSelect = document.getElementById("serviceSelect");
     const selectedOption = serviceSelect.options[serviceSelect.selectedIndex];
-    
+
     if (!serviceSelect.value) {
-      showError('Please select a service');
+      showError("Please select a service");
       return;
     }
 
-    const billingList = document.getElementById('billingList');
-    const billingTotal = document.getElementById('billingTotal');
-    
+    const billingList = document.getElementById("billingList");
+    const billingTotal = document.getElementById("billingTotal");
+
     // Add service to billing list
     billingList.innerHTML += `
       <li class="flex justify-between items-center">
@@ -971,22 +1153,22 @@ function setupModalEventListeners() {
     billingTotal.textContent = newTotal.toFixed(2);
 
     // Reset selection
-    serviceSelect.value = '';
+    serviceSelect.value = "";
   });
 
   // Add Product Button
-  document.getElementById('addProductBtn').addEventListener('click', () => {
-    const productSelect = document.getElementById('productSelect');
+  document.getElementById("addProductBtn").addEventListener("click", () => {
+    const productSelect = document.getElementById("productSelect");
     const selectedOption = productSelect.options[productSelect.selectedIndex];
-    
+
     if (!productSelect.value) {
-      showError('Please select a product');
+      showError("Please select a product");
       return;
     }
 
-    const billingList = document.getElementById('billingList');
-    const billingTotal = document.getElementById('billingTotal');
-    
+    const billingList = document.getElementById("billingList");
+    const billingTotal = document.getElementById("billingTotal");
+
     // Add product to billing list
     billingList.innerHTML += `
       <li class="flex justify-between items-center">
@@ -1001,103 +1183,106 @@ function setupModalEventListeners() {
     billingTotal.textContent = newTotal.toFixed(2);
 
     // Reset selection
-    productSelect.value = '';
+    productSelect.value = "";
   });
 
   // Cancel Button
-  document.getElementById('cancelBillingBtn').addEventListener('click', () => {
-    const modal = document.getElementById('proceedModal');
-    modal.classList.add('hidden');
+  document.getElementById("cancelBillingBtn").addEventListener("click", () => {
+    const modal = document.getElementById("proceedModal");
+    modal.classList.add("hidden");
     // Reset form
-    document.getElementById('billingList').innerHTML = '';
-    document.getElementById('billingTotal').textContent = '0.00';
-    document.getElementById('serviceSelect').value = '';
-    document.getElementById('productSelect').value = '';
+    document.getElementById("billingList").innerHTML = "";
+    document.getElementById("billingTotal").textContent = "0.00";
+    document.getElementById("serviceSelect").value = "";
+    document.getElementById("productSelect").value = "";
   });
 
   // Complete Button
-  document.getElementById('completeBillingBtn').addEventListener('click', async () => {
-    try {
-      const paymentMethod = document.getElementById('paymentMethodSelect').value;
-      const total = parseFloat(document.getElementById('billingTotal').textContent);
-      const appointmentId = document.getElementById('proceedModal').dataset.appointmentId;
-      
-      if (!paymentMethod) {
-        showError('Please select a payment method');
-        return;
+  document
+    .getElementById("completeBillingBtn")
+    .addEventListener("click", async () => {
+      try {
+        const paymentMethod = document.getElementById(
+          "paymentMethodSelect"
+        ).value;
+        const total = parseFloat(
+          document.getElementById("billingTotal").textContent
+        );
+        const appointmentId =
+          document.getElementById("proceedModal").dataset.appointmentId;
+
+        if (!paymentMethod) {
+          showError("Please select a payment method");
+          return;
+        }
+
+        // Ensure payment method matches database constraints exactly
+        const validPaymentMethods = ["Cash", "GCash", "Credit Card", "Other"];
+        if (!validPaymentMethods.includes(paymentMethod)) {
+          showError("Invalid payment method selected");
+          return;
+        }
+
+        // Calculate amounts
+        const subtotal = total / 1.12;
+        const tax = total - subtotal;
+
+        // Get all items from billing list
+        const billingItems = Array.from(
+          document.getElementById("billingList").children
+        ).map((item) => {
+          const [name, price] = item.textContent.split("₱");
+          return {
+            name: name.trim(),
+            price: parseFloat(price),
+          };
+        });
+
+        // Create transaction record
+        const { data: transaction, error: transactionError } = await supabase
+          .from("transactions")
+          .insert({
+            transaction_code: "TXN-" + Date.now().toString(36).toUpperCase(),
+            total_amount: total,
+            tax_amount: tax,
+            subtotal_amount: subtotal,
+            payment_method: paymentMethod,
+            status: "Paid",
+            transaction_type: "Sale",
+            remarks: `Appointment ID: ${appointmentId}`,
+          })
+          .select();
+
+        if (transactionError) throw transactionError;
+
+        // Update appointment status to completed
+        const { error: appointmentError } = await supabase
+          .from("appointments")
+          .update({
+            status: "completed",
+            completed_at: new Date().toISOString(),
+          })
+          .eq("appointment_id", appointmentId);
+
+        if (appointmentError) throw appointmentError;
+
+        showError("Transaction completed successfully!");
+        modal.classList.add("hidden");
+
+        // Reset form
+        document.getElementById("billingList").innerHTML = "";
+        document.getElementById("billingTotal").textContent = "0.00";
+        document.getElementById("serviceSelect").value = "";
+        document.getElementById("productSelect").value = "";
+
+        // Reload dashboard to reflect changes
+        loadDashboard();
+      } catch (error) {
+        console.error("Error completing transaction:", error);
+        showError("Failed to complete transaction: " + error.message);
       }
-
-      // Ensure payment method matches database constraints exactly
-      const validPaymentMethods = ['Cash', 'GCash', 'Credit Card', 'Other'];
-      if (!validPaymentMethods.includes(paymentMethod)) {
-        showError('Invalid payment method selected');
-        return;
-      }
-
-      // Calculate amounts
-      const subtotal = total / 1.12; 
-      const tax = total - subtotal;
-
-      // Get all items from billing list
-      const billingItems = Array.from(document.getElementById('billingList').children).map(item => {
-        const [name, price] = item.textContent.split('₱');
-        return {
-          name: name.trim(),
-          price: parseFloat(price)
-        };
-      });
-
-      // Create transaction record
-      const { data: transaction, error: transactionError } = await supabase
-        .from('transactions')
-        .insert({
-          transaction_code: 'TXN-' + Date.now().toString(36).toUpperCase(),
-          total_amount: total,
-          tax_amount: tax,
-          subtotal_amount: subtotal,
-          payment_method: paymentMethod,
-          status: 'Paid',
-          transaction_type: 'Sale',
-          remarks: `Appointment ID: ${appointmentId}`
-        })
-        .select();
-
-      if (transactionError) throw transactionError;
-
-      // Update appointment status to completed
-      const { error: appointmentError } = await supabase
-        .from('appointments')
-        .update({ 
-          status: 'completed',
-          completed_at: new Date().toISOString()
-        })
-        .eq('appointment_id', appointmentId);
-
-      if (appointmentError) throw appointmentError;
-
-      showError('Transaction completed successfully!');
-      modal.classList.add('hidden');
-      
-      // Reset form
-      document.getElementById('billingList').innerHTML = '';
-      document.getElementById('billingTotal').textContent = '0.00';
-      document.getElementById('serviceSelect').value = '';
-      document.getElementById('productSelect').value = '';
-      
-      // Reload dashboard to reflect changes
-      loadDashboard();
-      
-    } catch (error) {
-      console.error('Error completing transaction:', error);
-      showError('Failed to complete transaction: ' + error.message);
-    }
-  });
+    });
 }
 
 // Export functions that need to be accessed from other files
-export {
-  handleAppointmentAction,
-  checkLowStock,
-  loadDashboard
-};
-
+export { handleAppointmentAction, checkLowStock, loadDashboard };

@@ -296,6 +296,13 @@
               <div class="bg-white rounded-xl shadow p-5">
                 <div class="flex justify-between items-center mb-3">
                   <h2 class="text-xl font-semibold">Services To-Do</h2>
+                  <input
+                    type="text"
+                    id="urn-search"
+                    class="border p-2 rounded ml-4"
+                    placeholder="Search by URN..."
+                    style="width: 220px"
+                  />
                 </div>
                 <div
                   id="todaysSchedule"
@@ -659,14 +666,11 @@
             </div>
           </div>
 
-          
           <!-- Right side: Calendar Only -->
           <div class="flex flex-col gap-6 sticky top-0 h-fit">
             <!-- Calendar Box -->
             <div class="bg-white p-6 rounded-2xl shadow-md">
-              <h2 class="font-bold text-xl flex items-center">
-                Calendar View
-              </h2>
+              <h2 class="font-bold text-xl flex items-center">Calendar View</h2>
               <p class="text-gray-600 mt-2">
                 Check your upcoming appointments at a glance on the calendar.
               </p>
@@ -682,10 +686,11 @@
           <p class="text-gray-600 mt-2">View and manage customers.</p>
 
           <!-- Search & Filter -->
-          <div class="mt-4 bg-white p-4 rounded-lg shadow-md border-l-4 border-blue-500">
+          <div
+            class="mt-4 bg-white p-4 rounded-lg shadow-md border-l-4 border-blue-500"
+          >
             <h2 class="text-lg font-semibold mb-2">Search Customers</h2>
             <div class="flex flex-col md:flex-row gap-4">
-              
               <!-- Search input (80%) -->
               <div class="md:w-[80%] w-full">
                 <input
@@ -698,13 +703,13 @@
 
               <!-- Button (20%) -->
               <div class="md:w-[20%] w-full flex gap-2">
-                <button id="addAccountBtn"
+                <button
+                  id="addAccountBtn"
                   class="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700 w-full"
                 >
                   Create User Account
                 </button>
               </div>
-              
             </div>
           </div>
 
@@ -799,43 +804,105 @@
             </form>
           </div>
 
-         <!-- Add Account Modal -->
-         <div id="createAccountModal" class="fixed inset-0 bg-black bg-opacity-40 flex justify-center items-center z-50 hidden">
-          <div class="bg-white p-4 rounded-md">
-            <h2 class="text-xl font-semibold mb-4">Create Account</h2>
-            <div>
-              <label>
-                <input type="radio" name="accountType" value="customer" checked>
-                Customer
-              </label>
-              <label class="ml-4">
-                <input type="radio" name="accountType" value="business_admin">
-                Business Admin
-              </label>
-            </div>
-        
-            <!-- Customer Form -->
-            <div id="customerForm" class="mt-4">
-              <input id="customerFirstName" type="text" placeholder="First Name" class="border p-2 mb-2 w-full">
-              <input id="customerLastName" type="text" placeholder="Last Name" class="border p-2 mb-2 w-full">
-              <input id="customerEmail" type="email" placeholder="Email" class="border p-2 mb-2 w-full">
-              <input id="customerPhone" type="password" placeholder="Password" class="border p-2 mb-2 w-full">
-            </div>
-        
-            <!-- Business Admin Form -->
-            <div id="businessAdminForm" class="mt-4 hidden">
-              <input id="businessFirstName" type="text" placeholder="First Name" class="border p-2 mb-2 w-full">
-              <input id="businessLastName" type="text" placeholder="Last Name" class="border p-2 mb-2 w-full">
-              <input id="businessEmail" type="email" placeholder="Email" class="border p-2 mb-2 w-full">
-              <input id="businessPassword" type="password" placeholder="Password" class="border p-2 mb-2 w-full">
-            </div>
-        
-            <div class="mt-4">
-              <button id="saveAccountBtn" class="bg-blue-500 text-white p-2 rounded">Create Account</button>
-              <button id="closeModalBtn" class="bg-red-500 text-white p-2 rounded ml-2">Close</button>
+          <!-- Add Account Modal -->
+          <div
+            id="createAccountModal"
+            class="fixed inset-0 bg-black bg-opacity-40 flex justify-center items-center z-50 hidden"
+          >
+            <div class="bg-white p-4 rounded-md">
+              <h2 class="text-xl font-semibold mb-4">Create Account</h2>
+              <div>
+                <label>
+                  <input
+                    type="radio"
+                    name="accountType"
+                    value="customer"
+                    checked
+                  />
+                  Customer
+                </label>
+                <label class="ml-4">
+                  <input
+                    type="radio"
+                    name="accountType"
+                    value="business_admin"
+                  />
+                  Business Admin
+                </label>
+              </div>
+
+              <!-- Customer Form -->
+              <div id="customerForm" class="mt-4">
+                <input
+                  id="customerFirstName"
+                  type="text"
+                  placeholder="First Name"
+                  class="border p-2 mb-2 w-full"
+                />
+                <input
+                  id="customerLastName"
+                  type="text"
+                  placeholder="Last Name"
+                  class="border p-2 mb-2 w-full"
+                />
+                <input
+                  id="customerEmail"
+                  type="email"
+                  placeholder="Email"
+                  class="border p-2 mb-2 w-full"
+                />
+                <input
+                  id="customerPhone"
+                  type="password"
+                  placeholder="Password"
+                  class="border p-2 mb-2 w-full"
+                />
+              </div>
+
+              <!-- Business Admin Form -->
+              <div id="businessAdminForm" class="mt-4 hidden">
+                <input
+                  id="businessFirstName"
+                  type="text"
+                  placeholder="First Name"
+                  class="border p-2 mb-2 w-full"
+                />
+                <input
+                  id="businessLastName"
+                  type="text"
+                  placeholder="Last Name"
+                  class="border p-2 mb-2 w-full"
+                />
+                <input
+                  id="businessEmail"
+                  type="email"
+                  placeholder="Email"
+                  class="border p-2 mb-2 w-full"
+                />
+                <input
+                  id="businessPassword"
+                  type="password"
+                  placeholder="Password"
+                  class="border p-2 mb-2 w-full"
+                />
+              </div>
+
+              <div class="mt-4">
+                <button
+                  id="saveAccountBtn"
+                  class="bg-blue-500 text-white p-2 rounded"
+                >
+                  Create Account
+                </button>
+                <button
+                  id="closeModalBtn"
+                  class="bg-red-500 text-white p-2 rounded ml-2"
+                >
+                  Close
+                </button>
+              </div>
             </div>
           </div>
-        </div>
 
           <!-- Edit Customer Modal -->
           <div
@@ -882,14 +949,14 @@
                 <div class="flex justify-end">
                   <button
                     type="button"
-                    id="cancelEditBtn"  
+                    id="cancelEditBtn"
                     class="bg-gray-300 text-gray-800 px-4 py-2 rounded mr-2 hover:bg-gray-400"
                   >
                     Cancel
                   </button>
                   <button
                     type="submit"
-                    id="submitEditBtn" 
+                    id="submitEditBtn"
                     class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-700"
                   >
                     Save
@@ -1351,12 +1418,18 @@
         <section id="audit-log" class="content-section hidden">
           <!-- Header Section -->
           <div class="px-4">
-            <h1 class="text-2xl md:text-3xl font-bold flex items-center">Audit Log</h1>
-            <p class="text-gray-600 mt-1 md:mt-2 text-sm md:text-base">Monitor Business Flow</p>
+            <h1 class="text-2xl md:text-3xl font-bold flex items-center">
+              Audit Log
+            </h1>
+            <p class="text-gray-600 mt-1 md:mt-2 text-sm md:text-base">
+              Monitor Business Flow
+            </p>
           </div>
-        
+
           <!-- Filter Section -->
-          <div class="audit-log-filters mt-4 px-4 flex flex-col sm:flex-row items-start sm:items-center gap-2 sm:gap-4">
+          <div
+            class="audit-log-filters mt-4 px-4 flex flex-col sm:flex-row items-start sm:items-center gap-2 sm:gap-4"
+          >
             <!-- Action Type Dropdown -->
             <select
               id="actionTypeFilter"
@@ -1365,7 +1438,7 @@
               <option value="">All Actions</option>
               <!-- Populated dynamically -->
             </select>
-        
+
             <!-- Filter Button -->
             <button
               id="filterButton"
@@ -1374,28 +1447,36 @@
               Filter
             </button>
           </div>
-        
+
           <!-- Audit Log Table -->
           <div class="mt-6 px-4 overflow-x-auto">
             <!-- Table -->
-            <table class="mt-4 w-full table-auto border-collapse border border-gray-300 text-sm md:text-base">
+            <table
+              class="mt-4 w-full table-auto border-collapse border border-gray-300 text-sm md:text-base"
+            >
               <thead>
                 <tr>
                   <th class="border p-2 text-left">Timestamp</th>
-                  <th class="border p-2 text-left hidden sm:table-cell">User</th>
+                  <th class="border p-2 text-left hidden sm:table-cell">
+                    User
+                  </th>
                   <th class="border p-2 text-left">Action</th>
-                  <th class="border p-2 text-left hidden md:table-cell">Target</th>
+                  <th class="border p-2 text-left hidden md:table-cell">
+                    Target
+                  </th>
                   <th class="border p-2 text-left">Details</th>
                 </tr>
               </thead>
               <tbody id="auditLogBody">
-                <tr id="placeholderRow" style="display: none;">
-                  <td colspan="5" class="text-center p-4 text-gray-500">No audit logs found.</td>
+                <tr id="placeholderRow" style="display: none">
+                  <td colspan="5" class="text-center p-4 text-gray-500">
+                    No audit logs found.
+                  </td>
                 </tr>
               </tbody>
             </table>
           </div>
-        
+
           <!-- Pagination Controls -->
           <div class="mt-4 px-4 flex justify-center">
             <button
@@ -1413,15 +1494,20 @@
               Next
             </button>
           </div>
-        
+
           <!-- View Changes Modal -->
           <div
             id="changesModal"
             class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center hidden z-50 p-4"
           >
-            <div class="bg-white rounded-lg p-4 md:p-6 w-full max-w-2xl max-h-[90vh] overflow-y-auto shadow-lg">
+            <div
+              class="bg-white rounded-lg p-4 md:p-6 w-full max-w-2xl max-h-[90vh] overflow-y-auto shadow-lg"
+            >
               <h2 class="text-lg md:text-xl font-bold mb-4">Change Details</h2>
-              <div id="changesContent" class="overflow-x-auto text-sm md:text-base">
+              <div
+                id="changesContent"
+                class="overflow-x-auto text-sm md:text-base"
+              >
                 <!-- Injected dynamically -->
               </div>
               <div class="text-right mt-4">
@@ -1435,7 +1521,6 @@
             </div>
           </div>
         </section>
-        
       </main>
     </div>
 
@@ -1607,54 +1692,54 @@
     </script>
 
     <script>
-     document.addEventListener("DOMContentLoaded", function () {
-      const userSession = localStorage.getItem("userSession");
-      const userRole = localStorage.getItem("userRole");
-      const currentPage = window.location.pathname;
+      document.addEventListener("DOMContentLoaded", function () {
+        const userSession = localStorage.getItem("userSession");
+        const userRole = localStorage.getItem("userRole");
+        const currentPage = window.location.pathname;
 
-      if (!userSession) {
-        alert("Access denied. Please log in.");
-        window.location.href = "/frontend/public/index.html";
-        return;
-      }
-
-      if (
-        currentPage.includes("admin-dashboard.html") &&
-        !["system_admin", "business_admin"].includes(userRole)
-      ) {
-        alert("Unauthorized access!");
-        window.location.href = "/frontend/public/index.html";
-        return;
-      }
-
-      const welcomeHeader = document.getElementById("welcomeHeader");
-      if (welcomeHeader) {
-        if (userRole === "business_admin") {
-          welcomeHeader.textContent = "Welcome, Staff!";
-        } else if (userRole === "system_admin") {
-          welcomeHeader.textContent = "Welcome, Admin!";
+        if (!userSession) {
+          alert("Access denied. Please log in.");
+          window.location.href = "/frontend/public/index.html";
+          return;
         }
-      }
 
-      // Apply visibility logic for business_admin
-      if (userRole === "business_admin") {
-        // Hide main sections
-        const customersSection = document.getElementById("customers");
-        const auditLogSection = document.getElementById("audit-log");
+        if (
+          currentPage.includes("admin-dashboard.html") &&
+          !["system_admin", "business_admin"].includes(userRole)
+        ) {
+          alert("Unauthorized access!");
+          window.location.href = "/frontend/public/index.html";
+          return;
+        }
 
-        if (customersSection) customersSection.classList.add("hidden");
-        if (auditLogSection) auditLogSection.classList.add("hidden");
+        const welcomeHeader = document.getElementById("welcomeHeader");
+        if (welcomeHeader) {
+          if (userRole === "business_admin") {
+            welcomeHeader.textContent = "Welcome, Staff!";
+          } else if (userRole === "system_admin") {
+            welcomeHeader.textContent = "Welcome, Admin!";
+          }
+        }
 
-        // Hide sidebar links
-        const customersLink = document.getElementById("sidebarCustomersLink");
-        const auditLogLink = document.getElementById("sidebarAuditLogLink");
+        // Apply visibility logic for business_admin
+        if (userRole === "business_admin") {
+          // Hide main sections
+          const customersSection = document.getElementById("customers");
+          const auditLogSection = document.getElementById("audit-log");
 
-        if (customersLink) customersLink.classList.add("hidden");
-        if (auditLogLink) auditLogLink.classList.add("hidden");
-      }
+          if (customersSection) customersSection.classList.add("hidden");
+          if (auditLogSection) auditLogSection.classList.add("hidden");
 
-      document.body.classList.remove("hidden");
-    });
+          // Hide sidebar links
+          const customersLink = document.getElementById("sidebarCustomersLink");
+          const auditLogLink = document.getElementById("sidebarAuditLogLink");
+
+          if (customersLink) customersLink.classList.add("hidden");
+          if (auditLogLink) auditLogLink.classList.add("hidden");
+        }
+
+        document.body.classList.remove("hidden");
+      });
     </script>
 
     <script src="../js/auth.js"></script>
