@@ -48,9 +48,10 @@ document.addEventListener("DOMContentLoaded", () => {
       const sourceTable = (status === "completed") ? "completed_appointments" : "appointments";
 
       const { data, error } = await supabase
-        .from(sourceTable)
+        .from(sourceTable) 
         .select(`
           appointment_id,
+          urn,
           appointment_date,
           appointment_time,
           created_at,
@@ -114,6 +115,7 @@ document.addEventListener("DOMContentLoaded", () => {
     const appointmentTime = appt.appointment_time?.slice(0, 5) || "—";
     const bookedDate = new Date(appt.created_at).toLocaleDateString();
     const statusLabel = appt.status === 'no show' ? 'No Show' : appt.status.charAt(0).toUpperCase() + appt.status.slice(1);
+    const urn = appt.urn || "N/A";
   
     const div = document.createElement("div");
     div.className = "bg-gray-50 p-4 rounded-xl shadow border";
@@ -128,6 +130,7 @@ document.addEventListener("DOMContentLoaded", () => {
           at <span class="font-medium">${appointmentTime}</span>
         </p>
         <p class="text-gray-700">🕓 Booked On: <span class="font-medium">${bookedDate}</span></p>
+        <p class="text-gray-700">🆔 URN: <span class="font-mono text-blue-700">${appt.urn || "N/A"}</span></p>  
         <p class="text-sm text-gray-500 italic">Status: ${statusLabel}</p>
       </div>
     `;
