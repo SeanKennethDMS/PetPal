@@ -1247,7 +1247,7 @@ async function cancelAppointment(appointmentId) {
   debounceLoadAppointments();
 }
 
-document.addEventListener("click", (e) => {
+document.addEventListener("click", async (e) => {
   if (e.target.matches("[data-details]")) {
     const app = JSON.parse(e.target.getAttribute("data-details"));
     const modal = document.getElementById("appointment-details-modal");
@@ -1256,7 +1256,7 @@ document.addEventListener("click", (e) => {
     const formattedDate = formatDate(app.appointment_date);
     const formattedTime = convertToAMPM(app.appointment_time);
 
-    // Fill fields directly (no innerHTML)
+    // Fill fields that are available immediately
     document.getElementById("detail-urn").textContent =
       app.urn || "Not available";
     document.getElementById("detail-service").textContent =
@@ -1264,13 +1264,16 @@ document.addEventListener("click", (e) => {
     document.getElementById(
       "detail-datetime"
     ).textContent = `${formattedDate} at ${formattedTime}`;
-    document.getElementById("detail-pet").textContent = app.pet_name || "N/A"; // Fixed
     document.getElementById("detail-status").textContent = app.status || "N/A";
     document.getElementById("detail-price").textContent = app.services?.price
-      ? `₱${app.services.price.toLocaleString()}`
+      ? `₱${Number(app.services.price).toLocaleString()}`
       : "N/A";
 
-    // Remove duration-related code
+    // Fetch and display the pet name
+    document.getElementById("detail-pet").textContent = "Loading...";
+    const petName = await getPetName(app.pet_id);
+    document.getElementById("detail-pet").textContent = petName;
+
     modal.classList.remove("hidden");
   }
 });
