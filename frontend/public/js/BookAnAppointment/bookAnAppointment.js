@@ -1252,10 +1252,11 @@ document.addEventListener("click", (e) => {
     const app = JSON.parse(e.target.getAttribute("data-details"));
     const modal = document.getElementById("appointment-details-modal");
 
+    // Format date/time
     const formattedDate = formatDate(app.appointment_date);
     const formattedTime = convertToAMPM(app.appointment_time);
 
-    // Fill in the fields
+    // Fill fields directly (no innerHTML)
     document.getElementById("detail-urn").textContent =
       app.urn || "Not available";
     document.getElementById("detail-service").textContent =
@@ -1263,54 +1264,13 @@ document.addEventListener("click", (e) => {
     document.getElementById(
       "detail-datetime"
     ).textContent = `${formattedDate} at ${formattedTime}`;
-    document.getElementById("detail-pet").textContent = app.pet_name || "N/A";
-
+    document.getElementById("detail-pet").textContent = app.pet_name || "N/A"; // Fixed
     document.getElementById("detail-status").textContent = app.status || "N/A";
-    document.getElementById("detail-duration").textContent = app.services
-      ?.duration
-      ? `${app.services.duration} minutes`
-      : "N/A";
     document.getElementById("detail-price").textContent = app.services?.price
       ? `₱${app.services.price.toLocaleString()}`
       : "N/A";
 
-    modal.classList.remove("hidden");
-
-    const dateBooked = new Date(app.created_at).toLocaleDateString(undefined, {
-      year: "numeric",
-      month: "short",
-      day: "numeric",
-      hour: "2-digit",
-      minute: "2-digit",
-    });
-
-    content.innerHTML = `
-  <div class="bg-blue-50 border border-blue-200 rounded-lg p-3 mb-4">
-    <div class="flex justify-between items-center">
-      <div>
-        <p class="text-xs text-blue-600">Your Reference Number</p>
-        <p class="text-blue-800 font-bold text-lg tracking-wider">${
-          app.urn || "Not available"
-        }</p>
-      </div>
-      ${
-        app.urn
-          ? `
-        <button class="copy-urn text-blue-500 hover:text-blue-700" data-urn="${app.urn}">
-          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v3m2 4H10m0 0l3-3m-3 3l3 3"/>
-          </svg>
-        </button>
-      `
-          : ""
-      }
-    </div>
-    <p class="text-xs text-blue-600 mt-1">Present this number when you arrive</p>
-  </div>
-  <p><strong>Service:</strong> ${app.services?.name || "N/A"}</p>
-  <!-- rest of your existing details -->
-`;
-
+    // Remove duration-related code
     modal.classList.remove("hidden");
   }
 });
