@@ -810,6 +810,7 @@ function renderAppointments(appointments) {
     }
 
     if (app.status === "accepted" && !app.original_appointment_date) {
+      // Always show Details button
       html += `
         <button class="px-3 py-1 bg-blue-100 text-blue-800 rounded text-sm hover:bg-blue-200" data-details='${JSON.stringify(app)}'>
           Details
@@ -817,21 +818,13 @@ function renderAppointments(appointments) {
       `;
       if (daysUntilAppointment > 7) {
         html += `
-          <button class="px-3 py-1 bg-blue-100 text-blue-800 rounded text-sm hover:bg-blue-200" data-details='${JSON.stringify(
-            app
-          )}'>
-            Details
-          </button>
-          <button class="px-3 py-1 bg-yellow-100 text-yellow-800 rounded text-sm hover:bg-yellow-200" data-resched="${
-            app.appointment_id
-          }">
+          <button class="px-3 py-1 bg-yellow-100 text-yellow-800 rounded text-sm hover:bg-yellow-200" data-resched="${app.appointment_id}">
             Reschedule
           </button>
-          <button class="px-3 py-1 bg-red-100 text-red-800 rounded text-sm hover:bg-red-200" data-id="${
-            app.appointment_id
-          }">
+          <button class="px-3 py-1 bg-red-100 text-red-800 rounded text-sm hover:bg-red-200" data-id="${app.appointment_id}">
             Cancel
-          </button>`;
+          </button>
+        `;
       } else {
         html += `<span class="text-sm text-gray-500 italic">Appointment cannot be changed within 7 days.</span>`;
       }

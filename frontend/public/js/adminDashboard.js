@@ -667,6 +667,7 @@ async function loadAppointments(status = "pending", page = 1) {
 // Appointment Actions
 async function handleAppointmentAction(appointmentId, action) {
   try {
+    // 1. Fetch the appointment (with URN)
     const { data: appointment, error: fetchError } = await supabase
       .from("appointments")
       .select(`
@@ -701,57 +702,20 @@ async function handleAppointmentAction(appointmentId, action) {
       .single();
 
     if (fetchError) throw fetchError;
-    if (!appointment || !appointment.pets || !appointment.pets.owner_id) {
-      throw new Error("Invalid appointment data");
-    }
+    console.log("Original URN:", appointment.urn); // Debug
 
-    const { newStatus, notificationType, notificationData } = getActionDetails(
-      action,
-      appointment
-    );
-
+    // 2. Update appointment status
+    const { newStatus, notificationType, notificationData } = getActionDetails(action, appointment);
     const { error: updateError } = await supabase
       .from("appointments")
-      .update({
-        status: newStatus,
-        completed_at: new Date().toISOString(),
-      })
+      .update({ status: newStatus, completed_at: new Date().toISOString() })
       .eq("appointment_id", appointmentId);
 
     if (updateError) throw updateError;
 
-    const urn = appointment.urn ?? null;
-
-
+    // 3. Handle completion
     if (newStatus === "completed") {
-      const paymentMethodSelect = document.getElementById("paymentMethodSelect");
-      const paymentMethod = paymentMethodSelect?.value || "Cash";
-
-      const total = appointment.services?.price || 0;
-      const tax = total * 0.12;
-      const subtotal = total;
-
-      // Insert into transactions
-      const { error: transactionError } = await supabase
-        .from("transactions")
-        .insert({
-          transaction_code: "TXN-" + Date.now().toString(36).toUpperCase(),
-          total_amount: total,
-          tax_amount: tax,
-          subtotal_amount: subtotal,
-          payment_method: paymentMethod,
-          status: "Paid",
-          transaction_type: "Sale",
-          urn: urn,
-          remarks: `Appointment ID: ${appointmentId} - Service: ${appointment.services?.name || "Unknown"}`,
-        });
-
-      if (transactionError) {
-        console.error("Insert error for transactions:", transactionError);
-        throw transactionError;
-      }
-
-      // Insert into completed_appointments
+      // 4. Build payload for completed_appointments (with URN)
       const completedAppointment = {
         appointment_id: appointment.appointment_id,
         appointment_date: appointment.appointment_date,
@@ -765,33 +729,51 @@ async function handleAppointmentAction(appointmentId, action) {
         updated_at: appointment.updated_at,
         original_appointment_date: appointment.original_appointment_date,
         original_appointment_time: appointment.original_appointment_time,
-        urn: appointment.urn ?? null,
+        urn: appointment.urn || null, // Explicit URN
       };
-      
-      console.log("🔍 completedAppointment payload:", completedAppointment);
-      
-      const { data, error: completedError } = await supabase
+
+      console.log("Inserting into completed_appointments:", completedAppointment); // Debug
+
+      // 5. Insert into completed_appointments
+      const { data: completedData, error: completedError } = await supabase
         .from("completed_appointments")
         .insert(completedAppointment)
         .select();
-      
-      if (completedError) {
-        console.error("Insert error for completed_appointments:", completedError);
-      } else {
-        console.log("completed_appointments inserted:", data);
-      }
+
+      if (completedError) throw completedError;
+      console.log("Inserted URN:", completedData[0]?.urn); // Verify
+
+      // 6. Create transaction
+      const paymentMethodSelect = document.getElementById("paymentMethodSelect");
+      const paymentMethod = paymentMethodSelect?.value || "Cash";
+      const total = appointment.services?.price || 0;
+      const tax = total * 0.12;
+      const subtotal = total;
+
+      const { error: transactionError } = await supabase.from("transactions").insert({
+        transaction_code: "TXN-" + Date.now().toString(36).toUpperCase(),
+        urn: appointment.urn || null,
+        total_amount: total,
+        tax_amount: tax,
+        subtotal_amount: subtotal,
+        payment_method: paymentMethod,
+        status: "Paid",
+        transaction_type: "Sale",
+        remarks: `Appointment ID: ${appointmentId} - Service: ${appointment.services?.name || "Unknown"}`,
+      });
+      if (transactionError) throw transactionError;
     }
 
+    // 7. Send notification and reload dashboard
     await NotificationService.sendNotification(
       appointment.pets.owner_id,
       notificationType,
       notificationData
     );
-
     await loadDashboard();
   } catch (error) {
     console.error("Error in handleAppointmentAction:", error);
-    showError("Failed to process appointment action. Please try again.");
+    showError("Failed to complete appointment.");
   }
 }
 
