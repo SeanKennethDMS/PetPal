@@ -235,7 +235,7 @@ async function createCustomerAccount() {
 
   try {
     // Create auth user with email confirmation
-    const { data, error } = await supabase.auth.signUp({
+    const { data: signUpData, error } = await supabase.auth.signUp({
       email,
       password,
       options: {
@@ -250,22 +250,36 @@ async function createCustomerAccount() {
     });
 
     if (error) throw error;
+    if (!signUpData.user) throw new Error('User creation failed');
 
-    // Create profile in user_profiles table
+    // 2. Insert into users_table
+    const { error: userTableError } = await supabase.from('users_table').insert({
+      id: signUpData.user.id,
+      email: email,
+      first_name: capitalizeName(firstname),
+      last_name: capitalizeName(lastname),
+      role: 'customer',
+      role_type: 'customer',
+      created_at: new Date().toISOString()
+    });
+
+    if (userTableError) throw userTableError;
+
+    // 3. Create profile in user_profiles table
     const { error: profileError } = await supabase.from('user_profiles')
       .upsert({
         user_id: signUpData.user.id,
         first_name: capitalizeName(firstName),
         last_name: capitalizeName(lastName),
         email: email,
-        updated_at: new Date().toISOString()
+        created_at: new Date().toISOString()
       }, { onConflict: 'user_id' });
 
     if (profileError) throw profileError;
 
     alert('Account created successfully! A confirmation email has been sent to the user.');
     closeModal(createAccountModal);
-    document.getElementById('customerForm').reset();
+    document.getElementById('addCustomerForm').reset();
     await loadAllCustomers();
   } catch (error) {
     console.error('Account creation error:', error);
@@ -308,13 +322,13 @@ async function createBusinessAdminAccount() {
     if (signUpError) throw signUpError;
     if (!signUpData.user) throw new Error('User creation failed');
 
+    // Remove last_updated and use created_at only
     const { error: userTableError } = await supabase.from('users_table').upsert({
       id: signUpData.user.id,
       email: email,
       role: 'business_admin',
       role_type: 'business_admin',
-      created_at: new Date().toISOString(),
-      updated_at: new Date().toISOString()
+      created_at: new Date().toISOString()
     }, { onConflict: 'id' });
 
     if (userTableError) throw userTableError;
@@ -325,18 +339,15 @@ async function createBusinessAdminAccount() {
         first_name: capitalizeName(firstName),
         last_name: capitalizeName(lastName),
         email: email,
-        updated_at: new Date().toISOString()
       }, { onConflict: 'user_id' });
 
     if (profileError) throw profileError;
 
     alert('Business admin account created successfully! A confirmation email has been sent.');
-    
     document.getElementById('businessFirstName').value = '';
     document.getElementById('businessLastName').value = '';
     document.getElementById('businessEmail').value = '';
     document.getElementById('businessPassword').value = '';
-    
     closeModal(createAccountModal);
   } catch (error) {
     console.error('Business admin creation error:', error);
