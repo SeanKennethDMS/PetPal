@@ -669,8 +669,7 @@ async function handleAppointmentAction(appointmentId, action) {
   try {
     const { data: appointment, error: fetchError } = await supabase
       .from("appointments")
-      .select(
-        `
+      .select(`
         *,
         pets!inner (
           pet_name,
@@ -685,8 +684,7 @@ async function handleAppointmentAction(appointmentId, action) {
           name,
           price
         )
-      `
-      )
+      `)
       .eq("appointment_id", appointmentId)
       .single();
 
@@ -695,6 +693,7 @@ async function handleAppointmentAction(appointmentId, action) {
       throw new Error("Invalid appointment data");
     }
 
+    const urn = appointment.urn ?? null;
     const { newStatus, notificationType, notificationData } = getActionDetails(
       action,
       appointment
@@ -711,18 +710,14 @@ async function handleAppointmentAction(appointmentId, action) {
     if (updateError) throw updateError;
 
     if (newStatus === "completed") {
-      // Fetch the URN directly from the appointments table
-      const { data: appointmentUrnRow, error: urnFetchError } = await supabase
-        .from("appointments")
-        .select("urn")
-        .eq("appointment_id", appointmentId)
-        .single();
+      const paymentMethodSelect = document.getElementById("paymentMethodSelect");
+      const paymentMethod = paymentMethodSelect?.value || "Cash";
 
-      if (urnFetchError) throw urnFetchError;
-      const urn = appointmentUrnRow.urn;
-      console.log("Fetched URN from appointments table:", urn);
+      const total = appointment.services?.price || 0;
+      const tax = total * 0.12;
+      const subtotal = total;
 
-      // Insert into transactions table
+      // Insert into transactions
       const { error: transactionError } = await supabase
         .from("transactions")
         .insert({
@@ -733,7 +728,7 @@ async function handleAppointmentAction(appointmentId, action) {
           payment_method: paymentMethod,
           status: "Paid",
           transaction_type: "Sale",
-          urn: urn, // Use fetched URN
+          urn: urn,
           remarks: `Appointment ID: ${appointmentId} - Service: ${appointment.services?.name || "Unknown"}`,
         });
 
@@ -742,62 +737,29 @@ async function handleAppointmentAction(appointmentId, action) {
         throw transactionError;
       }
 
-      // Insert into completed_appointments table (full insert)
-      const { data: updatedAppointment, error: fetchUpdatedError } = await supabase
-        .from("appointments")
-        .select("*")
-        .eq("appointment_id", appointmentId)
-        .single();
-
-      if (fetchUpdatedError) throw fetchUpdatedError;
-
+      // Insert into completed_appointments
       const completedAppointment = {
-        appointment_id: updatedAppointment.appointment_id,
-        appointment_date: updatedAppointment.appointment_date,
-        appointment_time: updatedAppointment.appointment_time,
-        created_at: updatedAppointment.created_at,
-        completed_at: updatedAppointment.completed_at,
-        status: updatedAppointment.status,
-        user_id: updatedAppointment.user_id,
-        pet_id: updatedAppointment.pet_id,
-        service_id: updatedAppointment.service_id,
-        updated_at: updatedAppointment.updated_at,
-        original_appointment_date: updatedAppointment.original_appointment_date,
-        original_appointment_time: updatedAppointment.original_appointment_time,
-        urn: urn, // Use fetched URN
+        appointment_id: appointment.appointment_id,
+        appointment_date: appointment.appointment_date,
+        appointment_time: appointment.appointment_time,
+        created_at: appointment.created_at,
+        completed_at: new Date().toISOString(),
+        status: "completed",
+        user_id: appointment.user_id,
+        pet_id: appointment.pet_id,
+        service_id: appointment.service_id,
+        updated_at: appointment.updated_at,
+        original_appointment_date: appointment.original_appointment_date,
+        original_appointment_time: appointment.original_appointment_time,
+        urn: urn,
       };
 
-      let completedError = null;
-      try {
-        const result = await supabase
-          .from("completed_appointments")
-          .insert(completedAppointment);
-        completedError = result.error;
-        if (completedError) {
-          console.error("Insert error for completed_appointments (full):", completedError);
-        }
-      } catch (err) {
-        console.error("Exception during completed_appointments insert (full):", err);
-        completedError = err;
-      }
+      const { error: completedError } = await supabase
+        .from("completed_appointments")
+        .insert(completedAppointment);
 
-      // If full insert fails, try minimal insert for debugging
       if (completedError) {
-        try {
-          const minimalResult = await supabase
-            .from("completed_appointments")
-            .insert({
-              appointment_id: updatedAppointment.appointment_id,
-              urn: urn
-            });
-          if (minimalResult.error) {
-            console.error("Insert error for completed_appointments (minimal):", minimalResult.error);
-          } else {
-            console.log("Minimal insert for completed_appointments succeeded.");
-          }
-        } catch (err) {
-          console.error("Exception during completed_appointments minimal insert:", err);
-        }
+        console.error("Insert error for completed_appointments:", completedError);
       }
     }
 
