@@ -715,6 +715,16 @@ async function handleAppointmentAction(appointmentId, action) {
 
     // 3. Handle completion
     if (newStatus === "completed") {
+      // Fetch the URN directly from the appointments table to ensure it's up-to-date
+      const { data: urnRow, error: urnFetchError } = await supabase
+        .from("appointments")
+        .select("urn")
+        .eq("appointment_id", appointmentId)
+        .single();
+      if (urnFetchError) throw urnFetchError;
+      const urn = urnRow.urn;
+      console.log("Fetched URN for completed_appointments:", urn);
+
       // 4. Build payload for completed_appointments (with URN)
       const completedAppointment = {
         appointment_id: appointment.appointment_id,
@@ -729,19 +739,17 @@ async function handleAppointmentAction(appointmentId, action) {
         updated_at: appointment.updated_at,
         original_appointment_date: appointment.original_appointment_date,
         original_appointment_time: appointment.original_appointment_time,
-        urn: appointment.urn || null, // Explicit URN
+        urn: urn || null, // Use fetched URN
       };
-
-      console.log("Inserting into completed_appointments:", completedAppointment); // Debug
+      console.log("Inserting into completed_appointments:", completedAppointment);
 
       // 5. Insert into completed_appointments
       const { data: completedData, error: completedError } = await supabase
         .from("completed_appointments")
         .insert(completedAppointment)
         .select();
-
       if (completedError) throw completedError;
-      console.log("Inserted URN:", completedData[0]?.urn); // Verify
+      console.log("Inserted completed_appointments row:", completedData);
 
       // 6. Create transaction
       const paymentMethodSelect = document.getElementById("paymentMethodSelect");
@@ -749,10 +757,9 @@ async function handleAppointmentAction(appointmentId, action) {
       const total = appointment.services?.price || 0;
       const tax = total * 0.12;
       const subtotal = total;
-
       const { error: transactionError } = await supabase.from("transactions").insert({
         transaction_code: "TXN-" + Date.now().toString(36).toUpperCase(),
-        urn: appointment.urn || null,
+        urn: urn || null,
         total_amount: total,
         tax_amount: tax,
         subtotal_amount: subtotal,

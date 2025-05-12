@@ -74,7 +74,7 @@ async function handleSignup(event) {
 
     } catch (error) {
         console.error("Signup error:", error);
-        showError(error.message || "Signup failed. Please try again.");
+        showError("Signup failed. Please try again.");
     } finally {
         signupBtn.disabled = false;
     }
