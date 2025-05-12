@@ -177,6 +177,7 @@ function renderTodaysAppointments(appointments) {
 
       return `
         <div class="flex items-start gap-4 bg-white p-4 rounded-lg shadow-sm border border-gray-100 appointment-item" data-urn="${urn}">
+          <!-- ... existing content ... -->
           <img src="${imageUrl}" alt="${
         pet?.pet_name
       }" class="w-12 h-12 rounded-full object-cover border">
@@ -190,32 +191,34 @@ function renderTodaysAppointments(appointments) {
                 <p class="text-xs text-gray-500">${time}</p>
                 <p class="text-xs text-blue-700 font-mono mt-1"><span class="font-semibold">URN:</span> ${urn}</p>
               </div>
-              <div class="flex gap-2">
-                <button class="proceed-btn px-3 py-1 text-sm bg-blue-600 text-white rounded hover:bg-blue-700" data-appointment-id="${
-                  app.appointment_id
-                }">
-                  Proceed
-                </button>
-                <button class="no-show-btn px-3 py-1 text-sm bg-red-600 text-white rounded hover:bg-red-700" data-appointment-id="${
-                  app.appointment_id
-                }">
-                  No Show
-                </button>
-              </div>
-            </div>
+          <div class="flex gap-2">
+            <button class="proceed-btn px-3 py-1 text-sm bg-blue-600 text-white rounded hover:bg-blue-700" data-appointment-id="${app.appointment_id}">
+              Proceed
+            </button>
+            <button class="no-show-btn px-3 py-1 text-sm bg-red-600 text-white rounded hover:bg-red-700" data-appointment-id="${app.appointment_id}">
+              No Show
+            </button>
           </div>
         </div>
       `;
     })
     .join("");
 
-  // Re-attach event listeners after rendering
-  container.querySelectorAll(".proceed-btn").forEach((button) => {
+    container.querySelectorAll(".proceed-btn").forEach((button) => {
+      button.addEventListener("click", () => {
+        const appointmentId = button.dataset.appointmentId;
+        openProceedModal(appointmentId);
+      });
+    });
+
+  // Add event listener for complete buttons
+  container.querySelectorAll(".complete-btn").forEach((button) => {
     button.addEventListener("click", () => {
       const appointmentId = button.dataset.appointmentId;
-      openProceedModal(appointmentId);
+      handleAppointmentAction(appointmentId, "complete");
     });
   });
+
 
   container.querySelectorAll(".no-show-btn").forEach((button) => {
     button.addEventListener("click", () => {
@@ -707,6 +710,97 @@ async function handleAppointmentAction(appointmentId, action) {
 
     if (updateError) throw updateError;
 
+    if (newStatus === "completed") {
+      // Fetch the URN directly from the appointments table
+      const { data: appointmentUrnRow, error: urnFetchError } = await supabase
+        .from("appointments")
+        .select("urn")
+        .eq("appointment_id", appointmentId)
+        .single();
+
+      if (urnFetchError) throw urnFetchError;
+      const urn = appointmentUrnRow.urn;
+      console.log("Fetched URN from appointments table:", urn);
+
+      // Insert into transactions table
+      const { error: transactionError } = await supabase
+        .from("transactions")
+        .insert({
+          transaction_code: "TXN-" + Date.now().toString(36).toUpperCase(),
+          total_amount: total,
+          tax_amount: tax,
+          subtotal_amount: subtotal,
+          payment_method: paymentMethod,
+          status: "Paid",
+          transaction_type: "Sale",
+          urn: urn, // Use fetched URN
+          remarks: `Appointment ID: ${appointmentId} - Service: ${appointment.services?.name || "Unknown"}`,
+        });
+
+      if (transactionError) {
+        console.error("Insert error for transactions:", transactionError);
+        throw transactionError;
+      }
+
+      // Insert into completed_appointments table (full insert)
+      const { data: updatedAppointment, error: fetchUpdatedError } = await supabase
+        .from("appointments")
+        .select("*")
+        .eq("appointment_id", appointmentId)
+        .single();
+
+      if (fetchUpdatedError) throw fetchUpdatedError;
+
+      const completedAppointment = {
+        appointment_id: updatedAppointment.appointment_id,
+        appointment_date: updatedAppointment.appointment_date,
+        appointment_time: updatedAppointment.appointment_time,
+        created_at: updatedAppointment.created_at,
+        completed_at: updatedAppointment.completed_at,
+        status: updatedAppointment.status,
+        user_id: updatedAppointment.user_id,
+        pet_id: updatedAppointment.pet_id,
+        service_id: updatedAppointment.service_id,
+        updated_at: updatedAppointment.updated_at,
+        original_appointment_date: updatedAppointment.original_appointment_date,
+        original_appointment_time: updatedAppointment.original_appointment_time,
+        urn: urn, // Use fetched URN
+      };
+
+      let completedError = null;
+      try {
+        const result = await supabase
+          .from("completed_appointments")
+          .insert(completedAppointment);
+        completedError = result.error;
+        if (completedError) {
+          console.error("Insert error for completed_appointments (full):", completedError);
+        }
+      } catch (err) {
+        console.error("Exception during completed_appointments insert (full):", err);
+        completedError = err;
+      }
+
+      // If full insert fails, try minimal insert for debugging
+      if (completedError) {
+        try {
+          const minimalResult = await supabase
+            .from("completed_appointments")
+            .insert({
+              appointment_id: updatedAppointment.appointment_id,
+              urn: urn
+            });
+          if (minimalResult.error) {
+            console.error("Insert error for completed_appointments (minimal):", minimalResult.error);
+          } else {
+            console.log("Minimal insert for completed_appointments succeeded.");
+          }
+        } catch (err) {
+          console.error("Exception during completed_appointments minimal insert:", err);
+        }
+      }
+    }
+
     await NotificationService.sendNotification(
       appointment.pets.owner_id,
       notificationType,
@@ -844,12 +938,15 @@ function getActionDetails(action, appointment) {
         notificationType: NOTIFICATION_TYPES.APPOINTMENT_NO_SHOW,
         notificationData: baseData,
       };
-    case "complete":
-      return {
-        newStatus: "completed",
-        notificationType: NOTIFICATION_TYPES.APPOINTMENT_COMPLETED,
-        notificationData: baseData,
-      };
+      case "complete":
+        return {
+          newStatus: "completed",
+          notificationType: NOTIFICATION_TYPES.APPOINTMENT_COMPLETED,
+          notificationData: {
+            ...baseData,
+            servicePrice: appointment.services.price
+          },
+        };
     default:
       throw new Error("Invalid action");
   }

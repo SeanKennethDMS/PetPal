@@ -655,10 +655,12 @@ document.addEventListener('DOMContentLoaded', async () => {
                 .from('transactions')
                 .select(`
                     id,
+                    transaction_code,
                     created_at,
                     total_amount,
                     status,
                     payment_method,
+                    urn,
                     transaction_items:transaction_items(
                         item_name,
                         quantity,
@@ -698,8 +700,10 @@ document.addEventListener('DOMContentLoaded', async () => {
             const itemCount = tx.transaction_items.reduce((sum, item) => sum + item.quantity, 0);
             
             row.innerHTML = `
-                <td class="border border-gray-300 p-2">#${tx.id.substring(0, 8)}</td>
+                <td class="border border-gray-300 p-2">${tx.transaction_code}</td>
+                <td class="border border-gray-300 p-2">${tx.urn ? tx.urn : 'N/A'}</td>
                 <td class="border border-gray-300 p-2">${new Date(tx.created_at).toLocaleString()}</td>
+                <td class="border border-gray-300 p-2">${tx.payment_method}</td>
                 <td class="border border-gray-300 p-2">₱${tx.total_amount.toFixed(2)}</td>
                 <td class="border border-gray-300 p-2 ${tx.status === 'completed' ? 'text-green-600' : 'text-yellow-600'}">
                     ${tx.status}
