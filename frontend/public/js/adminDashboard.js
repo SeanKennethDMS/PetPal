@@ -765,30 +765,20 @@ async function handleAppointmentAction(appointmentId, action) {
         updated_at: appointment.updated_at,
         original_appointment_date: appointment.original_appointment_date,
         original_appointment_time: appointment.original_appointment_time,
-        urn: appointment.urn ?? null, 
+        urn: appointment.urn ?? null,
       };
-
+      
+      console.log("🔍 completedAppointment payload:", completedAppointment);
+      
       const { data, error: completedError } = await supabase
         .from("completed_appointments")
-        .insert({
-          appointment_id: appointment.appointment_id,
-          appointment_date: appointment.appointment_date,
-          appointment_time: appointment.appointment_time,
-          created_at: appointment.created_at,
-          completed_at: new Date().toISOString(),
-          status: "completed",
-          user_id: appointment.user_id,
-          pet_id: appointment.pet_id,
-          service_id: appointment.service_id,
-          updated_at: appointment.updated_at,
-          original_appointment_date: appointment.original_appointment_date,
-          original_appointment_time: appointment.original_appointment_time,
-          urn: urn
-        })
+        .insert(completedAppointment)
         .select();
-
+      
       if (completedError) {
         console.error("Insert error for completed_appointments:", completedError);
+      } else {
+        console.log("completed_appointments inserted:", data);
       }
     }
 

@@ -810,6 +810,11 @@ function renderAppointments(appointments) {
     }
 
     if (app.status === "accepted" && !app.original_appointment_date) {
+      html += `
+        <button class="px-3 py-1 bg-blue-100 text-blue-800 rounded text-sm hover:bg-blue-200" data-details='${JSON.stringify(app)}'>
+          Details
+        </button>
+      `;
       if (daysUntilAppointment > 7) {
         html += `
           <button class="px-3 py-1 bg-blue-100 text-blue-800 rounded text-sm hover:bg-blue-200" data-details='${JSON.stringify(
