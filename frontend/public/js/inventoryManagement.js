@@ -215,7 +215,7 @@ if (addSupplierForm) {
       // Initial load
       const { data, error } = await supabase
         .from("products")
-        .select("*")
+        .select("*, product_batches(expiration_date)")
         .order("name", { ascending: true });
 
       if (error) {
@@ -272,6 +272,20 @@ if (addSupplierForm) {
         lowStockList.appendChild(li);
       }
 
+      // Find soonest expiration date from product_batches or fallback to products.expiration_date
+      let soonestExpiration = "N/A";
+      if (product.product_batches && product.product_batches.length > 0) {
+        const validDates = product.product_batches
+          .map(b => b.expiration_date)
+          .filter(date => !!date)
+          .sort();
+        if (validDates.length > 0) {
+          soonestExpiration = new Date(validDates[0]).toLocaleDateString();
+        }
+      } else if (product.expiration_date) {
+        soonestExpiration = new Date(product.expiration_date).toLocaleDateString();
+      }
+
       // Create table row (existing code remains)
       const row = document.createElement("tr");
       row.className = "hover:bg-gray-50";
@@ -288,11 +302,7 @@ if (addSupplierForm) {
                   2
                 )}</td>
                 <td class="border border-gray-300 p-2">
-                    ${
-                      product.updated_at
-                        ? new Date(product.updated_at).toLocaleDateString()
-                        : "N/A"
-                    }
+                    ${soonestExpiration}
                 </td>
                 <td class="border border-gray-300 p-2 space-x-2">
                     <button class="restockBtn bg-yellow-500 text-white px-3 py-1 rounded hover:bg-yellow-600 transition" 
