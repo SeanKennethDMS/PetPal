@@ -142,6 +142,19 @@ async function fetchBookingHistory(dateFilter = null, statusFilter = null, petFi
         if (prevPageBtn) prevPageBtn.disabled = page <= 1;
         if (nextPageBtn) nextPageBtn.disabled = page >= totalPages;
 
+        // Fetch all relevant transactions by URN for completed appointments
+        const urns = allAppointments.filter(a => a.status === 'completed' && a.urn).map(a => a.urn);
+        let transactionsMap = {};
+        if (urns.length > 0) {
+            const { data: transactions, error: txError } = await supabase
+                .from('transactions')
+                .select('urn, subtotal_amount')
+                .in('urn', urns);
+            if (!txError && transactions) {
+                transactionsMap = Object.fromEntries(transactions.map(tx => [tx.urn, tx.subtotal_amount]));
+            }
+        }
+
         paginatedAppointments.forEach(entry => {
             const pet = petMap[entry.pet_id] || { pet_name: "Unknown" };
             const service = serviceMap[entry.service_id] || { service_name: "Unknown", pricing: 0 };
@@ -154,10 +167,12 @@ async function fetchBookingHistory(dateFilter = null, statusFilter = null, petFi
                 day: 'numeric'
             }) : "Invalid Date";
 
-            const validPricing = Number(service.pricing);
-            const formattedPricing = isNaN(validPricing)
-                ? "N/A"
-                : `₱${validPricing.toFixed(2)}`;
+            // Use transaction subtotal_amount for completed, else fallback to pricing
+            let formattedPricing = "N/A";
+            if (entry.status === 'completed' && entry.urn && transactionsMap[entry.urn] !== undefined) {
+                const validSubtotal = Number(transactionsMap[entry.urn]);
+                formattedPricing = isNaN(validSubtotal) ? "N/A" : `₱${validSubtotal.toFixed(2)}`;
+            }
 
             const previousStatus = historyEntry.status || "N/A";
             const currentStatus = entry.status;
