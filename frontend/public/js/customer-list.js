@@ -93,7 +93,7 @@ document.addEventListener('DOMContentLoaded', () => {
           last_name: capitalizeName(lastName),
           email,
           phone_number: phone,
-          updated_at: new Date().toISOString()
+          last_updated: new Date().toISOString()
         })
         .eq('user_id', id);
   
