@@ -670,7 +670,19 @@ async function handleAppointmentAction(appointmentId, action) {
     const { data: appointment, error: fetchError } = await supabase
       .from("appointments")
       .select(`
-        *,
+        urn,
+        appointment_id,
+        appointment_date,
+        appointment_time,
+        created_at,
+        completed_at,
+        status,
+        user_id,
+        pet_id,
+        service_id,
+        updated_at,
+        original_appointment_date,
+        original_appointment_time,
         pets!inner (
           pet_name,
           owner_id,
@@ -693,7 +705,6 @@ async function handleAppointmentAction(appointmentId, action) {
       throw new Error("Invalid appointment data");
     }
 
-    const urn = appointment.urn ?? null;
     const { newStatus, notificationType, notificationData } = getActionDetails(
       action,
       appointment
@@ -708,6 +719,9 @@ async function handleAppointmentAction(appointmentId, action) {
       .eq("appointment_id", appointmentId);
 
     if (updateError) throw updateError;
+
+    const urn = appointment.urn ?? null;
+
 
     if (newStatus === "completed") {
       const paymentMethodSelect = document.getElementById("paymentMethodSelect");
@@ -751,12 +765,27 @@ async function handleAppointmentAction(appointmentId, action) {
         updated_at: appointment.updated_at,
         original_appointment_date: appointment.original_appointment_date,
         original_appointment_time: appointment.original_appointment_time,
-        urn: urn,
+        urn: appointment.urn ?? null, 
       };
 
-      const { error: completedError } = await supabase
+      const { data, error: completedError } = await supabase
         .from("completed_appointments")
-        .insert(completedAppointment);
+        .insert({
+          appointment_id: appointment.appointment_id,
+          appointment_date: appointment.appointment_date,
+          appointment_time: appointment.appointment_time,
+          created_at: appointment.created_at,
+          completed_at: new Date().toISOString(),
+          status: "completed",
+          user_id: appointment.user_id,
+          pet_id: appointment.pet_id,
+          service_id: appointment.service_id,
+          updated_at: appointment.updated_at,
+          original_appointment_date: appointment.original_appointment_date,
+          original_appointment_time: appointment.original_appointment_time,
+          urn: urn
+        })
+        .select();
 
       if (completedError) {
         console.error("Insert error for completed_appointments:", completedError);
@@ -985,9 +1014,7 @@ window.openProceedModal = async function (appointmentId) {
       const newCompleteBtn = document.getElementById("completeBillingBtn");
       newCompleteBtn.addEventListener("click", async () => {
         try {
-          const paymentMethod = document.getElementById(
-            "paymentMethodSelect"
-          ).value;
+          const paymentMethod = document.getElementById("paymentMethodSelect")?.value;
           const total = parseFloat(
             document.getElementById("billingTotal").textContent
           );
@@ -1007,6 +1034,8 @@ window.openProceedModal = async function (appointmentId) {
           // Calculate amounts
           const subtotal = total / 1.12;
           const tax = total - subtotal;
+          const urn = appointment.urn ?? null;
+
 
           // Get all items from billing list
           const billingItems = Array.from(
@@ -1024,6 +1053,7 @@ window.openProceedModal = async function (appointmentId) {
             .from("transactions")
             .insert({
               transaction_code: "TXN-" + Date.now().toString(36).toUpperCase(),
+              urn:urn,
               total_amount: total,
               tax_amount: tax,
               subtotal_amount: subtotal,
@@ -1047,7 +1077,6 @@ window.openProceedModal = async function (appointmentId) {
 
           if (appointmentError) throw appointmentError;
 
-          showError("Transaction completed successfully!");
           modal.classList.add("hidden");
 
           // Reset form
