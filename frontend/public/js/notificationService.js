@@ -101,7 +101,7 @@ class NotificationService {
     const { data: admins, error } = await supabase
       .from('users_table')
       .select('id')
-      .eq('role', 'admin');
+      .eq('role', ['system_admin', 'business_admin']);
 
     if (error) {
       console.error('Error fetching admins:', error.message);
