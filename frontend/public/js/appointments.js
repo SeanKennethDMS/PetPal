@@ -115,7 +115,13 @@ document.addEventListener("DOMContentLoaded", () => {
     const appointmentTime = appt.appointment_time?.slice(0, 5) || "—";
     const bookedDate = new Date(appt.created_at).toLocaleDateString();
     const statusLabel = appt.status === 'no show' ? 'No Show' : appt.status.charAt(0).toUpperCase() + appt.status.slice(1);
-    const urn = appt.urn || "N/A";
+    let urn = appt.urn || "N/A";
+    if ((appt.status === 'completed' || appt.status === 'no show') && (!appt.urn || appt.urn === 'N/A')) {
+        fetchUrnFromAppointments(appt.appointment_id).then(fetchedUrn => {
+            const urnSpan = document.getElementById(`urn-span-${appt.appointment_id}`);
+            if (urnSpan && fetchedUrn) urnSpan.textContent = fetchedUrn;
+        });
+    }
   
     const div = document.createElement("div");
     div.className = "bg-gray-50 p-4 rounded-xl shadow border";
@@ -130,7 +136,7 @@ document.addEventListener("DOMContentLoaded", () => {
           at <span class="font-medium">${appointmentTime}</span>
         </p>
         <p class="text-gray-700">🕓 Booked On: <span class="font-medium">${bookedDate}</span></p>
-        <p class="text-gray-700">🆔 URN: <span class="font-mono text-blue-700">${appt.urn || "N/A"}</span></p>  
+        <p class="text-gray-700">🆔 URN: <span id="urn-span-${appt.appointment_id}" class="font-mono text-blue-700">${urn}</span></p>  
         <p class="text-sm text-gray-500 italic">Status: ${statusLabel}</p>
       </div>
     `;
@@ -203,6 +209,26 @@ document.addEventListener("DOMContentLoaded", () => {
   
     return div;
   }
+
+  async function fetchUrnFromAppointments(appointmentId) {
+    if (!appointmentId) return null;
+    try {
+        console.log('Fetching URN for appointment_id:', appointmentId, typeof appointmentId);
+        const { data, error } = await supabase
+            .from('appointments')
+            .select('urn')
+            .eq('appointment_id', appointmentId)
+            .maybeSingle();
+        if (error) {
+            console.error('URN fetch error:', error.message, error);
+            return null;
+        }
+        return data?.urn || null;
+    } catch (err) {
+        console.error('URN fetch exception:', err);
+        return null;
+    }
+}
 
   async function revertReschedule(appt) {
     if (!appt.original_appointment_date || !appt.original_appointment_time) {
