@@ -30,7 +30,7 @@
             <li><a href="#home-index" class="text-sm md:text-lg relative after:block after:content-[''] after:absolute after:w-full after:h-[2px] md:after:h-[3px] after:bg-white after:scale-x-0 after:origin-left after:transition-transform after:duration-300 hover:after:scale-x-100 active:font-extrabold" id="home-link">Home</a></li>
             <li><a href="#services-index" class="text-sm md:text-lg relative after:block after:content-[''] after:absolute after:w-full after:h-[2px] md:after:h-[3px] after:bg-white after:scale-x-0 after:origin-left after:transition-transform after:duration-300 hover:after:scale-x-100 active:font-extrabold" id="services-link">Services</a></li>
             <li><a href="#about-index" class="text-sm md:text-lg relative after:block after:content-[''] after:absolute after:w-full after:h-[2px] md:after:h-[3px] after:bg-white after:scale-x-0 after:origin-left after:transition-transform after:duration-300 hover:after:scale-x-100 active:font-extrabold" id="about-link">About Us</a></li>
-            <li><a href="#book-index" class="text-sm md:text-lg relative after:block after:content-[''] after:absolute after:w-full after:h-[2px] md:after:h-[3px] after:bg-white after:scale-x-0 after:origin-left after:transition-transform after:duration-300 hover:after:scale-x-100 active:font-extrabold" id="book-link">Book Now</a></li>
+            <li><a href="#book-index" class="text-sm md:text-lg relative after:block after:content-[''] after:absolute after:w-full after:h-[2px] md:after:h-[3px] after:bg-white after:scale-x-0 after:origin-left after:transition-transform after:duration-300 hover:after:scale-x-100 active:font-extrabold" id="book-link">FAQ</a></li>
         </ul>
     </nav>
 
@@ -598,83 +598,117 @@
         </div>
     </section>
 
+    <!-- FAQ Section (replaces Book Your Appointment) -->
+    <section id="book-index" class="bg-gray-100 py-16">
+      <div class="container mx-auto text-center px-4">
+        <h2 class="text-3xl font-bold text-gray-800 mb-4">Frequently Asked Questions</h2>
+        <div class="max-w-3xl mx-auto text-left">
+          <div class="bg-white rounded-lg shadow-lg p-6 space-y-4">
+            <div>
+              <h3 class="font-semibold text-lg">1. What is PetPal Scheduler?</h3>
+              <p class="text-gray-700">PetPal Scheduler is an online platform that allows you to book pet grooming, veterinary, and other pet care services easily and conveniently.</p>
+            </div>
+            <div>
+              <h3 class="font-semibold text-lg">2. What services do you offer?</h3>
+              <p class="text-gray-700">We offer Grooming Services, Vaccination, and more.</p>
+            </div>
+            <div>
+              <h3 class="font-semibold text-lg">3. How much is a basic grooming service?</h3>
+              <p class="text-gray-700">Basic Bath & Brush starts at ₱350. Full Grooming Package starts at ₱600.</p>
+            </div>
+            <div>
+              <h3 class="font-semibold text-lg">4. How do I book an appointment?</h3>
+              <p class="text-gray-700">You can book an appointment by logging in to your account and selecting your desired service and schedule.</p>
+            </div>
+            <div>
+              <h3 class="font-semibold text-lg">5. Can I reschedule or cancel my appointment?</h3>
+              <p class="text-gray-700">Yes, you can reschedule or cancel your appointment through your account dashboard.</p>
+            </div>
+            <div>
+              <h3 class="font-semibold text-lg">6. What are your vaccination prices?</h3>
+              <p class="text-gray-700">Deworming: ₱200, 4-in-1 Vaccine: ₱450, 5-in-1 Vaccine: ₱500, 8-in-1 Vaccine: ₱700, Anti-Rabies: ₱350.</p>
+            </div>
+            <div>
+              <h3 class="font-semibold text-lg">7. Do you accept walk-in customers?</h3>
+              <p class="text-gray-700">Yes, but we recommend booking online to secure your slot and avoid waiting.</p>
+            </div>
+            <div>
+              <h3 class="font-semibold text-lg">8. How can I contact PetPal for support?</h3>
+              <p class="text-gray-700">You can use the "Message Us" button on the website or email us at delosovet@gmail.com.</p>
+            </div>
+            <div>
+              <h3 class="font-semibold text-lg">9. What payment methods do you accept?</h3>
+              <p class="text-gray-700">We accept Cash, GCash, Credit Card, and other major payment methods.</p>
+            </div>
+            <div>
+              <h3 class="font-semibold text-lg">10. Where is Deloso Veterinary Clinic located?</h3>
+              <p class="text-gray-700">GAP Building Villa Magdalena 2, Camarin Road, North Caloocan, Philippines.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
 
-  
+    <button id="openMessageBtn" aria-label="Open messaging modal"
+        class="fixed bottom-6 right-6 z-50 bg-blue-600 text-white rounded-full shadow-lg p-3 w-12 h-12 flex items-center justify-center hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-400 transition duration-200">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M8 10h.01M12 10h.01M16 10h.01M21 12c0 4.418-4.03 8-9 8a9.77 9.77 0 01-4-.8l-4 1 1-3.5A7.96 7.96 0 013 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
+        </svg>
+    </button>
 
-    <!-- Booking Section -->
-    <section id="book-index" class="bg-gray-400 py-16">
-        <div class="container mx-auto text-center px-4">
-        <!-- Section Title -->
-        <h2 class="text-3xl font-bold text-gray-800 mb-4">Book Your Appointment</h2>
-        <p class="text-lg text-gray-700 mb-8">Easily book your pet’s grooming or veterinary check-up with us. Fill out the form, and we'll confirm your appointment right away!</p>
-    
-            <div class="bg-white p-6 rounded-lg shadow-lg max-w-3xl mx-auto">
-                <form action="#">
-                <div class="mb-4">
-                    <label for="petName" class="block text-gray-600 font-medium">Pet Name</label>
-                    <input type="text" id="petName" name="petName" class="mt-2 p-2 w-full border rounded-md" placeholder="Enter pet's name" required>
-                </div>
-        
-                <div class="mb-4">
-                    <label for="serviceType" class="block text-gray-600 font-medium">Select Service</label>
-                    <select id="serviceType" name="serviceType" class="mt-2 p-2 w-full border rounded-md">
-                        <option value="">Default</option>
-                        <option value="">Grooming</option>
-                        <option value="">Vet Check-up</option>
-                        <option value="">Other</option>
-                    </select>
+    <!-- Message Modal -->
+    <div id="messageModal" class="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50 hidden p-4">
+        <div class="bg-white rounded-lg shadow-xl w-full max-w-xs p-4 relative">
+            <!-- Close Button -->
+            <button id="closeMessageModal" aria-label="Close message modal"
+                class="absolute top-3 right-3 text-gray-500 hover:text-gray-700 text-xl leading-none h-6 w-6 flex items-center justify-center rounded-full hover:bg-gray-100 transition-colors">
+                &times;
+            </button>
 
-                    <label for="subServiceType" class="block text-gray-600 font-medium">Select Sub Service</label>
-                    <select id="subServiceType" name="subServiceType" class="mt-2 p-2 w-full border rounded-md">
-                        <option value="">Default</option>
-                        <option value="">SubCategory 1</option>
-                        <option value="">SubCategory 2</option>
-                        <option value="">SubCategory 3</option>
-                    </select>
+            <!-- Modal Content -->
+            <h2 class="text-lg font-semibold mb-3 text-blue-700">Message Us</h2>
+            <p class="mb-4 text-gray-600 text-sm">
+                This is a placeholder for the messaging feature. For now, please email us at
+                <a href="mailto:delosovet@gmail.com" class="text-blue-600 hover:underline">delosovet@gmail.com</a>
+                or message us on our Facebook page.
+            </p>
+
+            <!-- Disabled Fields -->
+            <div class="space-y-3">
+                <div>
+                    <label for="userName" class="block text-sm font-medium text-gray-700 mb-1">Your Name</label>
+                    <input type="text" id="userName" placeholder="Your Name"
+                        class="w-full border border-gray-300 rounded-md px-3 py-2 text-sm bg-gray-100 cursor-not-allowed" disabled />
                 </div>
-        
-                <div class="mb-4 md:flex md:space-x-4">
-                    <div class="w-full md:w-1/2">
-                    <label for="date" class="block text-gray-600 font-medium">Select Date</label>
-                    <input type="date" id="date" name="date" class="mt-2 p-2 w-full border rounded-md" required>
-                    </div>
-                    <div class="w-full md:w-1/2">
-                    <label for="time" class="block text-gray-600 font-medium">Select Time</label>
-                    <input type="time" id="time" name="time" class="mt-2 p-2 w-full border rounded-md" required>
-                    </div>
+                
+                <div>
+                    <label for="userMessage" class="block text-sm font-medium text-gray-700 mb-1">Your Message</label>
+                    <textarea id="userMessage" placeholder="Type your message here..." rows="3"
+                        class="w-full border border-gray-300 rounded-md px-3 py-2 text-sm bg-gray-100 cursor-not-allowed" disabled></textarea>
                 </div>
-        
-                <div class="mb-4">
-                    <label for="petAge" class="block text-gray-600 font-medium">Pet Age</label>
-                    <input type="number" id="petAge" name="petAge" class="mt-2 p-2 w-full border rounded-md" placeholder="Enter pet's age in years" required>
-                </div>
-        
-                <div class="mb-4">
-                    <label for="specialRequests" class="block text-gray-600 font-medium">Special Requests</label>
-                    <textarea id="specialRequests" name="specialRequests" rows="3" class="mt-2 p-2 w-full border rounded-md" placeholder="Any special requests?"></textarea>
-                </div>
-        
-                <div class="mb-4 md:flex md:space-x-4">
-                    <div class="w-full md:w-1/2">
-                    <label for="email" class="block text-gray-600 font-medium">Email</label>
-                    <input type="email" id="email" name="email" class="mt-2 p-2 w-full border rounded-md" placeholder="Enter your email">
-                    </div>
-                    <div class="w-full md:w-1/2">
-                    <label for="phone" class="block text-gray-600 font-medium">Phone</label>
-                    <input type="tel" id="phone" name="phone" class="mt-2 p-2 w-full border rounded-md" placeholder="Enter your phone number">
-                    </div>
-                </div>
-        
-                <button type="submit" class="w-full py-3 bg-blue-600 text-white rounded-md mt-4 hover:bg-blue-700">
-                    Confirm Appointment
+            </div>
+
+            <div class="mt-4 flex justify-end">
+                <button
+                    class="bg-blue-600 text-white px-3 py-1.5 rounded-md text-sm opacity-50 cursor-not-allowed"
+                    disabled>
+                    Send Message
                 </button>
-                </form>
             </div>
         </div>
+    </div>
+  
 
-        
-
-    </section>
+    <script>
+      // Floating Message Button Logic
+      document.getElementById('openMessageBtn').addEventListener('click', function() {
+        document.getElementById('messageModal').classList.remove('hidden');
+      });
+      document.getElementById('closeMessageModal').addEventListener('click', function() {
+        document.getElementById('messageModal').classList.add('hidden');
+      });
+    </script>
 
     <footer class="bg-[#36454F] py-6">
         <div class="container mx-auto text-center text-white">
