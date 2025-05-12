@@ -44,34 +44,55 @@ async function fetchBookingHistory(dateFilter = null, statusFilter = null, petFi
 
         const userId = user.id;
 
-        let query = supabase
+        // Fetch non-completed from appointments
+        let appointmentsQuery = supabase
             .from("appointments")
+            .select("*")
+            .eq("user_id", userId)
+            .neq("status", "completed");
+
+        // Fetch completed from completed_appointments
+        let completedQuery = supabase
+            .from("completed_appointments")
             .select("*")
             .eq("user_id", userId);
 
+        // Apply filters to both queries
         if (dateFilter) {
-            console.log("Applying date filter:", dateFilter);
-            query = query.eq("appointment_date", dateFilter);
+            appointmentsQuery = appointmentsQuery.eq("appointment_date", dateFilter);
+            completedQuery = completedQuery.eq("appointment_date", dateFilter);
         }
-
         if (statusFilter) {
             const trimmedStatus = statusFilter.trim();
-            console.log("Applying status filter:", trimmedStatus);
             if (trimmedStatus !== "" && trimmedStatus.toLowerCase() !== "all") {
-                query = query.eq("status", trimmedStatus);
+                if (trimmedStatus === "completed") {
+                    appointmentsQuery = appointmentsQuery.limit(0); // No completed in appointments
+                } else {
+                    appointmentsQuery = appointmentsQuery.eq("status", trimmedStatus);
+                    completedQuery = completedQuery.limit(0); // No non-completed in completed_appointments
+                }
             }
         }
 
-        const { data: appointments, error: appError } = await query;
+        const [{ data: appointments, error: appError }, { data: completed, error: compError }] = await Promise.all([
+            appointmentsQuery,
+            completedQuery,
+        ]);
 
-        if (appError) throw new Error(`Error fetching appointments: ${appError.message}`);
+        if (appError || compError) throw new Error(`Error fetching appointments: ${appError?.message || ""} ${compError?.message || ""}`);
 
-        if (!appointments || appointments.length === 0) {
+        // Merge results
+        const allAppointments = [
+            ...(appointments || []),
+            ...(completed || [])
+        ];
+
+        if (!allAppointments.length) {
             tableBody.innerHTML = "<tr><td colspan='6' class='p-2 text-center'>No records found</td></tr>";
             return;
         }
 
-        const validAppointmentIds = appointments
+        const validAppointmentIds = allAppointments
             .map(a => a.appointment_id)
             .filter(id => id !== null && id !== undefined);
 
@@ -81,8 +102,8 @@ async function fetchBookingHistory(dateFilter = null, statusFilter = null, petFi
         }
 
         const [{ data: pets }, { data: services }, { data: history, error: historyError }] = await Promise.all([
-            supabase.from("pets").select("*").in("id", appointments.map(a => a.pet_id)),
-            supabase.from("services").select("*").in("id", appointments.map(a => a.service_id)),
+            supabase.from("pets").select("*").in("id", allAppointments.map(a => a.pet_id)),
+            supabase.from("services").select("*").in("id", allAppointments.map(a => a.service_id)),
             supabase.from("booking_history").select("*").in("appointment_id", validAppointmentIds),
         ]);
 
@@ -97,7 +118,7 @@ async function fetchBookingHistory(dateFilter = null, statusFilter = null, petFi
 
         tableBody.innerHTML = "";
 
-        let filteredAppointments = appointments.filter(entry => {
+        let filteredAppointments = allAppointments.filter(entry => {
             const pet = petMap[entry.pet_id] || {};
             const service = serviceMap[entry.service_id] || {};
 
