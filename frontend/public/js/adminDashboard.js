@@ -20,6 +20,11 @@ document.addEventListener("DOMContentLoaded", () => {
   loadDashboard();
   setupEventListeners();
   setupModalEventListeners();
+  const scheduleContainer = document.getElementById("todaysSchedule");
+  if (scheduleContainer) {
+    scheduleContainer.style.maxHeight = "400px";
+    scheduleContainer.style.overflowY = "auto";
+  }
 });
 
 // Event Listeners Setup
@@ -176,49 +181,40 @@ function renderTodaysAppointments(appointments) {
       const urn = app.urn || "URN not found";
 
       return `
-        <div class="flex items-start gap-4 bg-white p-4 rounded-lg shadow-sm border border-gray-100 appointment-item" data-urn="${urn}">
-          <!-- ... existing content ... -->
-          <img src="${imageUrl}" alt="${
-        pet?.pet_name
-      }" class="w-12 h-12 rounded-full object-cover border">
+        <div class="flex items-start gap-4 bg-white p-4 rounded-lg shadow-sm border border-gray-100 appointment-item mb-3" data-urn="${urn}">
+          <img src="${imageUrl}" alt="${pet?.pet_name}" class="w-12 h-12 rounded-full object-cover border">
           <div class="flex-1">
             <div class="flex justify-between items-start">
               <div>
-                <p class="font-semibold text-gray-800">${
-                  pet?.pet_name || "Pet Name"
-                }</p>
+                <p class="font-semibold text-gray-800">${pet?.pet_name || "Pet Name"}</p>
                 <p class="text-sm text-gray-600">${service}</p>
                 <p class="text-xs text-gray-500">${time}</p>
                 <p class="text-xs text-blue-700 font-mono mt-1"><span class="font-semibold">URN:</span> ${urn}</p>
               </div>
-          <div class="flex gap-2">
-            <button class="proceed-btn px-3 py-1 text-sm bg-blue-600 text-white rounded hover:bg-blue-700" data-appointment-id="${app.appointment_id}">
-              Proceed
-            </button>
-            <button class="no-show-btn px-3 py-1 text-sm bg-red-600 text-white rounded hover:bg-red-700" data-appointment-id="${app.appointment_id}">
-              No Show
-            </button>
+              <div class="flex gap-2">
+                <button class="proceed-btn px-3 py-1 text-sm bg-blue-600 text-white rounded hover:bg-blue-700" data-appointment-id="${app.appointment_id}">Proceed</button>
+                <button class="no-show-btn px-3 py-1 text-sm bg-red-600 text-white rounded hover:bg-red-700" data-appointment-id="${app.appointment_id}">No Show</button>
+              </div>
+            </div>
           </div>
         </div>
       `;
     })
     .join("");
 
-    container.querySelectorAll(".proceed-btn").forEach((button) => {
-      button.addEventListener("click", () => {
-        const appointmentId = button.dataset.appointmentId;
-        openProceedModal(appointmentId);
-      });
+  container.querySelectorAll(".proceed-btn").forEach((button) => {
+    button.addEventListener("click", () => {
+      const appointmentId = button.dataset.appointmentId;
+      openProceedModal(appointmentId);
     });
+  });
 
-  // Add event listener for complete buttons
   container.querySelectorAll(".complete-btn").forEach((button) => {
     button.addEventListener("click", () => {
       const appointmentId = button.dataset.appointmentId;
       handleAppointmentAction(appointmentId, "complete");
     });
   });
-
 
   container.querySelectorAll(".no-show-btn").forEach((button) => {
     button.addEventListener("click", () => {
