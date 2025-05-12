@@ -1114,6 +1114,18 @@
             <ul id="lowStockList" class="mt-2 text-red-600 font-semibold">
               <!-- Data will be populated here dynamically -->
             </ul>
+            <button
+              id="openAddBatchModalBtn"
+              class="mt-4 px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
+            >
+              Add Product Batch
+            </button>
+            <button
+              id="openAddSupplierModalBtn"
+              class="mt-4 ml-2 px-4 py-2 bg-purple-600 text-white rounded hover:bg-purple-700"
+            >
+              Add New Supplier
+            </button>
           </div>
 
           <!-- Inventory Table Container -->
@@ -1151,70 +1163,6 @@
           </div>
           <!-- END inventory container -->
 
-          <!-- Restock Modal -->
-          <div
-            id="restockModal"
-            class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 hidden"
-          >
-            <div class="bg-white rounded-lg shadow-xl w-full max-w-md p-6">
-              <div class="flex justify-between items-center mb-4">
-                <h3 class="text-xl font-bold">Restock Product</h3>
-                <button
-                  id="closeRestockModal"
-                  class="text-gray-500 hover:text-gray-700 text-2xl"
-                >
-                  &times;
-                </button>
-              </div>
-
-              <form id="restockForm">
-                <input type="hidden" id="restockProductId" />
-
-                <div class="mb-4">
-                  <label
-                    for="restockQuantity"
-                    class="block text-sm font-medium text-gray-700 mb-1"
-                    >New Quantity</label
-                  >
-                  <input
-                    type="number"
-                    id="restockQuantity"
-                    class="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  />
-                </div>
-
-                <div class="mb-4">
-                  <label
-                    for="restockPrice"
-                    class="block text-sm font-medium text-gray-700 mb-1"
-                    >New Price (₱)</label
-                  >
-                  <input
-                    type="number"
-                    step="0.01"
-                    id="restockPrice"
-                    class="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  />
-                </div>
-
-                <div class="flex justify-end space-x-3">
-                  <button
-                    type="button"
-                    id="cancelRestock"
-                    class="px-4 py-2 bg-gray-300 text-gray-800 rounded-md hover:bg-gray-400"
-                  >
-                    Cancel
-                  </button>
-                  <button
-                    type="submit"
-                    class="px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600"
-                  >
-                    Update
-                  </button>
-                </div>
-              </form>
-            </div>
-          </div>
 
           <!-- Add New Product -->
           <div
@@ -1254,22 +1202,109 @@
               </button>
             </form>
           </div>
+         
+          <!-- Restock Modal -->
+          <div id="restockModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 hidden">
+            <div class="bg-white rounded-lg shadow-xl w-full max-w-md p-6">
+              <div class="flex justify-between items-center mb-4">
+                <h3 class="text-xl font-bold">Restock Product</h3>
+                <button id="closeRestockModal" class="text-gray-500 hover:text-gray-700 text-2xl">&times;</button>
+              </div>
+              <form id="restockForm">
+                <input type="hidden" id="restockProductId" />
+                <div class="mb-4">
+                  <label for="restockQuantity" class="block text-sm font-medium text-gray-700 mb-1">New Quantity</label>
+                  <input type="number" id="restockQuantity" class="w-full border border-gray-300 rounded-md px-3 py-2" />
+                </div>
+                <div class="mb-4">
+                  <label for="restockPrice" class="block text-sm font-medium text-gray-700 mb-1">New Price (₱)</label>
+                  <input type="number" step="0.01" id="restockPrice" class="w-full border border-gray-300 rounded-md px-3 py-2" />
+                </div>
+                <div class="flex justify-end space-x-3">
+                  <button type="button" id="cancelRestock" class="px-4 py-2 bg-gray-300 text-gray-800 rounded-md">Cancel</button>
+                  <button type="submit" class="px-4 py-2 bg-blue-500 text-white rounded-md">Update</button>
+                </div>
+              </form>
+            </div>
+          </div>
 
-          <!-- Export Reports -->
-          <div
-            class="mt-4 bg-white p-4 rounded-lg shadow-md border-l-4 border-indigo-500"
-          >
-            <h2 class="text-lg font-semibold">📄 Export Inventory Report</h2>
-            <button
-              class="mt-2 bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-700"
-            >
-              Export CSV
-            </button>
-            <button
-              class="mt-2 bg-gray-500 text-white px-4 py-2 rounded hover:bg-gray-700"
-            >
-              Export PDF
-            </button>
+          <!-- Add Product Batch Modal -->
+          <div id="addBatchModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 hidden">
+            <div class="bg-white rounded-lg shadow-xl w-full max-w-lg p-6 max-h-[90vh] overflow-y-auto">
+              <div class="flex justify-between items-center mb-4">
+                <h3 class="text-xl font-bold">Add Product Batch</h3>
+                <button id="closeAddBatchModal" class="text-gray-500 hover:text-gray-700 text-2xl" aria-label="Close modal">&times;</button>
+              </div>
+              <form id="addBatchForm" class="space-y-4">
+                <div>
+                  <label for="batchProductName" class="block text-sm font-medium text-gray-700 mb-1">Product Name</label>
+                  <input type="text" id="batchProductName" class="w-full border border-gray-300 rounded-md px-3 py-2" required />
+                </div>
+                <div>
+                  <label for="batchProductCategory" class="block text-sm font-medium text-gray-700 mb-1">Product Category</label>
+                  <input type="text" id="batchProductCategory" class="w-full border border-gray-300 rounded-md px-3 py-2" required />
+                </div>
+                <div>
+                  <label for="batchQuantity" class="block text-sm font-medium text-gray-700 mb-1">Quantity</label>
+                  <input type="number" id="batchQuantity" class="w-full border border-gray-300 rounded-md px-3 py-2" required min="1" />
+                </div>
+                <div>
+                  <label for="batchExpirationDate" class="block text-sm font-medium text-gray-700 mb-1">Expiration Date</label>
+                  <input type="date" id="batchExpirationDate" class="w-full border border-gray-300 rounded-md px-3 py-2" required />
+                </div>
+                <div>
+                  <label for="batchDeliveredDate" class="block text-sm font-medium text-gray-700 mb-1">Delivered Date</label>
+                  <input type="date" id="batchDeliveredDate" class="w-full border border-gray-300 rounded-md px-3 py-2" required />
+                </div>
+                <div>
+                  <label for="batchSupplier" class="block text-sm font-medium text-gray-700 mb-1">Supplier</label>
+                  <select id="batchSupplier" class="w-full border border-gray-300 rounded-md px-3 py-2" required>
+                    <option value="">Select Supplier</option>
+                  </select>
+                </div>
+                <div>
+                  <label for="batchCostPerUnit" class="block text-sm font-medium text-gray-700 mb-1">Cost per Unit / Item (₱)</label>
+                  <input type="number" step="0.01" id="batchCostPerUnit" class="w-full border border-gray-300 rounded-md px-3 py-2" required min="0" />
+                </div>
+                <div class="flex justify-end space-x-3">
+                  <button type="button" id="cancelAddBatch" class="px-4 py-2 bg-gray-300 text-gray-800 rounded-md">Cancel</button>
+                  <button type="submit" class="px-4 py-2 bg-purple-600 text-white rounded-md">Add Product</button>
+                </div>
+              </form>
+            </div>
+          </div>
+
+          
+          <!-- Add New Supplier Modal -->
+          <div id="addSupplierModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 hidden">
+            <div class="bg-white rounded-lg shadow-xl w-full max-w-md p-6">
+              <div class="flex justify-between items-center mb-4">
+                <h3 class="text-xl font-bold">Add New Supplier</h3>
+                <button id="cancelAddSupplier" class="text-gray-500 hover:text-gray-700 text-2xl">&times;</button>
+              </div>
+              <form id="addSupplierForm" class="space-y-4">
+                <div>
+                  <label for="supplierName" class="block text-sm font-medium text-gray-700 mb-1">Supplier Name</label>
+                  <input type="text" id="supplierName" class="w-full border border-gray-300 rounded-md px-3 py-2" required />
+                </div>
+                <div>
+                  <label for="supplierContactPerson" class="block text-sm font-medium text-gray-700 mb-1">Contact Person</label>
+                  <input type="text" id="supplierContactPerson" class="w-full border border-gray-300 rounded-md px-3 py-2" required />
+                </div>
+                <div>
+                  <label for="supplierPhone" class="block text-sm font-medium text-gray-700 mb-1">Phone</label>
+                  <input type="text" id="supplierPhone" class="w-full border border-gray-300 rounded-md px-3 py-2" required />
+                </div>
+                <div>
+                  <label for="supplierAddress" class="block text-sm font-medium text-gray-700 mb-1">Address</label>
+                  <input type="text" id="supplierAddress" class="w-full border border-gray-300 rounded-md px-3 py-2" required />
+                </div>
+                <div class="flex justify-end space-x-3">
+                  <button type="button" class="px-4 py-2 bg-gray-300 text-gray-800 rounded-md hover:bg-gray-400" id="cancelAddSupplier">Cancel</button>
+                  <button type="submit" class="px-4 py-2 bg-purple-600 text-white rounded-md hover:bg-purple-700">Add Supplier</button>
+                </div>
+              </form>
+            </div>
           </div>
         </section>
 

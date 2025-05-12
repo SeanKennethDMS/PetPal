@@ -84,6 +84,128 @@ document.addEventListener("DOMContentLoaded", async () => {
     }, 300)
   );
 
+  // Add Batch Modal open/close logic
+const openAddBatchModalBtn = document.getElementById("openAddBatchModalBtn");
+const addBatchModal = document.getElementById("addBatchModal");
+const closeAddBatchModal = document.getElementById("closeAddBatchModal");
+const cancelAddBatch = document.getElementById("cancelAddBatch");
+const addBatchForm = document.getElementById("addBatchForm");
+const batchSupplier = document.getElementById("batchSupplier");
+const toggleNewSupplierBtn = document.getElementById("toggleNewSupplierBtn");
+
+// New Supplier Modal Elements
+const addSupplierModal = document.getElementById("addSupplierModal");
+const closeAddSupplierModal = document.getElementById("closeAddSupplierModal");
+const cancelAddSupplier = document.getElementById("cancelAddSupplier");
+const addSupplierForm = document.getElementById("addSupplierForm");
+// Fix: Define supplier input fields
+const supplierNameInput = document.getElementById("supplierName");
+const supplierContactPersonInput = document.getElementById("supplierContactPerson");
+const supplierPhoneInput = document.getElementById("supplierPhone");
+const supplierAddressInput = document.getElementById("supplierAddress");
+
+// Open Add Batch Modal
+if (openAddBatchModalBtn && addBatchModal) {
+  openAddBatchModalBtn.addEventListener("click", () => {
+    addBatchForm.reset();
+    fetchAndRenderSuppliers();
+    addBatchModal.classList.remove("hidden");
+  });
+}
+
+// Close Add Batch Modal
+function closeAddBatchModalFn() {
+  if (addBatchModal) addBatchModal.classList.add("hidden");
+  if (addBatchForm) addBatchForm.reset();
+}
+
+if (closeAddBatchModal) {
+  closeAddBatchModal.addEventListener("click", closeAddBatchModalFn);
+}
+if (cancelAddBatch) {
+  cancelAddBatch.addEventListener("click", closeAddBatchModalFn);
+}
+
+// Open Add Supplier Modal (from new button outside batch modal)
+const openAddSupplierModalBtn = document.getElementById("openAddSupplierModalBtn");
+if (openAddSupplierModalBtn && addSupplierModal) {
+  openAddSupplierModalBtn.addEventListener("click", () => {
+    if (addSupplierForm) addSupplierForm.reset();
+    addSupplierModal.classList.remove("hidden");
+  });
+}
+
+// Close Add Supplier Modal
+function closeAddSupplierModalFn() {
+  addSupplierModal.classList.add("hidden");
+  if (addSupplierForm) addSupplierForm.reset();
+}
+
+// Attach close event to all elements with id 'cancelAddSupplier' (X and Cancel button)
+const cancelAddSupplierBtns = document.querySelectorAll('#cancelAddSupplier');
+cancelAddSupplierBtns.forEach(btn => {
+  btn.addEventListener('click', closeAddSupplierModalFn);
+});
+
+// Add Supplier Form Submission
+if (addSupplierForm) {
+  addSupplierForm.addEventListener("submit", async function(e) {
+    e.preventDefault();
+    // Only validate supplier fields, not batch fields
+    const name = supplierNameInput.value.trim();
+    const contactPerson = supplierContactPersonInput.value.trim();
+    const phone = supplierPhoneInput.value.trim();
+    const address = supplierAddressInput.value.trim();
+    // Validate phone again on submit
+    const phRegex = /^(09\d{9}|\+639\d{9})$/;
+    if (!name || !contactPerson || !phone || !address) {
+      alert("All fields are required.");
+      return;
+    }
+    if (!phRegex.test(phone)) {
+      alert("Please enter a valid Philippine phone number (09XXXXXXXXX or +639XXXXXXXXX)");
+      supplierPhoneInput.focus();
+      return;
+    }
+    let newSupplier = null;
+    try {
+      const { data, error } = await supabase
+        .from('suppliers')
+        .insert({ name, contact_person: contactPerson, phone, address })
+        .select()
+        .single();
+      if (error) throw error;
+      newSupplier = data;
+    } catch (error) {
+      alert('Failed to add new supplier: ' + error.message);
+      return;
+    }
+    // Close addSupplierModal, open addBatchModal, refresh suppliers, select new
+    closeAddSupplierModalFn();
+    if (addBatchModal) addBatchModal.classList.remove("hidden");
+    await fetchAndRenderSuppliers(newSupplier.id);
+  });
+}
+
+  // Function to close Add Batch Modal
+  function closeAddBatchModalFn() {
+    if (addBatchModal) addBatchModal.classList.add("hidden");
+    if (addBatchForm) addBatchForm.reset();
+  }
+  if (closeAddBatchModal) closeAddBatchModal.addEventListener("click", closeAddBatchModalFn);
+  if (cancelAddBatch) cancelAddBatch.addEventListener("click", closeAddBatchModalFn);
+
+  // Populate suppliers when opening modal
+  function openAddBatchModal() {
+    if (addBatchForm) addBatchForm.reset();
+    fetchAndRenderSuppliers();
+    if (addBatchModal) addBatchModal.classList.remove("hidden");
+  }
+
+  if (openAddBatchModalBtn && addBatchModal) {
+    openAddBatchModalBtn.addEventListener("click", openAddBatchModal);
+  }
+
   // Functions
   async function loadProducts() {
     inventoryTable.innerHTML = "";
@@ -345,6 +467,115 @@ document.addEventListener("DOMContentLoaded", async () => {
           btn.disabled = false;
         }
       });
+    });
+  }
+
+  // Fetch and Render Suppliers in Dropdown
+  async function fetchAndRenderSuppliers(selectedSupplierId = null) {
+    if (!batchSupplier) return;
+    batchSupplier.innerHTML = '<option value="">Select Supplier</option>';
+    const { data: suppliers, error } = await supabase.from('suppliers').select('id, name').order('name');
+    if (error) {
+      alert('Failed to load suppliers');
+      return;
+    }
+    // Use a Set to avoid duplicate supplier names
+    const seenNames = new Set();
+    suppliers.forEach(supplier => {
+      if (!seenNames.has(supplier.name)) {
+        seenNames.add(supplier.name);
+        const option = document.createElement('option');
+        option.value = supplier.id;
+        option.textContent = supplier.name;
+        if (selectedSupplierId && supplier.id === selectedSupplierId) {
+          option.selected = true;
+        }
+        batchSupplier.appendChild(option);
+      }
+    });
+  }
+
+  // Add Batch Form Submission (Add Product Batch)
+  if (addBatchForm) {
+    addBatchForm.addEventListener("submit", async function(e) {
+      e.preventDefault();
+      const productName = document.getElementById("batchProductName").value.trim();
+      const productCategory = document.getElementById("batchProductCategory").value.trim();
+      const quantity = parseInt(document.getElementById("batchQuantity").value, 10);
+      const expirationDate = document.getElementById("batchExpirationDate").value;
+      const deliveredDate = document.getElementById("batchDeliveredDate").value;
+      const costPerUnit = parseFloat(document.getElementById("batchCostPerUnit").value) || null;
+      const supplierId = batchSupplier.value;
+
+      if (!productName || !productCategory || !quantity || !expirationDate || !deliveredDate || !costPerUnit || !supplierId) {
+        alert('Please fill in all required fields.');
+        return;
+      }
+
+      // Generate a unique batch number (e.g., BATCH-yyyyMMddHHmmss-<random4>)
+      function generateBatchNumber() {
+        const now = new Date();
+        const pad = (n) => n.toString().padStart(2, '0');
+        const dateStr = `${now.getFullYear()}${pad(now.getMonth()+1)}${pad(now.getDate())}${pad(now.getHours())}${pad(now.getMinutes())}${pad(now.getSeconds())}`;
+        const rand = Math.random().toString(36).substring(2, 6).toUpperCase();
+        return `BATCH-${dateStr}-${rand}`;
+      }
+      const batchNumber = generateBatchNumber();
+
+      let productId = null;
+      try {
+        // Insert product (or get existing)
+        let { data: existingProducts, error: fetchError } = await supabase
+          .from('products')
+          .select('id, quantity')
+          .eq('name', productName)
+          .eq('category', productCategory)
+          .maybeSingle();
+        if (fetchError) throw fetchError;
+        if (existingProducts && existingProducts.id) {
+          productId = existingProducts.id;
+          // Update price and increment quantity
+          const newQuantity = (existingProducts.quantity || 0) + quantity;
+          await supabase.from('products').update({ price: costPerUnit, quantity: newQuantity }).eq('id', productId);
+        } else {
+          // Insert new product with initial quantity
+          let { data: newProduct, error: insertError } = await supabase
+            .from('products')
+            .insert({
+              name: productName,
+              category: productCategory,
+              price: costPerUnit,
+              quantity: quantity, // Set initial quantity
+              status: 'Active',
+            })
+            .select()
+            .single();
+          if (insertError) throw insertError;
+          productId = newProduct.id;
+        }
+      } catch (err) {
+        alert('Failed to add or fetch product: ' + (err.message || err));
+        return;
+      }
+
+      try {
+        // Insert new batch with batch quantity
+        const { error: batchError } = await supabase.from('product_batches').insert({
+          product_id: productId,
+          supplier_id: supplierId,
+          quantity: quantity, // Insert batch quantity
+          expiration_date: expirationDate,
+          purchase_date: deliveredDate,
+          batch_number: batchNumber
+        });
+        if (batchError) throw batchError;
+      } catch (err) {
+        alert('Failed to add product batch: ' + (err.message || err));
+        return;
+      }
+      addBatchModal.classList.add("hidden");
+      addBatchForm.reset();
+      await loadProducts();
     });
   }
 });
