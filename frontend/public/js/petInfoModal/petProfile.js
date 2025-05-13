@@ -26,7 +26,8 @@ const breedData = {
     "Bengal",
     "British Shorthair",
     "Sphynx",
-    "Scottish Fold"
+    "Scottish Fold",
+    "Others"
   ]
 };
 

@@ -37,7 +37,6 @@
     <!-- Home Section -->
     <section id="home-index" class="relative flex items-center justify-center min-h-screen bg-white pt-20 md:pt-0">
         <div class="absolute inset-0 flex flex-col md:flex-row">
-            <!-- Left Side - Full width on mobile, diagonal on desktop -->
             <div class="relative w-full md:w-[55%] bg-blue-500 text-white flex flex-col justify-center items-center md:items-start px-6 md:px-12 clip-mobile md:clip-left py-12 md:py-0">
                 <h1 class="text-4xl md:text-6xl font-bold mb-4 md:mb-6 text-center md:text-left">PetPal Scheduler</h1>
                 <p class="text-lg md:text-xl mb-6 md:mb-8 text-center md:text-left max-w-md">
@@ -49,7 +48,6 @@
                 </button>
             </div>
             
-            <!-- Right Side - Hidden on mobile, properly positioned on desktop -->
             <div class="hidden md:flex relative md:w-[45%] bg-white justify-center items-center clip-right overflow-hidden">
                 <img src="./assets/catdog-home.png" alt="Pet Grooming" 
                     class="w-full max-w-[500px] h-auto transform md:translate-x-10 lg:translate-x-20 z-10">
@@ -74,7 +72,6 @@
         }
     </style>
                 
-    <!-- Signup Modal -->
     <div id="signupModal" class="modal">
         <div class="modal-content w-11/12 md:w-[350px]">
             <span class="close" id="closeSignupModalBtn">&times;</span>
@@ -84,7 +81,6 @@
     
             <div class="sign-up-form">
                 <form id="signupForm">
-                    <!-- Personal Information Section -->
                     <h4 class="section-title">PERSONAL INFORMATION</h4>
                 
                     <label for="lastname">Last Name</label>
@@ -93,9 +89,8 @@
                     <label for="firstname">First Name</label>
                     <input type="text" id="first_name" placeholder="First Name" required>
                 
-                    <br><br> <!-- Space -->
+                    <br><br> 
                 
-                    <!-- Account Section -->
                     <h4 class="section-title">ACCOUNT</h4>
                 
                     <label for="email">Email</label>
@@ -140,7 +135,6 @@
                 </label>
                 <div style="display: flex; align-items: center; position: relative;">
                     <input type="password" id="login-password" placeholder="Enter your password" required style="width: 100%;"/>
-                    <!-- Span for the icon toggle -->
                     <span id="togglePassword" style="position: absolute; right: 10px; top: 50%; transform: translateY(-50%); cursor: pointer; color: #6b7280;">
                       <svg id="eyeIcon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" style="width: 20px; height: 20px;">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
@@ -188,7 +182,6 @@
 
     <!-- CSS for Modals -->
     <style>
-        /* Modal Styles */
         .modal {
             display: none;
             position: fixed;
@@ -317,7 +310,6 @@
                             Grooming Services
                         </div>
                         
-                        <!-- Expanded Content (Hidden by default) -->
                         <div id="grooming-content" class="absolute inset-0 bg-blue-600 bg-opacity-90 p-6 text-white opacity-0 invisible transition-all duration-300">
                             <div class="flex justify-between items-start">
                                 <h3 class="text-2xl font-bold mb-4">Grooming Services</h3>
@@ -520,7 +512,6 @@
         
             <!-- Team Cards -->
             <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-6 mt-6 w-full max-w-6xl mx-auto">
-                <!-- Member 1 -->
                 <div class="bg-white rounded-2xl shadow-lg p-4 flex flex-col items-center text-center">
                     <div class="w-24 h-24 bg-[#FF69B4] rounded-full flex items-center justify-center text-xl font-bold text-white">PM</div>
                     <h4 class="mt-4 text-lg font-semibold text-gray-800">Nivera, Princess Althea</h4>
@@ -528,7 +519,6 @@
                     <p class="text-xs mt-2 text-gray-500">Managed timelines, goals, and collaboration with Deloso Vet.</p>
                 </div>
             
-                <!-- Member 2 -->
                 <div class="bg-white rounded-2xl shadow-lg p-4 flex flex-col items-center text-center">
                     <div class="w-24 h-24 bg-blue-500 rounded-full flex items-center justify-center text-xl font-bold text-white">LP</div>
                     <h4 class="mt-4 text-lg font-semibold text-gray-800">Damasco, Sean Kenneth</h4>
@@ -536,7 +526,6 @@
                     <p class="text-xs mt-2 text-gray-500">Built and maintained the system's functionality and user experience.</p>
                 </div>
             
-                <!-- Member 3 -->
                 <div class="bg-white rounded-2xl shadow-lg p-4 flex flex-col items-center text-center">
                     <div class="w-24 h-24 bg-yellow-500 rounded-full flex items-center justify-center text-xl font-bold text-white">SA</div>
                     <h4 class="mt-4 text-lg font-semibold text-gray-800">Cabanela, Denisse Andrea</h4>
@@ -544,7 +533,6 @@
                     <p class="text-xs mt-2 text-gray-500">Handled data, structure, and secure database planning.</p>
                 </div>
             
-                <!-- Member 4 -->
                 <div class="bg-white rounded-2xl shadow-lg p-4 flex flex-col items-center text-center">
                     <div class="w-24 h-24 bg-red-500 rounded-full flex items-center justify-center text-xl font-bold text-white">QA</div>
                     <h4 class="mt-4 text-lg font-semibold text-gray-800">Dalida, Jasmin</h4>
@@ -565,7 +553,6 @@
                 a smart appointment and inventory management system tailored to their growing needs.
             </p>
 
-            <!-- Why the system -->
             <p class="text-sm md:text-base mt-4 text-center mx-auto max-w-2xl text-gray-600 italic">
                 Project PetPal streamlines appointments, tracks inventory, and enhances overall customer experience — giving Deloso Vet more time to care for pets.
             </p>
@@ -598,7 +585,6 @@
         </div>
     </section>
 
-    <!-- FAQ Section (replaces Book Your Appointment) -->
     <section id="book-index" class="bg-gray-100 py-16">
       <div class="container mx-auto text-center px-4">
         <h2 class="text-3xl font-bold text-gray-800 mb-4">Frequently Asked Questions</h2>
@@ -660,13 +646,11 @@
     <!-- Message Modal -->
     <div id="messageModal" class="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50 hidden p-4">
         <div class="bg-white rounded-lg shadow-xl w-full max-w-xs p-4 relative">
-            <!-- Close Button -->
             <button id="closeMessageModal" aria-label="Close message modal"
                 class="absolute top-3 right-3 text-gray-500 hover:text-gray-700 text-xl leading-none h-6 w-6 flex items-center justify-center rounded-full hover:bg-gray-100 transition-colors">
                 &times;
             </button>
 
-            <!-- Modal Content -->
             <h2 class="text-lg font-semibold mb-3 text-blue-700">Message Us</h2>
             <p class="mb-4 text-gray-600 text-sm">
                 This is a placeholder for the messaging feature. For now, please email us at
@@ -674,7 +658,6 @@
                 or message us on our Facebook page.
             </p>
 
-            <!-- Disabled Fields -->
             <div class="space-y-3">
                 <div>
                     <label for="userName" class="block text-sm font-medium text-gray-700 mb-1">Your Name</label>
@@ -701,7 +684,6 @@
   
 
     <script>
-      // Floating Message Button Logic
       document.getElementById('openMessageBtn').addEventListener('click', function() {
         document.getElementById('messageModal').classList.remove('hidden');
       });
@@ -716,7 +698,6 @@
         </div>
     </footer>
     
-     <!-- Script Supabase -->
      <script type="module" src="./js/signUp.js"></script>
      <script type="module" src="./js/login.js"></script>
 

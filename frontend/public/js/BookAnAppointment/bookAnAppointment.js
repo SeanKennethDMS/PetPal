@@ -497,7 +497,7 @@ async function handleBookingConfirmation() {
       urn,
     });
 
-    showBookingConfirmation(urn); // New function to show URN
+    showBookingConfirmation(urn); 
     resetAndCloseModal();
   } catch (error) {
     console.error("Booking error:", error);
