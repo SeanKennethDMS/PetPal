@@ -62,6 +62,9 @@ document.addEventListener("DOMContentLoaded", () => {
             first_name,
             last_name
           ),
+          user_profiles(
+            phone_number
+            ),
           pets (
             pet_name,
             species
@@ -110,6 +113,7 @@ document.addEventListener("DOMContentLoaded", () => {
     const petName = appt.pets?.pet_name || "N/A";
     const species = appt.pets?.species || "N/A";
     const service = appt.services?.name || "N/A";
+    const phoneNumber = appt.user_profiles?.phone_number || "N/A";
     const appointmentDate = new Date(appt.appointment_date).toLocaleDateString();
     const appointmentTime = appt.appointment_time?.slice(0, 5) || "—";
     const bookedDate = new Date(appt.created_at).toLocaleDateString();
@@ -128,14 +132,15 @@ document.addEventListener("DOMContentLoaded", () => {
     div.innerHTML = `
       <div class="card-inner flex flex-col gap-2">
         <h3 class="font-bold text-lg">${petName} (${species})</h3>
-        <p class="text-gray-700">👤 Owner: <span class="font-medium">${ownerName}</span></p>
-        <p class="text-gray-700">🛁 Service: <span class="font-medium">${service}</span></p>
-        <p class="text-gray-700">📅 Appointment: 
+        <p class="text-gray-700">Owner: <span class="font-medium">${ownerName}</span></p>
+        <p class="text-gray-700">Contact Number: <span class="font-medium">${phoneNumber}</span></p>
+        <p class="text-gray-700">Service: <span class="font-medium">${service}</span></p>
+        <p class="text-gray-700">Appointment: 
           <span class="font-medium">${appointmentDate}</span> 
           at <span class="font-medium">${appointmentTime}</span>
         </p>
-        <p class="text-gray-700">🕓 Booked On: <span class="font-medium">${bookedDate}</span></p>
-        <p class="text-gray-700 hidden">🆔 URN: <span id="urn-span-${appt.appointment_id}" class="font-mono text-blue-700">${urn}</span></p>  
+        <p class="text-gray-700">Booked On: <span class="font-medium">${bookedDate}</span></p>
+        <p class="text-gray-700 hidden">URN: <span id="urn-span-${appt.appointment_id}" class="font-mono text-blue-700">${urn}</span></p>  
         <p class="text-sm text-gray-500 italic">Status: ${statusLabel}</p>
       </div>
     `;
