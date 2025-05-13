@@ -9,7 +9,6 @@ function showError(message) {
   errorDiv.textContent = message;
   document.body.appendChild(errorDiv);
   
-  // Remove after 3 seconds
   setTimeout(() => {
     errorDiv.remove();
   }, 3000);
@@ -376,7 +375,6 @@ document.addEventListener("DOMContentLoaded", () => {
         }
       } catch (notifError) {
         console.error('Error sending notification:', notifError);
-        // Don't throw here, just log the error and continue
       }
     
       if (newStatus === 'completed') {
@@ -407,7 +405,6 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   function setupRealtimeUpdates() {
-    // Clean up existing subscription if any
     if (appointmentChannel) {
       appointmentChannel.unsubscribe();
       appointmentChannel = null;

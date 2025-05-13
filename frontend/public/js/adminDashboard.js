@@ -85,7 +85,6 @@ async function loadDashboard() {
         },
         (payload) => {
           console.log("Admin appointment change received:", payload);
-          // Reload all sections when there's a change
           loadTodaysSchedule();
           loadTodaysAppointments();
           loadPendingRequests();
@@ -698,9 +697,7 @@ async function handleAppointmentAction(appointmentId, action) {
       .single();
 
     if (fetchError) throw fetchError;
-    console.log("Original URN:", appointment.urn); // Debug
 
-    // 2. Update appointment status
     const { newStatus, notificationType, notificationData } = getActionDetails(action, appointment);
     const { error: updateError } = await supabase
       .from("appointments")
@@ -711,7 +708,6 @@ async function handleAppointmentAction(appointmentId, action) {
 
     // 3. Handle completion
     if (newStatus === "completed") {
-      // Fetch the URN directly from the appointments table to ensure it's up-to-date
       const { data: urnRow, error: urnFetchError } = await supabase
         .from("appointments")
         .select("urn")
@@ -721,7 +717,6 @@ async function handleAppointmentAction(appointmentId, action) {
       const urn = urnRow.urn;
       console.log("Fetched URN for completed_appointments:", urn);
 
-      // 4. Build payload for completed_appointments (with URN)
       const completedAppointment = {
         appointment_id: appointment.appointment_id,
         appointment_date: appointment.appointment_date,
@@ -735,7 +730,7 @@ async function handleAppointmentAction(appointmentId, action) {
         updated_at: appointment.updated_at,
         original_appointment_date: appointment.original_appointment_date,
         original_appointment_time: appointment.original_appointment_time,
-        urn: urn || null, // Use fetched URN
+        urn: urn || null,
       };
       console.log("Inserting into completed_appointments:", completedAppointment);
 
@@ -999,7 +994,6 @@ window.openProceedModal = async function (appointmentId) {
             return;
           }
 
-          // Ensure payment method matches database constraints exactly
           const validPaymentMethods = ["Cash", "GCash", "Credit Card", "Other"];
           if (!validPaymentMethods.includes(paymentMethod)) {
             showError("Invalid payment method selected");
@@ -1012,7 +1006,6 @@ window.openProceedModal = async function (appointmentId) {
           const urn = appointment.urn ?? null;
 
 
-          // Get all items from billing list
           const billingItems = Array.from(
             document.getElementById("billingList").children
           ).map((item) => {
@@ -1060,7 +1053,6 @@ window.openProceedModal = async function (appointmentId) {
           document.getElementById("serviceSelect").value = "";
           document.getElementById("productSelect").value = "";
 
-          // Reload dashboard to reflect changes
           loadDashboard();
         } catch (error) {
           console.error("Error completing transaction:", error);
@@ -1117,7 +1109,6 @@ async function loadServices(initialServiceId = null) {
       '<option value="">-- Select a Service --</option>' +
       services
         .map((service) => {
-          // Parse the JSON price and get the first value
           const priceObj =
             typeof service.price === "string"
               ? JSON.parse(service.price)

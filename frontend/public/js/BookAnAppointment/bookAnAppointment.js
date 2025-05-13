@@ -810,7 +810,6 @@ function renderAppointments(appointments) {
     }
 
     if (app.status === "accepted" && !app.original_appointment_date) {
-      // Always show Details button
       html += `
         <button class="px-3 py-1 bg-blue-100 text-blue-800 rounded text-sm hover:bg-blue-200" data-details='${JSON.stringify(app)}'>
           Details
@@ -870,7 +869,6 @@ function renderAppointments(appointments) {
       const nextYear = new Date();
       nextYear.setFullYear(today.getFullYear() + 1);
 
-      // Set min date to tomorrow
       const minDate = new Date(today);
       minDate.setDate(today.getDate() + 1);
 
@@ -1250,11 +1248,9 @@ document.addEventListener("click", async (e) => {
     const app = JSON.parse(e.target.getAttribute("data-details"));
     const modal = document.getElementById("appointment-details-modal");
 
-    // Format date/time
     const formattedDate = formatDate(app.appointment_date);
     const formattedTime = convertToAMPM(app.appointment_time);
 
-    // Fill fields that are available immediately
     document.getElementById("detail-urn").textContent =
       app.urn || "Not available";
     document.getElementById("detail-service").textContent =
@@ -1267,7 +1263,6 @@ document.addEventListener("click", async (e) => {
       ? `₱${Number(app.services.price).toLocaleString()}`
       : "N/A";
 
-    // Fetch and display the pet name
     document.getElementById("detail-pet").textContent = "Loading...";
     const petName = await getPetName(app.pet_id);
     document.getElementById("detail-pet").textContent = petName;
