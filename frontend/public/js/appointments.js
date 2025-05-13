@@ -135,7 +135,7 @@ document.addEventListener("DOMContentLoaded", () => {
           at <span class="font-medium">${appointmentTime}</span>
         </p>
         <p class="text-gray-700">🕓 Booked On: <span class="font-medium">${bookedDate}</span></p>
-        <p class="text-gray-700">🆔 URN: <span id="urn-span-${appt.appointment_id}" class="font-mono text-blue-700">${urn}</span></p>  
+        <p class="text-gray-700 hidden">🆔 URN: <span id="urn-span-${appt.appointment_id}" class="font-mono text-blue-700">${urn}</span></p>  
         <p class="text-sm text-gray-500 italic">Status: ${statusLabel}</p>
       </div>
     `;
