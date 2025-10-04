@@ -7,14 +7,6 @@ Supports both **customer and admin dashboards**, with updates and integrated cha
 
 ---
 
-## Entity-Relationship Diagram (ERD)
-
-Here is the Entity-Relationship Diagram (ERD) for the database:
-
-![ERD](./frontend/public/assets/ERD%20PetPal.png)
-
----
-
 ## 🚀 Features
 ✅ Appointment Booking & Rescheduling  
 ✅ Customer & Staff Dashboards  
@@ -40,5 +32,6 @@ Here is the Entity-Relationship Diagram (ERD) for the database:
 > ✅ Tailwind CDN Included in HTML:  
 ```html
 <script src="https://cdn.tailwindcss.com"></script>
+
 
 
